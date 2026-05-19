@@ -64,7 +64,7 @@ public class SecurityConfig {
                         // Para acceder a Swagger/OpenAPI si es necesario que estén públicas
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         // Cualquier otra petición no especificada arriba requerirá estar autenticado (con token válido)
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 )
                 // Indicamos que queremos manejar sesiones de forma Stateless (Sin Guardar Sesión en el servidor)
                 .sessionManagement(session -> session
