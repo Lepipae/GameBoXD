@@ -13,7 +13,7 @@ import java.util.List;
  * @author Andrés López
  */
 @RestController
-@RequestMapping("api/desarrolladora")
+@RequestMapping("/api/desarrolladoras")
 public class DesarrolladoraController {
 
     @Autowired
@@ -34,7 +34,7 @@ public class DesarrolladoraController {
      * @return          Desarrolladora con el nombre asociado
      */
     @GetMapping("/nombre/{nombre}")
-    public Desarrolladora obtenerPorNombre(String nombre) {
+    public Desarrolladora obtenerPorNombre(@PathVariable String nombre) {
         return desarrolladoraService.obtenerPorNombre(nombre);
     }
 
@@ -44,7 +44,7 @@ public class DesarrolladoraController {
      * @return      Desarrolladora asociada a ese id
      */
     @GetMapping("/id/{id}")
-    public Desarrolladora obtenerPorId(int id) {
+    public Desarrolladora obtenerPorId(@PathVariable int id) {
         return desarrolladoraService.obtenerPorId(id);
     }
 

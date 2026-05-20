@@ -13,7 +13,7 @@ import java.util.List;
  * @author Andrés López
  */
 @RestController
-@RequestMapping("api/usuarios")
+@RequestMapping("/api/usuarios")
 public class UsuarioController {
     @Autowired
     private UsuarioService usuarioService;
@@ -51,8 +51,8 @@ public class UsuarioController {
      * Metodo para eliminar un usuario de la base de datos
      * @param miId  Id del usuario que se quiere borrar
      */
-    @DeleteMapping
-    public void borrarUsuarioPorMiId(@RequestBody int miId) {
+    @DeleteMapping("/{miId}")
+    public void borrarUsuarioPorMiId(@PathVariable int miId) {
         usuarioService.borrarPorMiId(miId);
     }
 

@@ -13,7 +13,7 @@ import java.util.List;
  * @author Andrés López
  */
 @RestController
-@RequestMapping("api/lista")
+@RequestMapping("/api/lista")
 public class EntradaListaController {
     @Autowired
     private EntradaListaService entradaListaService;    // Servicio de la clase entradalista

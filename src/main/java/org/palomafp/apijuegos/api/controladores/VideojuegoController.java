@@ -13,7 +13,7 @@ import java.util.List;
  * @author Andrés López
  */
 @RestController
-@RequestMapping("api/videojuegos")
+@RequestMapping("/api/videojuegos")
 public class VideojuegoController {
     @Autowired
     private VideojuegoService videojuegoService;
@@ -82,7 +82,7 @@ public class VideojuegoController {
      * @param miId  Id del videojuego que se quiere borrar
      */
     @DeleteMapping("/{miId}")
-    public void borrarVideojuego(@RequestBody long miId) {
+    public void borrarVideojuego(@PathVariable long miId) {
         videojuegoService.borrarVideojuego(miId);
     }
 
