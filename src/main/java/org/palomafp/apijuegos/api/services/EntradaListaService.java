@@ -15,7 +15,7 @@ import java.util.List;
 public class EntradaListaService {
 
     @Autowired
-    private EntradaListaRepo entradaListaRepo;
+    private EntradaListaRepo entradaListaRepo; //Repo de Entradalista
 
     /**
      * Obtiene las entradas de la lista pertenecientes a un usuario
