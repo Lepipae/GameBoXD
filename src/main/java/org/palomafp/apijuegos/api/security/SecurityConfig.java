@@ -51,8 +51,9 @@ public class SecurityConfig {
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // Deshabilitamos CSRF porque nuestra API es Stateless usando JWT. (Cross-Site Request Forgery no nos afecta)
-        http.csrf(csrf -> csrf.disable())
+        // Habilitamos CORS y deshabilitamos CSRF porque nuestra API es Stateless usando JWT
+        http.cors(org.springframework.security.config.Customizer.withDefaults())
+            .csrf(csrf -> csrf.disable())
                 // Configuramos las reglas de autorización por rutas
                 .authorizeHttpRequests(auth -> auth
                         // Rutas públicas que nos pidió el usuario: Login y Registro
