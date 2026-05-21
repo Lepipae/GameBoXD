@@ -1,0 +1,307 @@
+/* CSS Reset - Cancelaciones de estilos por defecto */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    width: 100%;
+    min-height: 100vh;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #0B0E14;
+    color: #333;
+}
+
+ul, ol {
+    list-style: none;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+button, input, select, textarea {
+    font-family: inherit;
+    border: none;
+    background: none;
+    outline: none;
+}
+
+button {
+    cursor: pointer;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+/* Header Styles */
+.main-header {
+    background-color: #1A202C; /* Color del diseño original */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px;
+    height: 72px; /* Altura del header */
+    color: #F8FAFC; /* Color del texto del header */
+}
+
+/* Contenedores para alinear items en el header */
+.header-left, .header-center, .header-right {
+    display: flex;
+    align-items: center;
+    flex: 1; /* Distribuye el espacio equitativamente */
+}
+
+/* Parte izquierda: Botones */
+.header-left {
+    justify-content: flex-start;
+    gap: 16px; /* Espacio entre los botones */
+}
+
+.icon-button {
+    background-color: #E2E8F0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    width: 48px;
+    height: 48px;
+    transition: transform 0.1s ease, filter 0.2s ease;
+}
+
+.main-footer {
+    background-color: #1A202C; /* Color del diseño original */
+    color: #F8FAFC; /* Color del texto del footer */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 24px;
+}
+
+.footer-social {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.social {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    margin-left: 5px;
+    margin-right: 5px;
+    transition: transform 0.1s ease, filter 0.2s ease;
+}
+
+.icon-button img {
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    object-fit: contain;
+}
+
+.nav-button {
+    background-color: #00D1FF; /* Cian vibrante de la imagen */
+    color: #1a1a1a; /* Texto oscuro para buen contraste */
+    font-size: 16px;
+    font-weight: 700;
+    padding: 12px 24px;
+    border-radius: 8px;
+    transition: transform 0.1s ease, filter 0.2s ease;
+}
+
+.section-title {
+    margin-left: 20px;
+    padding: 5px 15px;
+    color: #F8FAFC;
+    background-color: #1A202C;
+    display: flex;
+    width: fit-content;
+    border-radius: 30px;
+    box-shadow: 0 0 15px 2px rgba(0, 219, 255, 0.6);
+    transition: box-shadow 0.3s ease;
+}
+
+.section-title:hover {
+    box-shadow: 0 0 20px 4px rgba(0, 219, 255, 0.8);
+}
+.icon-button:hover, .nav-button:hover {
+    filter: brightness(1.1);
+}
+
+.icon-button:active, .nav-button:active {
+    transform: scale(0.96);
+}
+
+/* Parte central: Título */
+.header-center {
+    justify-content: center;
+}
+
+.header-center h1 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    color: #F8FAFC; /* Color del texto del título */
+}
+
+/* Parte derecha: Logo */
+.header-right {
+    justify-content: flex-end;
+}
+
+.header-right .logo {
+    height: 44px; /* Ajuste del tamaño del logo para que encaje bien */
+    object-fit: contain;
+}
+
+/* Buscador */
+.search-container {
+    display: flex;
+    justify-content: center;
+    padding: 60px 24px;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    background-color: #E2E8F0;
+    border-radius: 50px;
+    padding: 6px 24px 6px 6px;
+    width: 100%;
+    max-width: 650px;
+    box-shadow: 0 0 15px 2px rgba(0, 219, 255, 0.6);
+    transition: box-shadow 0.3s ease;
+}
+
+.search-bar:focus-within {
+    box-shadow: 0 0 20px 4px rgba(0, 219, 255, 0.8);
+}
+
+.search-icon-wrapper {
+    background-color: #00DBFF;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.1s ease;
+}
+
+.search-icon-wrapper:active {
+    transform: scale(0.92);
+}
+
+.search-icon-wrapper img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+}
+
+.search-input {
+    flex: 1;
+    background: transparent;
+    font-size: 20px;
+    font-weight: 700;
+    color: #333;
+    margin-left: 16px;
+}
+
+.search-input::placeholder {
+    color: #8892A0; /* Un gris intermedio para el placeholder */
+}
+
+/* Hero Section */
+.hero-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 40px 80px;
+}
+
+.hero-left {
+    flex: 1;
+}
+
+.hero-left h2 {
+    font-size: 52px;
+    font-weight: 800;
+    color: #F8FAFC;
+    line-height: 1.2;
+}
+
+.hero-middle {
+    flex: 0 0 auto;
+    margin: 0 40px;
+}
+
+.hero-arrows {
+    height: 220px;
+    object-fit: contain;
+}
+
+.hero-right {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.hero-image {
+    width: 100%;
+    max-width: 580px;
+    border-radius: 24px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+    object-fit: cover;
+}
+
+/* Recomendaciones Section */
+.recommendations-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 40px 80px;
+}
+
+.contenedor-recomendaciones {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    margin-top: 40px;
+}
+
+.recomendacion {
+    flex: 1;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    aspect-ratio: 2/3; /* Proporción típica de portada de juego */
+    background-color: #1A202C;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.recomendacion img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.recomendacion:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0, 219, 255, 0.3); /* Brillo cyan al hacer hover */
+}
+
+.recomendacion:hover img {
+    transform: scale(1.05);
+}
