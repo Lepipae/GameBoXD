@@ -89,6 +89,7 @@ public class EntradaListaService {
      * Borra las entradas asociadas a un usuario
      * @param idUsuario Id del usuario
      */
+    @SuppressWarnings("null")
     public void borrarPorUsuario(int idUsuario) {
         List<EntradaLista> entradas = entradaListaRepo.findByIdUsuario(idUsuario);
         entradaListaRepo.deleteByIdUsuario(idUsuario);
