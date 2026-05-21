@@ -142,8 +142,8 @@ public class EntradaLista {
      * @param nota Nota a establecer
      */
     public void setNota(double nota) {
-        if (nota < 0 || nota > 5) {
-            throw new IllegalArgumentException("La nota debe de estar entre 0 y 5");
+        if (nota < 0 || nota > 10) {
+            throw new IllegalArgumentException("La nota debe de estar entre 0 y 10");
         }
         this.nota = nota;
     }
