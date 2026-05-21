@@ -1,7 +1,9 @@
 package org.palomafp.apijuegos.api.services;
 
 import org.palomafp.apijuegos.api.modelo.EntradaLista;
+import org.palomafp.apijuegos.api.modelo.Videojuego;
 import org.palomafp.apijuegos.api.repositories.EntradaListaRepo;
+import org.palomafp.apijuegos.api.repositories.VideojuegoRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +18,33 @@ public class EntradaListaService {
 
     @Autowired
     private EntradaListaRepo entradaListaRepo; //Repo de Entradalista
+
+    @Autowired
+    private VideojuegoRepo videojuegoRepo; //Repo de Videojuego
+
+    /**
+     * Actualiza la nota media de un videojuego basado en sus entradas de lista
+     * @param idVideojuego Id del videojuego
+     */
+    private void actualizarNotaMedia(long idVideojuego) {
+        List<EntradaLista> entradas = entradaListaRepo.findByIdVideojuego(idVideojuego);
+        double notaMedia = 0.0;
+        
+        if (entradas != null && !entradas.isEmpty()) {
+            double suma = 0.0;
+            for (EntradaLista entrada : entradas) {
+                suma += entrada.getNota();
+            }
+            notaMedia = suma / entradas.size();
+            notaMedia = Math.round(notaMedia * 100.0) / 100.0;
+        }
+        
+        Videojuego videojuego = videojuegoRepo.findByMiId(idVideojuego);
+        if (videojuego != null) {
+            videojuego.setNotaMedia(notaMedia);
+            videojuegoRepo.save(videojuego);
+        }
+    }
 
     /**
      * Obtiene las entradas de la lista pertenecientes a un usuario
@@ -40,7 +69,12 @@ public class EntradaListaService {
      * @param id Id interno
      */
     public void borrarEntrada(int id) {
-        entradaListaRepo.deleteByMiId(id);
+        EntradaLista entrada = entradaListaRepo.findByMiId(id);
+        if (entrada != null) {
+            long idVideojuego = entrada.getIdVideojuego();
+            entradaListaRepo.deleteByMiId(id);
+            actualizarNotaMedia(idVideojuego);
+        }
     }
 
     /**
@@ -56,7 +90,14 @@ public class EntradaListaService {
      * @param idUsuario Id del usuario
      */
     public void borrarPorUsuario(int idUsuario) {
+        List<EntradaLista> entradas = entradaListaRepo.findByIdUsuario(idUsuario);
         entradaListaRepo.deleteByIdUsuario(idUsuario);
+        if (entradas != null) {
+            entradas.stream()
+                    .map(EntradaLista::getIdVideojuego)
+                    .distinct()
+                    .forEach(this::actualizarNotaMedia);
+        }
     }
 
     /**
@@ -70,6 +111,8 @@ public class EntradaListaService {
             long nuevoId = (ultimo != null) ? ultimo.getMiId() + 1 : 1;
             entradaLista.setMiId(nuevoId);
         }
-        return entradaListaRepo.save(entradaLista);
+        EntradaLista guardada = entradaListaRepo.save(entradaLista);
+        actualizarNotaMedia(guardada.getIdVideojuego());
+        return guardada;
     }
 }

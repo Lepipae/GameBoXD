@@ -43,6 +43,14 @@ public interface EntradaListaRepo extends MongoRepository<EntradaLista, String> 
     void deleteByIdUsuario(int idUsuario);
 
     /**
+     * Busca las entradas de la lista pertenecientes a un videojuego
+     * @param idVideojuego Id del videojuego
+     * @return Lista de entradas del videojuego
+     */
+    List<EntradaLista> findByIdVideojuego(long idVideojuego);
+
+
+    /**
      * Encuentra la entrada con el id interno mas alto
      * @return EntradaLista con el id mas alto
      */
