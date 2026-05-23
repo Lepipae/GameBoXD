@@ -29,6 +29,16 @@ public class EntradaListaController {
     }
 
     /**
+     * Metodo que devuelve todas las entradas asociadas a un videojuego
+     * @param idJuego Id del videojuego del que queremos las entradas
+     * @return      Lista que contiene todas las entradas de ese videojuego
+     */
+    @GetMapping("/juego/{idJuego}")
+    public List<EntradaLista> findByIdVideojuego(@PathVariable("idJuego") long idJuego) {
+        return entradaListaService.findByIdVideojuego(idJuego);
+    }
+
+    /**
      * Metodo que devuelve una entradaLista basado en su id interno
      * @param id    Id de la entrada
      * @return      Entrada asociada a ese id

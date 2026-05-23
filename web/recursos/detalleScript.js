@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (idJuego) {
         console.log("ID del juego recibido:", idJuego);
         cargarDetallesJuego(idJuego);
+        cargarResenyasJuego(idJuego);
     } else {
         mostrarError("No se ha especificado ningún juego.");
     }
@@ -87,6 +88,7 @@ function ocultarCargando() {
  */
 function mostrarContenedor() {
     document.getElementById('game-detail-wrapper').style.display = 'flex';
+    document.getElementById('reviews-wrapper').style.display = 'block';
 }
 
 /**
@@ -159,4 +161,67 @@ function renderizarValoracion(notaMedia) {
     
     ratingContainer.appendChild(ratingNumber);
     ratingContainer.appendChild(starsContainer);
+}
+
+/**
+ * Realiza una petición a la API para obtener las reseñas del videojuego.
+ * 
+ * @param {string} idJuego - El ID del videojuego.
+ */
+function cargarResenyasJuego(idJuego) {
+    const API_URL = `http://localhost:8080/api/lista/juego/${idJuego}`;
+    
+    fetch(API_URL)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error de red al intentar obtener las reseñas del juego');
+            }
+            return response.json();
+        })
+        .then(resenyas => {
+            console.log("Reseñas obtenidas:", resenyas);
+            renderizarResenyas(resenyas);
+        })
+        .catch(error => {
+            console.error(error);
+            // Si falla, mostramos el contenedor indicando que no hay reseñas
+            renderizarResenyas([]);
+        });
+}
+
+/**
+ * Renderiza las reseñas del juego en la página.
+ * 
+ * @param {Object[]} resenyas - Array de objetos de entradas de lista.
+ */
+function renderizarResenyas(resenyas) {
+    const container = document.getElementById('reviews-container');
+    container.innerHTML = '';
+    
+    // Filtrar reseñas que tengan texto
+    const resenyasConTexto = resenyas.filter(r => r.resenya && r.resenya.trim() !== '');
+
+    if (resenyasConTexto.length === 0) {
+        const msg = document.createElement('div');
+        msg.className = 'no-reviews-msg';
+        msg.textContent = 'Aún no hay reseñas para este juego.';
+        container.appendChild(msg);
+    } else {
+        resenyasConTexto.forEach(r => {
+            const card = document.createElement('div');
+            card.className = 'review-card';
+            
+            const rating = document.createElement('div');
+            rating.className = 'review-rating';
+            rating.textContent = r.nota.toFixed(1);
+            
+            const content = document.createElement('div');
+            content.className = 'review-content';
+            content.textContent = r.resenya;
+            
+            card.appendChild(rating);
+            card.appendChild(content);
+            container.appendChild(card);
+        });
+    }
 }

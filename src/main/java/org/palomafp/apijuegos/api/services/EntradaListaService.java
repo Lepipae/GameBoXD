@@ -56,6 +56,15 @@ public class EntradaListaService {
     }
 
     /**
+     * Obtiene las entradas de la lista pertenecientes a un videojuego
+     * @param idVideojuego Id del videojuego
+     * @return Lista de entradas del videojuego
+     */
+    public List<EntradaLista> findByIdVideojuego(long idVideojuego) {
+        return entradaListaRepo.findByIdVideojuego(idVideojuego);
+    }
+
+    /**
      * Obtiene una entrada de la lista a partir de su id interno
      * @param id Id interno
      * @return EntradaLista encontrada o null
