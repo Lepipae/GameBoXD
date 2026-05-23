@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameBoXD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="recursos/style.css">
+    <link rel="stylesheet" href="recursos/styleDetalle.css">
+</head>
+<body>
+    <!-- Cabecera de la pagina -->
+    <header class="main-header">
+      <div class="header-left">
+        <button class="icon-button" type="button" aria-label="Usuario">
+          <img src="https://gameboxd.s3.us-east-1.amazonaws.com/web/user.png" alt="Usuario">
+        </button>
+        <button class="nav-button" type="button">Mi perfil</button>
+        <button class="nav-button" type="button">Mi lista</button>
+      </div>
+      
+      <div class="header-center">
+        <h1 id="titulo">GameBoXD</h1>
+      </div>
+      
+      <div class="header-right">
+        <a href="index.html">
+          <img src="https://gameboxd.s3.us-east-1.amazonaws.com/web/logoGameboxd.png" alt="GameBoXD Logo" class="logo">
+        </a>
+      </div>
+    </header>
+
+    <!-- Contenido principal del detalle -->
+    <main class="game-detail-wrapper" id="game-detail-wrapper" style="display: none;">
+      <div class="game-col-left">
+          <img id="game-cover" src="" alt="Portada del juego" class="game-cover">
+          <div class="game-tags" id="game-tags"></div>
+          <button id="add-to-list-btn" class="add-to-list-btn" type="button">Añadir a mi lista</button>
+      </div>
+      <div class="game-col-right">
+          <div class="game-description-box">
+              <p id="game-desc"></p>
+          </div>
+          <div class="game-rating-box">
+              <h3>Valoración media</h3>
+              <div class="rating-display" id="game-rating"></div>
+          </div>
+      </div>
+    </main>
+    <div id="loading-state" class="loading-state">Cargando datos del juego...</div>
+
+    <!-- Pie de pagina -->
+    <footer class="main-footer">
+      <p>Proyecto realizado para el IES Virgen de la Paloma</p>
+      <div class="footer-social">
+        <button class="social" type="button">
+          <a href="https://www.palomafp.org/" target="_blank" rel="noopener noreferrer">
+            <img src="https://gameboxd.s3.us-east-1.amazonaws.com/web/iconoEscuela.png" alt="IES Virgen de la Paloma">
+          </a>
+        </button>
+        <button class="social" type="button">
+          <a href="https://github.com/Lepipae/GameBoXD" target="_blank" rel="noopener noreferrer">
+            <img src="https://gameboxd.s3.us-east-1.amazonaws.com/web/github.png" alt="GitHub">
+          </a>
+        </button>
+      </div>
+    </footer>
+    
+    <script src="recursos/detalleScript.js"></script>
+</body>
+</html>
