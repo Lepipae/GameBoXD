@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameBoXD - Acceso</title>
+    <link rel="stylesheet" href="recursos/style.css">
+    <link rel="stylesheet" href="recursos/loginStyle.css">
+</head>
+<body>
+    <header class="main-header">
+        <div class="header-left">
+            <a href="index.html" class="icon-button" style="text-decoration: none; color: inherit; font-size: 14px; font-weight: bold; width: auto; padding: 0 15px;">
+                Volver
+            </a>
+        </div>
+        <div class="header-center">
+            <h1>Acceso de Usuario</h1>
+        </div>
+        <div class="header-right">
+        </div>
+    </header>
+
+    <main class="login-container">
+        <!-- Columna Login -->
+        <section class="auth-column login-section">
+            <h2>Iniciar Sesión</h2>
+            <form id="login-form">
+                <div class="input-group">
+                    <label for="login-username">Nombre de Usuario</label>
+                    <input type="text" id="login-username" required>
+                </div>
+                <div class="input-group">
+                    <label for="login-password">Contraseña</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <button type="submit" class="auth-button">Entrar</button>
+                <div id="login-error" class="error-msg"></div>
+            </form>
+        </section>
+
+        <!-- Divisor vertical -->
+        <div class="divider"></div>
+
+        <!-- Columna Registro -->
+        <section class="auth-column register-section">
+            <h2>Crear Cuenta</h2>
+            <form id="register-form">
+                <div class="input-group">
+                    <label for="reg-username">Nombre de Usuario</label>
+                    <input type="text" id="reg-username" required>
+                </div>
+                <div class="input-group">
+                    <label for="reg-password">Contraseña (Mín. 8 caracteres)</label>
+                    <input type="password" id="reg-password" required minlength="8">
+                </div>
+                <button type="submit" class="auth-button">Registrarse</button>
+                <div id="register-error" class="error-msg"></div>
+                <div id="register-success" class="success-msg"></div>
+            </form>
+        </section>
+    </main>
+
+    <script src="recursos/loginScript.js"></script>
+</body>
+</html>
