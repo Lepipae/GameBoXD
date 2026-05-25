@@ -61,6 +61,9 @@ function renderizarJuego(juego) {
     renderizarInformacionBasica(juego);
     renderizarTags(juego.tags);
     renderizarValoracion(juego.notaMedia);
+    if (juego.idDesarrolladora) {
+        cargarDesarrolladora(juego.idDesarrolladora);
+    }
 }
 
 /**
@@ -224,4 +227,47 @@ function renderizarResenyas(resenyas) {
             container.appendChild(card);
         });
     }
+}
+
+/**
+ * Petición a la API para obtener los datos de la desarrolladora.
+ * 
+ * @param {number} idDesarrolladora - El ID de la desarrolladora.
+ */
+function cargarDesarrolladora(idDesarrolladora) {
+    const API_URL = `http://localhost:8080/api/desarrolladoras/id/${idDesarrolladora}`;
+    
+    fetch(API_URL)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al obtener la desarrolladora');
+            }
+            return response.json();
+        })
+        .then(desarrolladora => {
+            renderizarDesarrolladora(desarrolladora);
+        })
+        .catch(error => {
+            console.error("Error cargando desarrolladora:", error);
+            // Si falla, la caja game-dev-box permanecerá oculta por defecto
+        });
+}
+
+/**
+ * Renderiza la información de la desarrolladora en la interfaz.
+ * 
+ * @param {Object} desarrolladora - Datos de la desarrolladora.
+ */
+function renderizarDesarrolladora(desarrolladora) {
+    document.getElementById('game-dev-box').style.display = 'block';
+    
+    const logoImg = document.getElementById('dev-logo');
+    if (desarrolladora.urlImagen === "placeholder" || !desarrolladora.urlImagen) {
+        logoImg.style.display = 'none'; // Ocultar imagen si es placeholder
+    } else {
+        logoImg.src = desarrolladora.urlImagen;
+    }
+    
+    document.getElementById('dev-name').textContent = desarrolladora.nombre;
+    document.getElementById('dev-country').textContent = desarrolladora.pais;
 }

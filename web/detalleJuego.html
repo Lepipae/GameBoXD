@@ -45,14 +45,25 @@
               <h3>Valoración media</h3>
               <div class="rating-display" id="game-rating"></div>
           </div>
+          <div class="game-dev-box" id="game-dev-box" style="display: none;">
+              <h3>Desarrolladora</h3>
+              <div class="dev-info">
+                  <img id="dev-logo" src="" alt="Logo desarrolladora" class="dev-logo">
+                  <div class="dev-details">
+                      <p id="dev-name" class="dev-name"></p>
+                      <p id="dev-country" class="dev-country"></p>
+                  </div>
+              </div>
+          </div>
+          
+          <!-- Sección de reseñas -->
+          <section class="reviews-wrapper" id="reviews-wrapper" style="display: none;">
+              <h3 class="section-title" style="margin-left: 0; margin-bottom: 24px;">Reseñas de la comunidad</h3>
+              <div id="reviews-container" class="reviews-container"></div>
+          </section>
       </div>
     </main>
 
-    <!-- Sección de reseñas -->
-    <section class="reviews-wrapper" id="reviews-wrapper" style="display: none;">
-        <h3 class="section-title" style="margin-left: 0; margin-bottom: 24px;">Reseñas de la comunidad</h3>
-        <div id="reviews-container" class="reviews-container"></div>
-    </section>
     <div id="loading-state" class="loading-state">Cargando datos del juego...</div>
 
     <!-- Pie de pagina -->
