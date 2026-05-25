@@ -58,11 +58,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                // El rol es USER por defecto para nuevos registros, miId y urlImagen pueden ser null/default en backend.
+                // El rol es usuarioNormal por defecto para nuevos registros
                 body: JSON.stringify({ 
                     nombre: nombre, 
                     contrasenia: contrasenia,
-                    rol: 'USER'
+                    rol: 'usuarioNormal',
+                    miId: 0
                 })
             });
 
