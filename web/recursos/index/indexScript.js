@@ -3,8 +3,23 @@
  * Inicia el proceso para obtener y mostrar recomendaciones de juegos.
  */
 document.addEventListener('DOMContentLoaded', () => {
+    verificarSesion();
     obtenerRecomendaciones(); 
 });
+
+/**
+ * Verifica si existe un token de sesión. Si no existe, oculta los botones de perfil y lista.
+ */
+function verificarSesion() {
+    const token = localStorage.getItem('jwt_token');
+    const btnPerfil = document.getElementById('btn-mi-perfil');
+    const btnLista = document.getElementById('btn-mi-lista');
+
+    if (!token) {
+        if (btnPerfil) btnPerfil.style.display = 'none';
+        if (btnLista) btnLista.style.display = 'none';
+    }
+}
 
 /**
  * Realiza la petición principal a la API para obtener la lista completa de videojuegos.
