@@ -12,7 +12,7 @@ function cargarDesarrolladoras() {
     const selectDesarrolladora = document.getElementById('videojuego-desarrolladora');
     if (!selectDesarrolladora) return;
 
-    const API_URL = 'http://34.196.250.38:8080/api/desarrolladoras';
+    const API_URL = 'https://gameboxd.duckdns.org/api/desarrolladoras';
 
     fetch(API_URL)
         .then(response => {
@@ -187,7 +187,7 @@ function inicializarFormularios() {
                 urlImagen: urlImagen || 'placeholder'
             };
 
-            const API_URL = 'http://34.196.250.38:8080/api/desarrolladoras';
+            const API_URL = 'https://gameboxd.duckdns.org/api/desarrolladoras';
 
             fetch(API_URL, {
                 method: 'POST',
@@ -257,7 +257,7 @@ function inicializarFormularios() {
                 tags: tags
             };
 
-            const API_URL = 'http://34.196.250.38:8080/api/videojuegos';
+            const API_URL = 'https://gameboxd.duckdns.org/api/videojuegos';
 
             fetch(API_URL, {
                 method: 'POST',

@@ -31,7 +31,7 @@ function obtenerIdDeUrl() {
  * @param {string} idJuego - El ID del videojuego a cargar.
  */
 function cargarDetallesJuego(idJuego) {
-    const API_URL = `http://34.196.250.38:8080/api/videojuegos/${idJuego}`;
+    const API_URL = `https://gameboxd.duckdns.org/api/videojuegos/${idJuego}`;
     
     fetch(API_URL)
         .then(response => {
@@ -173,7 +173,7 @@ function renderizarValoracion(notaMedia) {
  * @param {string} idJuego - El ID del videojuego.
  */
 function cargarResenyasJuego(idJuego) {
-    const API_URL = `http://34.196.250.38:8080/api/lista/juego/${idJuego}`;
+    const API_URL = `https://gameboxd.duckdns.org/api/lista/juego/${idJuego}`;
     
     fetch(API_URL)
         .then(response => {
@@ -236,7 +236,7 @@ function renderizarResenyas(resenyas) {
  * @param {number} idDesarrolladora - El ID de la desarrolladora.
  */
 function cargarDesarrolladora(idDesarrolladora) {
-    const API_URL = `http://34.196.250.38:8080/api/desarrolladoras/id/${idDesarrolladora}`;
+    const API_URL = `https://gameboxd.duckdns.org/api/desarrolladoras/id/${idDesarrolladora}`;
     
     fetch(API_URL)
         .then(response => {
@@ -294,7 +294,7 @@ function verificarSesionYConfigurarBoton(idJuego) {
         const payloadDecoded = JSON.parse(atob(payloadBase64));
         const username = payloadDecoded.sub;
 
-        fetch(`http://34.196.250.38:8080/api/usuarios/nombre/${username}`, {
+        fetch(`https://gameboxd.duckdns.org/api/usuarios/nombre/${username}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -336,7 +336,7 @@ function anyadirALista(idJuego, idUsuario, token) {
         miId: 0
     };
 
-    fetch('http://34.196.250.38:8080/api/lista', {
+    fetch('https://gameboxd.duckdns.org/api/lista', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

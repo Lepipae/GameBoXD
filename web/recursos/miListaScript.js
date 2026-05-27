@@ -108,7 +108,7 @@ function inicializarFormularios() {
             }
 
             const bodyData = { nombre, contrasenia };
-            const AUTH_URL = 'http://34.196.250.38:8080/api/auth/login';
+            const AUTH_URL = 'https://gameboxd.duckdns.org/api/auth/login';
 
             fetch(AUTH_URL, {
                 method: 'POST',
@@ -124,7 +124,7 @@ function inicializarFormularios() {
             })
             .then(authData => {
                 // Autenticado con éxito. Ahora traemos el ID y foto de perfil del usuario por su nombre.
-                const USUARIO_URL = `http://34.196.250.38:8080/api/usuarios/nombre/${nombre}`;
+                const USUARIO_URL = `https://gameboxd.duckdns.org/api/usuarios/nombre/${nombre}`;
                 
                 return fetch(USUARIO_URL)
                     .then(response => {
@@ -178,7 +178,7 @@ function inicializarFormularios() {
                 rol: 'usuario' // Rol por defecto
             };
 
-            const REGISTER_URL = 'http://34.196.250.38:8080/api/usuarios';
+            const REGISTER_URL = 'https://gameboxd.duckdns.org/api/usuarios';
 
             fetch(REGISTER_URL, {
                 method: 'POST',
@@ -216,7 +216,7 @@ function cargarMiLista(idUsuario) {
 
     if (!gameGrid) return;
 
-    const LISTA_URL = `http://34.196.250.38:8080/api/lista/${idUsuario}`;
+    const LISTA_URL = `https://gameboxd.duckdns.org/api/lista/${idUsuario}`;
 
     fetch(LISTA_URL)
         .then(response => {
@@ -259,7 +259,7 @@ function formatEstado(estado) {
 
 // Renderizar una tarjeta individual consultando la API de videojuegos
 async function renderizarEntradaJuego(entrada, container) {
-    const JUEGO_URL = `http://34.196.250.38:8080/api/videojuegos/${entrada.idVideojuego}`;
+    const JUEGO_URL = `https://gameboxd.duckdns.org/api/videojuegos/${entrada.idVideojuego}`;
 
     try {
         const response = await fetch(JUEGO_URL);
@@ -343,7 +343,7 @@ async function renderizarEntradaJuego(entrada, container) {
 
 // Carga el nombre de la desarrolladora desde la API y lo inyecta en la tarjeta
 function cargarNombreDesarrolladora(idDev, miIdEntrada) {
-    const DEV_URL = `http://34.196.250.38:8080/api/desarrolladoras/id/${idDev}`;
+    const DEV_URL = `https://gameboxd.duckdns.org/api/desarrolladoras/id/${idDev}`;
     const label = document.getElementById(`dev-name-${miIdEntrada}`);
     if (!label) return;
 
@@ -365,7 +365,7 @@ function cargarNombreDesarrolladora(idDev, miIdEntrada) {
 window.eliminarDeLista = function(idEntrada) {
     if (!confirm('¿Estás seguro de que quieres eliminar este videojuego de tu lista personal?')) return;
 
-    const DELETE_URL = `http://34.196.250.38:8080/api/lista/${idEntrada}`;
+    const DELETE_URL = `https://gameboxd.duckdns.org/api/lista/${idEntrada}`;
 
     fetch(DELETE_URL, {
         method: 'DELETE'
