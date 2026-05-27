@@ -1,4 +1,4 @@
-name: Deploy Spring Boot API to EC2
+name: Despliegue de la API a EC2
 
 on:
   push:
