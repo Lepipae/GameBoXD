@@ -12,11 +12,11 @@
     <!-- Cabecera de la pagina -->
     <header class="main-header">
       <div class="header-left">
-        <a href="index.html" class="icon-button" aria-label="Usuario">
+        <a href="login.html" class="icon-button" aria-label="Usuario" id="btn-user-icon">
           <img src="https://gameboxd.s3.us-east-1.amazonaws.com/web/user.png" alt="Usuario">
         </a>
-        <button id="btn-mi-perfil" class="nav-button" type="button" onclick="location.href='index.html'">Mi perfil</button>
-        <a href="miLista.html"><button id="btn-mi-lista" class="nav-button" type="button">Mi lista</button></a>
+        <button id="btn-mi-perfil" class="nav-button" type="button">Mi perfil</button>
+        <a href="miLista.html" id="link-mi-lista"><button id="btn-mi-lista" class="nav-button" type="button">Mi lista</button></a>
       </div>
       
       <div class="header-center">
@@ -144,6 +144,7 @@
     <!-- Contenedor para alertas tipo Toast flotantes -->
     <div id="toast-container" class="toast-container"></div>
 
+    <script src="recursos/header.js"></script>
     <script src="recursos/miListaScript.js"></script>
   </body>
 </html>
