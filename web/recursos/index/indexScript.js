@@ -27,7 +27,7 @@ function verificarSesion() {
  * En caso de error, muestra una pantalla de fallo.
  */
 function obtenerRecomendaciones() {
-    const API_URL = 'http://localhost:8080/api/videojuegos';
+    const API_URL = 'http://34.196.250.38:8080/api/videojuegos';
 
     fetch(API_URL)
         .then(response => {

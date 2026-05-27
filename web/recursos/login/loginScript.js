@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const contrasenia = document.getElementById('login-password').value;
         
         try {
-            const response = await fetch('http://localhost:8080/api/auth/login', {
+            const response = await fetch('http://34.196.250.38:8080/api/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch('http://localhost:8080/api/usuarios', {
+            const response = await fetch('http://34.196.250.38:8080/api/usuarios', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
