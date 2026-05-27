@@ -50,6 +50,7 @@ function inicializarSesion() {
         } catch (e) {
             console.error('Error parseando sesión local:', e);
             localStorage.removeItem('currentUser');
+            localStorage.removeItem('jwt_token');
             location.reload();
         }
     }
@@ -59,6 +60,7 @@ function inicializarSesion() {
     if (btnLogout) {
         btnLogout.addEventListener('click', () => {
             localStorage.removeItem('currentUser');
+            localStorage.removeItem('jwt_token');
             showToast('¡Sesión cerrada correctamente!', 'success');
             setTimeout(() => location.reload(), 800);
         });
@@ -140,6 +142,7 @@ function inicializarFormularios() {
                             urlImagen: userProfile.urlImagen
                         };
                         localStorage.setItem('currentUser', JSON.stringify(sessionObj));
+                        localStorage.setItem('jwt_token', authData.jwt);
                         
                         showToast(`¡Bienvenido de nuevo, ${userProfile.nombre}!`, 'success');
                         setTimeout(() => location.reload(), 1000);

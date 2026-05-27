@@ -27,6 +27,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
                 // Guardamos el JWT en localStorage para usarlo en otras peticiones
                 localStorage.setItem('jwt_token', data.jwt);
+                
+                // También obtenemos el perfil completo para sincronizar con la lista y otros componentes
+                try {
+                    const profileResponse = await fetch(`https://gameboxd.duckdns.org/api/usuarios/nombre/${nombre}`);
+                    if (profileResponse.ok) {
+                        const userProfile = await profileResponse.json();
+                        const sessionObj = {
+                            token: data.jwt,
+                            miId: userProfile.miId,
+                            nombre: userProfile.nombre,
+                            urlImagen: userProfile.urlImagen
+                        };
+                        localStorage.setItem('currentUser', JSON.stringify(sessionObj));
+                    }
+                } catch (profileError) {
+                    console.error('Error fetching user profile during login:', profileError);
+                }
+
                 // Redirigir a la página principal u otra página
                 window.location.href = 'index.html'; 
             } else {
