@@ -16,85 +16,6 @@ body {
     color: #333;
 }
 
-body {
-    position: relative;
-    z-index: 0;
-    display: flex;
-    flex-direction: column;
-}
-
-body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: -1;
-    pointer-events: none;
-    background-color: #0B0E14;
-
-    background-image:
-        linear-gradient(180deg, transparent 85%, rgba(0, 219, 255, 0.4) 95%, #00dbff 100%),
-        linear-gradient(180deg, transparent 75%, rgba(0, 219, 255, 0.6) 90%, #00dbff 100%),
-        linear-gradient(180deg, transparent 80%, rgba(0, 219, 255, 0.3) 90%, #00dbff 100%),
-        linear-gradient(180deg, transparent 90%, rgba(0, 219, 255, 0.8) 95%, #00dbff 100%),
-        linear-gradient(180deg, transparent 85%, rgba(0, 219, 255, 0.5) 95%, #00dbff 100%),
-        linear-gradient(180deg, transparent 80%, rgba(0, 219, 255, 0.7) 95%, #00dbff 100%),
-        linear-gradient(180deg, transparent 70%, rgba(0, 219, 255, 0.4) 90%, #00dbff 100%),
-        linear-gradient(180deg, transparent 85%, rgba(0, 219, 255, 0.9) 95%, #00dbff 100%);
-
-    background-size:
-        2px 600px,
-        1px 600px,
-        2px 600px,
-        3px 600px,
-        1px 600px,
-        2px 600px,
-        1px 600px,
-        2px 600px;
-
-    background-position:
-        10% -20px,
-        25% -150px,
-        35% -300px,
-        50% -450px,
-        65% -100px,
-        75% -250px,
-        85% -400px,
-        95% -550px;
-
-    background-repeat: repeat-y;
-    animation: neon-rain 8s linear infinite;
-    opacity: 0.4;
-}
-
-@keyframes neon-rain {
-    0% {
-        background-position:
-            10% -20px,
-            25% -150px,
-            35% -300px,
-            50% -450px,
-            65% -100px,
-            75% -250px,
-            85% -400px,
-            95% -550px;
-    }
-
-    100% {
-        background-position:
-            10% 1180px,
-            25% 1650px,
-            35% 300px,
-            50% 1950px,
-            65% 1100px,
-            75% 1550px,
-            85% 200px,
-            95% 650px;
-    }
-}
-
 ul,
 ol {
     list-style: none;
@@ -136,9 +57,6 @@ img {
     /* Altura del header */
     color: #F8FAFC;
     /* Color del texto del header */
-    position: sticky;
-    top: 0;
-    z-index: 1000;
 }
 
 /* Contenedores para alinear items en el header */
@@ -419,10 +337,10 @@ img {
 }
 
 .descripcion-section {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px 40px 80px;
-    }
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 40px 80px;
+}
 
 .parrafo {
     background: #1A202C;

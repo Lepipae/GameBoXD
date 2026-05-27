@@ -1,0 +1,554 @@
+/* CSS Reset - Cancelaciones de estilos por defecto */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    width: 100%;
+    min-height: 100vh;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #0B0E14;
+    color: #333;
+}
+
+ul, ol {
+    list-style: none;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+button, input, select, textarea {
+    font-family: inherit;
+    border: none;
+    background: none;
+    outline: none;
+}
+
+button {
+    cursor: pointer;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+/* Header Styles */
+.main-header {
+    background-color: #1A202C; /* Color del diseño original */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px;
+    height: 72px; /* Altura del header */
+    color: #F8FAFC; /* Color del texto del header */
+}
+
+/* Contenedores para alinear items en el header */
+.header-left, .header-center, .header-right {
+    display: flex;
+    align-items: center;
+    flex: 1; /* Distribuye el espacio equitativamente */
+}
+
+.header-left {
+    justify-content: flex-start;
+    gap: 16px;
+}
+
+.nav-button {
+    background-color: #00D1FF; /* Cian vibrante */
+    color: #1a1a1a;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 12px 24px;
+    border-radius: 8px;
+    transition: transform 0.1s ease, filter 0.2s ease;
+}
+
+.nav-button:hover {
+    filter: brightness(1.1);
+}
+
+.nav-button:active {
+    transform: scale(0.96);
+}
+
+.header-center {
+    justify-content: center;
+}
+
+.header-center h1 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    color: #F8FAFC;
+}
+
+.header-right {
+    justify-content: flex-end;
+}
+
+.header-right .logo {
+    height: 44px;
+    object-fit: contain;
+}
+
+/* Footer Styles */
+.main-footer {
+    background-color: #1A202C;
+    color: #F8FAFC;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 24px;
+    margin-top: 60px;
+}
+
+.footer-social {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.social {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    transition: transform 0.1s ease, filter 0.2s ease;
+}
+
+.social img {
+    width: 100%;
+    height: 100%;
+}
+
+.social:hover {
+    filter: brightness(1.2);
+}
+
+/* Section Title Style */
+.section-title {
+    padding: 5px 15px;
+    color: #F8FAFC;
+    background-color: #1A202C;
+    display: flex;
+    width: fit-content;
+    border-radius: 30px;
+    box-shadow: 0 0 15px 2px rgba(0, 219, 255, 0.6);
+    transition: box-shadow 0.3s ease;
+    margin-bottom: 20px;
+}
+
+.section-title:hover {
+    box-shadow: 0 0 20px 4px rgba(0, 219, 255, 0.8);
+}
+
+/* --- Panel de Inserción --- */
+.insertar-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 40px 80px;
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.insertar-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-top: 30px;
+}
+
+@media (max-width: 900px) {
+    .insertar-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    .insertar-section {
+        padding: 20px 20px 60px;
+    }
+}
+
+.insertar-card {
+    background: rgba(26, 32, 44, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 219, 255, 0.15);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.insertar-card:hover {
+    border-color: rgba(0, 219, 255, 0.4);
+    box-shadow: 0 15px 40px rgba(0, 219, 255, 0.08);
+}
+
+.insertar-card h2 {
+    color: #F8FAFC;
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.card-subtitle {
+    color: #A0AEC0;
+    font-size: 14px;
+    margin-top: -10px;
+    line-height: 1.4;
+}
+
+/* Formularios */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.form-row {
+    display: flex;
+    gap: 20px;
+}
+
+.half-width {
+    flex: 1;
+}
+
+.form-group label {
+    color: #E2E8F0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    background: rgba(11, 14, 20, 0.8);
+    border: 1px solid rgba(226, 232, 240, 0.2);
+    border-radius: 10px;
+    color: #F8FAFC;
+    padding: 12px 16px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: #718096;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    border-color: #00D1FF;
+    box-shadow: 0 0 10px rgba(0, 209, 255, 0.3);
+    background: rgba(11, 14, 20, 0.95);
+}
+
+.form-group textarea {
+    height: 120px;
+    resize: none;
+}
+
+.form-group select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2300D1FF'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 16px;
+    padding-right: 40px;
+    cursor: pointer;
+}
+
+.form-group select option {
+    background-color: #1A202C;
+    color: #F8FAFC;
+}
+
+.submit-button {
+    background: #00D1FF;
+    color: #0B0E14;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 14px;
+    border-radius: 10px;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 209, 255, 0.2);
+    width: 100%;
+}
+
+.submit-button:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 6px 20px rgba(0, 209, 255, 0.4);
+    transform: translateY(-2px);
+}
+
+.submit-button:active {
+    transform: translateY(0);
+}
+
+/* Vista Previa */
+.live-preview-container {
+    margin-top: 30px;
+    border-top: 1px solid rgba(226, 232, 240, 0.1);
+    padding-top: 25px;
+}
+
+.live-preview-container h3 {
+    color: #00D1FF;
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+}
+
+/* Desarrolladora Preview Card */
+.dev-preview-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: rgba(11, 14, 20, 0.5);
+    border: 1px dashed rgba(0, 209, 255, 0.3);
+    border-radius: 14px;
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.dev-logo-container {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #1A202C;
+    border: 1px solid rgba(226, 232, 240, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.dev-logo-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.dev-logo-placeholder {
+    color: #00D1FF;
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.dev-info h4 {
+    color: #F8FAFC;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.dev-info p {
+    color: #A0AEC0;
+    font-size: 14px;
+}
+
+/* Videojuego Preview Card (Premium) */
+.game-preview-card {
+    display: flex;
+    background: #1A202C;
+    border: 1px solid rgba(0, 219, 255, 0.2);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    min-height: 180px;
+    transition: all 0.3s ease;
+}
+
+.game-preview-card:hover {
+    box-shadow: 0 12px 30px rgba(0, 219, 255, 0.25);
+    border-color: rgba(0, 219, 255, 0.5);
+}
+
+.game-preview-img-container {
+    width: 130px;
+    position: relative;
+    background: #0B0E14;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-right: 1px solid rgba(226, 232, 240, 0.05);
+}
+
+.game-preview-img-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.game-img-placeholder {
+    color: #4A5568;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.game-preview-details {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.game-preview-details h4 {
+    color: #F8FAFC;
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.preview-game-desc {
+    color: #A0AEC0;
+    font-size: 13px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin: 0;
+}
+
+.game-preview-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+}
+
+.preview-game-score {
+    color: #FFD700;
+    font-weight: 700;
+}
+
+.preview-game-dev {
+    color: #00D1FF;
+    font-weight: 600;
+}
+
+.preview-game-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.preview-tag-badge {
+    background: rgba(0, 209, 255, 0.1);
+    border: 1px solid rgba(0, 209, 255, 0.3);
+    color: #00D1FF;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 20px;
+}
+
+/* Toast Notifications */
+.toast-container {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    z-index: 10000;
+}
+
+.toast {
+    background: rgba(26, 32, 44, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-left: 5px solid #00D1FF;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.5);
+    color: #F8FAFC;
+    padding: 16px 24px;
+    border-radius: 8px;
+    min-width: 320px;
+    max-width: 450px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    animation: slideIn 0.3s ease-out forwards;
+    transition: all 0.3s ease;
+}
+
+.toast.toast-error {
+    border-left-color: #FF5A5F;
+}
+
+.toast.toast-success {
+    border-left-color: #00E676;
+}
+
+.toast-content {
+    font-size: 14px;
+    line-height: 1.4;
+    font-weight: 500;
+    flex: 1;
+}
+
+.toast-close {
+    color: #A0AEC0;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: 700;
+    transition: color 0.2s ease;
+    border: none;
+    background: none;
+}
+
+.toast-close:hover {
+    color: #F8FAFC;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.toast.toast-fade-out {
+    transform: translateX(120%);
+    opacity: 0;
+}

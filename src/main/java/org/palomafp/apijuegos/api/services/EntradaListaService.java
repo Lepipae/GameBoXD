@@ -11,25 +11,27 @@ import java.util.List;
 
 /**
  * Servicio que gestiona la logica de negocio de EntradaLista
+ * 
  * @author Andrés López
  */
 @Service
 public class EntradaListaService {
 
     @Autowired
-    private EntradaListaRepo entradaListaRepo; //Repo de Entradalista
+    private EntradaListaRepo entradaListaRepo; // Repo de Entradalista
 
     @Autowired
-    private VideojuegoRepo videojuegoRepo; //Repo de Videojuego
+    private VideojuegoRepo videojuegoRepo; // Repo de Videojuego
 
     /**
      * Actualiza la nota media de un videojuego basado en sus entradas de lista
+     * 
      * @param idVideojuego Id del videojuego
      */
     private void actualizarNotaMedia(long idVideojuego) {
         List<EntradaLista> entradas = entradaListaRepo.findByIdVideojuego(idVideojuego);
         double notaMedia = 0.0;
-        
+
         if (entradas != null && !entradas.isEmpty()) {
             double suma = 0.0;
             for (EntradaLista entrada : entradas) {
@@ -38,7 +40,7 @@ public class EntradaListaService {
             notaMedia = suma / entradas.size();
             notaMedia = Math.round(notaMedia * 100.0) / 100.0;
         }
-        
+
         Videojuego videojuego = videojuegoRepo.findByMiId(idVideojuego);
         if (videojuego != null) {
             videojuego.setNotaMedia(notaMedia);
@@ -48,6 +50,7 @@ public class EntradaListaService {
 
     /**
      * Obtiene las entradas de la lista pertenecientes a un usuario
+     * 
      * @param id Id del usuario
      * @return Lista de entradas del usuario
      */
@@ -66,6 +69,7 @@ public class EntradaListaService {
 
     /**
      * Obtiene una entrada de la lista a partir de su id interno
+     * 
      * @param id Id interno
      * @return EntradaLista encontrada o null
      */
@@ -75,6 +79,7 @@ public class EntradaListaService {
 
     /**
      * Borra una entrada a partir de su id interno
+     * 
      * @param id Id interno
      */
     public void borrarEntrada(int id) {
@@ -88,6 +93,7 @@ public class EntradaListaService {
 
     /**
      * Borra las entradas asociadas a un videojuego
+     * 
      * @param idVideojuego Id del videojuego
      */
     public void borrarPorVideojuego(long idVideojuego) {
@@ -96,9 +102,9 @@ public class EntradaListaService {
 
     /**
      * Borra las entradas asociadas a un usuario
+     * 
      * @param idUsuario Id del usuario
      */
-    @SuppressWarnings("null")
     public void borrarPorUsuario(int idUsuario) {
         List<EntradaLista> entradas = entradaListaRepo.findByIdUsuario(idUsuario);
         entradaListaRepo.deleteByIdUsuario(idUsuario);
@@ -112,6 +118,7 @@ public class EntradaListaService {
 
     /**
      * Guarda una entrada en la base de datos
+     * 
      * @param entradaLista Objeto a guardar
      * @return EntradaLista guardada
      */

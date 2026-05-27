@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameBoXD - Panel de Inserción</title>
+    <!-- Fuente -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="recursos/insertarStyle.css">
+  </head>
+  <body>
+    <!-- Cabecera de la pagina -->
+    <header class="main-header">
+      <div class="header-left">
+        <a href="index.html" class="nav-button-link">
+          <button class="nav-button" type="button">Volver al inicio</button>
+        </a>
+      </div>
+      
+      <div class="header-center">
+        <a href="index.html" class="brand-link">
+          <h1>GameBoXD</h1>
+        </a>
+      </div>
+      
+      <div class="header-right">
+        <a href="index.html">
+          <img src="https://gameboxd.s3.us-east-1.amazonaws.com/web/logoGameboxd.png" alt="GameBoXD Logo" class="logo">
+        </a>
+      </div>
+    </header>
+
+    <!-- Seccion principal -->
+    <main>
+      <div class="insertar-section">
+        <h1 class="section-title">Panel de Inserción</h1>
+        
+        <div class="insertar-grid">
+          <!-- Columna Desarrolladora -->
+          <div class="insertar-card card-desarrolladora">
+            <h2>Nueva Desarrolladora</h2>
+            <p class="card-subtitle">Registra un estudio creador en el sistema para asignarle juegos.</p>
+            <form id="form-desarrolladora" novalidate>
+              <div class="form-group">
+                <label for="desarrolladora-nombre">Nombre de la Desarrolladora *</label>
+                <input type="text" id="desarrolladora-nombre" required placeholder="Ej. FromSoftware, Valve, Nintendo">
+              </div>
+              <div class="form-group">
+                <label for="desarrolladora-pais">País de origen *</label>
+                <input type="text" id="desarrolladora-pais" required placeholder="Ej. Japón, EE. UU., España">
+              </div>
+              <div class="form-group">
+                <label for="desarrolladora-urlImagen">URL del Logo/Imagen</label>
+                <input type="url" id="desarrolladora-urlImagen" placeholder="Ej. https://mi-logo-imagen.png">
+              </div>
+              <button type="submit" class="submit-button">Registrar Desarrolladora</button>
+            </form>
+            
+            <!-- Live Preview Desarrolladora -->
+            <div class="live-preview-container">
+              <h3>Vista Previa del Estudio</h3>
+              <div class="dev-preview-card" id="dev-preview">
+                <div class="dev-logo-container">
+                  <div class="dev-logo-placeholder" id="preview-dev-logo-placeholder">D</div>
+                  <img id="preview-dev-logo" src="" alt="Logo" style="display:none;">
+                </div>
+                <div class="dev-info">
+                  <h4 id="preview-dev-nombre">Nombre Desarrolladora</h4>
+                  <p id="preview-dev-pais">País de origen</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Columna Videojuego -->
+          <div class="insertar-card card-videojuego">
+            <h2>Nuevo Videojuego</h2>
+            <p class="card-subtitle">Inserta un nuevo título en la biblioteca colectiva de GameBoXD.</p>
+            <form id="form-videojuego" novalidate>
+              <div class="form-group">
+                <label for="videojuego-nombre">Nombre del Videojuego *</label>
+                <input type="text" id="videojuego-nombre" required placeholder="Ej. Elden Ring, Portal 2">
+              </div>
+              <div class="form-group">
+                <label for="videojuego-descripcion">Sinopsis / Descripción *</label>
+                <textarea id="videojuego-descripcion" required placeholder="Escribe una breve y emocionante reseña o sinopsis de este videojuego..."></textarea>
+              </div>
+              <div class="form-group">
+                <label for="videojuego-urlImagen">URL de la Portada (Imagen) *</label>
+                <input type="url" id="videojuego-urlImagen" required placeholder="Ej. https://url-de-la-portada.jpg">
+              </div>
+              <div class="form-row">
+                <div class="form-group half-width">
+                  <label for="videojuego-notaMedia">Nota Media *</label>
+                  <input type="number" id="videojuego-notaMedia" required min="0" max="10" step="0.1" placeholder="Ej. 9.2">
+                </div>
+                <div class="form-group half-width">
+                  <label for="videojuego-desarrolladora">Desarrolladora *</label>
+                  <select id="videojuego-desarrolladora" required>
+                    <option value="" disabled selected>Selecciona desarrolladora...</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="videojuego-tags">Categorías / Tags (separados por comas)</label>
+                <input type="text" id="videojuego-tags" placeholder="Ej. RPG, Acción, Aventura, Indie">
+              </div>
+              <button type="submit" class="submit-button">Registrar Videojuego</button>
+            </form>
+            
+            <!-- Live Preview Videojuego -->
+            <div class="live-preview-container">
+              <h3>Vista Previa del Juego</h3>
+              <div class="game-preview-card" id="game-preview">
+                <div class="game-preview-img-container">
+                  <img id="preview-game-img" src="" alt="Portada" style="display:none;">
+                  <div class="game-img-placeholder" id="preview-game-placeholder">PORTADA</div>
+                </div>
+                <div class="game-preview-details">
+                  <h4 id="preview-game-nombre">Título del Juego</h4>
+                  <p class="preview-game-desc" id="preview-game-desc">Sinopsis del juego...</p>
+                  <div class="game-preview-footer">
+                    <span class="preview-game-score" id="preview-game-score">★ 0.0</span>
+                    <span class="preview-game-dev" id="preview-game-dev">Desarrolladora</span>
+                  </div>
+                  <div class="preview-game-tags" id="preview-game-tags">
+                    <!-- Tags dinámicos -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Pie de pagina -->
+    <footer class="main-footer">
+      <p>Proyecto realizado para el IES Virgen de la Paloma</p>
+      <div class="footer-social">
+        <button class="social" type="button">
+          <a href="https://www.palomafp.org/" target="_blank" rel="noopener noreferrer">
+            <img src="https://gameboxd.s3.us-east-1.amazonaws.com/web/iconoEscuela.png" alt="IES Virgen de la Paloma">
+          </a>
+        </button>
+        <button class="social" type="button">
+          <a href="https://github.com/Lepipae/GameBoXD" target="_blank" rel="noopener noreferrer">
+            <img src="https://gameboxd.s3.us-east-1.amazonaws.com/web/github.png" alt="GitHub">
+          </a>
+        </button>
+      </div>
+    </footer>
+
+    <!-- Contenedor para alertas tipo Toast flotantes -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="recursos/insertarScript.js"></script>
+  </body>
+</html>
