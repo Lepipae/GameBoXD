@@ -3,8 +3,6 @@ name: Deploy Web Frontend to GitHub Pages
 on:
   push:
     branches: ["main"]
-    paths:
-      - 'web/**'
   workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
