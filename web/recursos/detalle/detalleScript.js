@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("ID del juego recibido:", idJuego);
         cargarDetallesJuego(idJuego);
         cargarResenyasJuego(idJuego);
+        verificarSesionYConfigurarBoton(idJuego);
     } else {
         mostrarError("No se ha especificado ningún juego.");
     }
@@ -270,4 +271,88 @@ function renderizarDesarrolladora(desarrolladora) {
     
     document.getElementById('dev-name').textContent = desarrolladora.nombre;
     document.getElementById('dev-country').textContent = desarrolladora.pais;
+}
+
+let idUsuarioLogueado = null;
+
+/**
+ * Verifica si hay una sesión iniciada y configura el botón "Añadir a mi lista".
+ * Si no hay sesión, oculta el botón.
+ * @param {string} idJuego - El ID del juego actual.
+ */
+function verificarSesionYConfigurarBoton(idJuego) {
+    const token = localStorage.getItem('jwt_token');
+    const btnAdd = document.getElementById('add-to-list-btn');
+    
+    if (!token) {
+        if (btnAdd) btnAdd.style.display = 'none';
+        return;
+    }
+
+    try {
+        const payloadBase64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+        const payloadDecoded = JSON.parse(atob(payloadBase64));
+        const username = payloadDecoded.sub;
+
+        fetch(`http://localhost:8080/api/usuarios/nombre/${username}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to fetch user data');
+            return response.json();
+        })
+        .then(usuario => {
+            idUsuarioLogueado = usuario.miId;
+            
+            if (btnAdd) {
+                btnAdd.addEventListener('click', () => {
+                    anyadirALista(idJuego, idUsuarioLogueado, token);
+                });
+            }
+        })
+        .catch(err => {
+            console.error('Error fetching logged in user:', err);
+            if (btnAdd) btnAdd.style.display = 'none';
+        });
+    } catch (e) {
+        console.error('Error decoding token', e);
+        if (btnAdd) btnAdd.style.display = 'none';
+    }
+}
+
+/**
+ * Realiza la petición POST para crear una nueva entrada en la lista del usuario.
+ */
+function anyadirALista(idJuego, idUsuario, token) {
+    const nuevaEntrada = {
+        horasJugadas: 0,
+        nota: 0.0,
+        resenya: "",
+        estado: "noEmpezado",
+        idVideojuego: parseInt(idJuego),
+        idUsuario: idUsuario,
+        miId: 0
+    };
+
+    fetch('http://localhost:8080/api/lista', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(nuevaEntrada)
+    })
+    .then(response => {
+        if (response.ok) {
+            alert('¡Juego añadido a tu lista con éxito!');
+        } else {
+            alert('Hubo un error al añadir el juego a tu lista. Quizás ya esté añadido.');
+        }
+    })
+    .catch(error => {
+        console.error('Error adding to list:', error);
+        alert('Error de conexión al añadir a la lista.');
+    });
 }
