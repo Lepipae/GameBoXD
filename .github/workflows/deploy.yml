@@ -74,28 +74,16 @@ jobs:
             echo "MONGO_DB=${{ secrets.MONGO_DB }}" >> .env
             echo "CLAVE_CIFRADO=${{ secrets.CLAVE_CIFRADO }}" >> .env
             
-            # Buscar si la API ya se está ejecutando (evitando la autoreferenciación filtrando $$ y $PPID)
-            PID=$(pgrep -f 'api-0.0.1-SNAPSHOT.jar' | grep -v "$$" | grep -v "$PPID" || echo "")
-            if [ ! -z "$PID" ]; then
-              echo "Deteniendo proceso existente de la API (PID: $PID)..."
-              PID_CLEAN=$(echo "$PID" | tr '\n' ' ')
-              kill -15 $PID_CLEAN 2>/dev/null || true
-              sleep 5
-              kill -9 $PID_CLEAN 2>/dev/null || true
-            fi
+            # Reiniciar el servicio gestionado por systemd
+            echo "Reiniciando el servicio de la API..."
+            sudo systemctl restart miapp.service
             
-            # Liberar el puerto 8080 si estuviera retenido por algún motivo
-            sudo fuser -k 8080/tcp 2>/dev/null || true
-            
-            # Levantar la API en segundo plano con la configuración del .env
-            echo "Iniciando nueva versión de la API REST..."
-            nohup java -jar api-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
-            
-            # Esperar unos segundos para verificar que se inició correctamente
+            # Comprobar que el servicio está activo y sin errores
             sleep 5
-            if pgrep -f 'api-0.0.1-SNAPSHOT.jar' | grep -v "$$" | grep -v "$PPID" > /dev/null; then
-              echo "¡API levantada exitosamente en EC2!"
+            if sudo systemctl is-active --quiet miapp.service; then
+              echo "¡API levantada exitosamente en EC2 a través de systemd!"
             else
-              echo "ADVERTENCIA: La API no se detecta en ejecución. Revisa ~/app/app.log para ver los detalles del error."
+              echo "ADVERTENCIA: El servicio falló al iniciar. Revisa los logs ejecutando:"
+              echo "sudo journalctl -u miapp.service -n 50"
               exit 1
             fi
