@@ -74,8 +74,8 @@ jobs:
             echo "MONGO_DB=${{ secrets.MONGO_DB }}" >> .env
             echo "CLAVE_CIFRADO=${{ secrets.CLAVE_CIFRADO }}" >> .env
             
-            # Buscar si la API ya se está ejecutando
-            PID=$(pgrep -f 'java.*[a]pi-0.0.1-SNAPSHOT.jar' || echo "")
+            # Buscar si la API ya se está ejecutando (evitando la autoreferenciación filtrando $$ y $PPID)
+            PID=$(pgrep -f 'api-0.0.1-SNAPSHOT.jar' | grep -v "$$" | grep -v "$PPID" || echo "")
             if [ ! -z "$PID" ]; then
               echo "Deteniendo proceso existente de la API (PID: $PID)..."
               PID_CLEAN=$(echo "$PID" | tr '\n' ' ')
@@ -93,7 +93,7 @@ jobs:
             
             # Esperar unos segundos para verificar que se inició correctamente
             sleep 5
-            if pgrep -f 'java.*[a]pi-0.0.1-SNAPSHOT.jar' > /dev/null; then
+            if pgrep -f 'api-0.0.1-SNAPSHOT.jar' | grep -v "$$" | grep -v "$PPID" > /dev/null; then
               echo "¡API levantada exitosamente en EC2!"
             else
               echo "ADVERTENCIA: La API no se detecta en ejecución. Revisa ~/app/app.log para ver los detalles del error."
