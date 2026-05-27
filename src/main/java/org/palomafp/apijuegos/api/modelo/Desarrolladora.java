@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * Clase que representa a una desarrolladora de videojuegos
+ * 
  * @author Andrés López
  */
 @Document(collection = "Desarrolladoras")
@@ -20,10 +21,12 @@ public class Desarrolladora {
     /**
      * Constructor por defecto
      */
-    public Desarrolladora() {}
+    public Desarrolladora() {
+    }
 
     /**
      * Constructor con parametros
+     * 
      * @param id        Id de MongoDB
      * @param pais      Pais de origen de la desarrolladora
      * @param nombre    Nombre de la desarrolladora
@@ -40,6 +43,7 @@ public class Desarrolladora {
 
     /**
      * Establece el id de MongoDB
+     * 
      * @param id Id a establecer
      */
     public void setId(String id) {
@@ -48,6 +52,7 @@ public class Desarrolladora {
 
     /**
      * Obtiene el id de MongoDB
+     * 
      * @return Id de MongoDB
      */
     public String getId() {
@@ -56,6 +61,7 @@ public class Desarrolladora {
 
     /**
      * Obtiene el id interno
+     * 
      * @return Id interno
      */
     public int getMiId() {
@@ -64,6 +70,7 @@ public class Desarrolladora {
 
     /**
      * Establece el id interno
+     * 
      * @param miId Id interno a establecer
      */
     public void setMiId(int miId) {
@@ -72,6 +79,7 @@ public class Desarrolladora {
 
     /**
      * Obtiene la url de la imagen
+     * 
      * @return URL de la imagen
      */
     public String getUrlImagen() {
@@ -80,6 +88,7 @@ public class Desarrolladora {
 
     /**
      * Establece la url de la imagen
+     * 
      * @param urlImagen URL a establecer
      */
     public void setUrlImagen(String urlImagen) {
@@ -92,6 +101,7 @@ public class Desarrolladora {
 
     /**
      * Obtiene el nombre de la desarrolladora
+     * 
      * @return Nombre
      */
     public String getNombre() {
@@ -100,6 +110,7 @@ public class Desarrolladora {
 
     /**
      * Establece el nombre de la desarrolladora
+     * 
      * @param nombre Nombre a establecer
      */
     public void setNombre(String nombre) {
@@ -111,6 +122,7 @@ public class Desarrolladora {
 
     /**
      * Obtiene el pais de la desarrolladora
+     * 
      * @return Pais
      */
     public String getPais() {
@@ -119,6 +131,7 @@ public class Desarrolladora {
 
     /**
      * Establece el pais de la desarrolladora
+     * 
      * @param pais Pais a establecer
      */
     public void setPais(String pais) {
@@ -127,4 +140,5 @@ public class Desarrolladora {
         }
         this.pais = pais;
     }
+    // comentario para probar el push de actions :)
 }
