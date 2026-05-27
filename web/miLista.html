@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameBoXD - Mi Lista</title>
+    <!-- Fuente -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="recursos/miListaStyle.css">
+  </head>
+  <body>
+    <!-- Cabecera de la pagina -->
+    <header class="main-header">
+      <div class="header-left">
+        <a href="index.html" class="icon-button" aria-label="Usuario">
+          <img src="https://gameboxd.s3.us-east-1.amazonaws.com/web/user.png" alt="Usuario">
+        </a>
+        <button id="btn-mi-perfil" class="nav-button" type="button" onclick="location.href='index.html'">Mi perfil</button>
+        <a href="miLista.html"><button id="btn-mi-lista" class="nav-button" type="button">Mi lista</button></a>
+      </div>
+      
+      <div class="header-center">
+        <a href="index.html" class="brand-link">
+          <h1>GameBoXD</h1>
+        </a>
+      </div>
+      
+      <div class="header-right">
+        <a href="index.html">
+          <img src="https://gameboxd.s3.us-east-1.amazonaws.com/web/logoGameboxd.png" alt="GameBoXD Logo" class="logo">
+        </a>
+      </div>
+    </header>
+
+    <!-- Seccion principal -->
+    <main>
+      <!-- VISTA DE AUTENTICACION (No logueado) -->
+      <div id="auth-view" class="auth-view hidden">
+        <div class="auth-card">
+          <div class="auth-tabs">
+            <button id="tab-login" class="auth-tab active" type="button">Iniciar Sesión</button>
+            <button id="tab-register" class="auth-tab" type="button">Registrarse</button>
+          </div>
+
+          <!-- Formulario Login -->
+          <form id="form-login" class="auth-form" novalidate>
+            <h2>¡Hola de nuevo!</h2>
+            <p class="auth-subtitle">Inicia sesión para acceder a tu colección guardada.</p>
+            
+            <div class="form-group">
+              <label for="login-username">Nombre de Usuario *</label>
+              <input type="text" id="login-username" required placeholder="Tu nombre de usuario">
+            </div>
+            <div class="form-group">
+              <label for="login-password">Contraseña *</label>
+              <input type="password" id="login-password" required placeholder="Tu contraseña secreta">
+            </div>
+            
+            <button type="submit" class="submit-button">Iniciar Sesión</button>
+          </form>
+
+          <!-- Formulario Registro -->
+          <form id="form-register" class="auth-form hidden" novalidate>
+            <h2>Crea tu cuenta</h2>
+            <p class="auth-subtitle">Únete a GameBoXD y registra tu historial de juegos.</p>
+            
+            <div class="form-group">
+              <label for="register-username">Nombre de Usuario *</label>
+              <input type="text" id="register-username" required placeholder="Ej. AndresL">
+            </div>
+            <div class="form-group">
+              <label for="register-avatar">URL de la Imagen de Perfil</label>
+              <input type="url" id="register-avatar" placeholder="Ej. https://url-de-tu-foto.jpg">
+            </div>
+            <div class="form-group">
+              <label for="register-password">Contraseña * (Mín. 8 caracteres)</label>
+              <input type="password" id="register-password" required minlength="8" placeholder="Crea una contraseña segura">
+            </div>
+            
+            <button type="submit" class="submit-button">Registrar Cuenta</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- VISTA DE LISTA PERSONAL (Logueado) -->
+      <div id="list-view" class="list-view hidden">
+        <!-- Panel de Perfil de Usuario -->
+        <div class="user-profile-header">
+          <div class="profile-left">
+            <div class="profile-avatar-container">
+              <img id="user-avatar" src="" alt="Avatar" style="display: none;">
+              <div id="user-avatar-placeholder" class="avatar-placeholder">U</div>
+            </div>
+            <div class="profile-info">
+              <h2>¡Hola, <span id="user-name-span">Usuario</span>!</h2>
+              <p>Gestiona tu colección y progreso de videojuegos.</p>
+            </div>
+          </div>
+          <div class="profile-right">
+            <button id="btn-logout" class="logout-button" type="button">Cerrar Sesión</button>
+          </div>
+        </div>
+
+        <h1 class="section-title">Mi Colección</h1>
+
+        <!-- Indicador de Carga -->
+        <div id="list-loader" class="list-loader">
+          <div class="spinner"></div>
+          <p>Conectando con la base de datos y cargando tus juegos...</p>
+        </div>
+
+        <!-- Mensaje de Lista Vacía -->
+        <div id="empty-list-message" class="empty-list-message hidden">
+          <img src="https://gameboxd.s3.us-east-1.amazonaws.com/web/search.png" alt="Lista Vacía" class="empty-img">
+          <h3>Tu colección está vacía</h3>
+          <p>No has añadido videojuegos a tu lista personal todavía. ¡Regresa al inicio para descubrir y guardar nuevos títulos!</p>
+          <a href="index.html" class="browse-link-button">Explorar Videojuegos</a>
+        </div>
+
+        <!-- Grid de Juegos en la Lista -->
+        <div id="game-grid" class="game-grid">
+          <!-- Tarjetas de videojuego inyectadas dinámicamente -->
+        </div>
+      </div>
+    </main>
+
+    <!-- Pie de pagina -->
+    <footer class="main-footer">
+      <p>Proyecto realizado para el IES Virgen de la Paloma</p>
+      <div class="footer-social">
+        <button class="social" type="button">
+          <a href="https://www.palomafp.org/" target="_blank" rel="noopener noreferrer">
+            <img src="https://gameboxd.s3.us-east-1.amazonaws.com/web/iconoEscuela.png" alt="IES Virgen de la Paloma">
+          </a>
+        </button>
+        <button class="social" type="button">
+          <a href="https://github.com/Lepipae/GameBoXD" target="_blank" rel="noopener noreferrer">
+            <img src="https://gameboxd.s3.us-east-1.amazonaws.com/web/github.png" alt="GitHub">
+          </a>
+        </button>
+      </div>
+    </footer>
+
+    <!-- Contenedor para alertas tipo Toast flotantes -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="recursos/miListaScript.js"></script>
+  </body>
+</html>
