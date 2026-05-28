@@ -4,6 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Clase que representa a un videojuego
@@ -20,7 +21,7 @@ public class Videojuego {
     private String urlImagen;
     private double notaMedia;
     private int idDesarrolladora;
-    private ArrayList<String> tags;
+    private List<String> tags;
 
     /**
      * Constructor por defecto
@@ -38,7 +39,7 @@ public class Videojuego {
      * @param tags              Lista de categorias o tags
      * @param idDesarrolladora  Id de la desarrolladora
      */
-    public Videojuego(String id, long miId, String nombre, String descripcion, String urlImagen, double notaMedia, ArrayList<String> tags, int idDesarrolladora) {
+    public Videojuego(String id, long miId, String nombre, String descripcion, String urlImagen, double notaMedia, List<String> tags, int idDesarrolladora) {
         this.id = id;
         setMiId(miId);
         setNombre(nombre);
@@ -168,7 +169,7 @@ public class Videojuego {
      * Obtiene la lista de tags
      * @return Tags o categorias
      */
-    public ArrayList<String> getTags() {
+    public List<String> getTags() {
         return tags;
     }
 
@@ -176,7 +177,7 @@ public class Videojuego {
      * Establece la lista de tags
      * @param tags Tags a establecer
      */
-    public void setTags(ArrayList<String> tags) {
+    public void setTags(List<String> tags) {
         this.tags = tags;
     }
 }
