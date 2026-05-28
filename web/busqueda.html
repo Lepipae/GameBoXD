@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameBoXD - Búsqueda de Videojuegos</title>
+    <!-- Fuente -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="recursos/style.css">
+    <link rel="stylesheet" href="recursos/busqueda/busquedaStyle.css">
+  </head>
+  <body>
+    <!-- Cabecera de la pagina -->
+    <header class="main-header">
+      <div class="header-left">
+        <a href="login.html" class="icon-button" aria-label="Usuario" id="btn-user-icon">
+          <img src="https://gameboxd.s3.us-east-1.amazonaws.com/web/user.png" alt="Usuario">
+        </a>
+        <button id="btn-mi-perfil" class="nav-button" type="button">Mi perfil</button>
+        <a href="miLista.html" id="link-mi-lista"><button id="btn-mi-lista" class="nav-button" type="button">Mi lista</button></a>
+      </div>
+      
+      <div class="header-center">
+        <a href="index.html" class="brand-link" style="color: inherit; text-decoration: none;">
+          <h1>GameBoXD</h1>
+        </a>
+      </div>
+      
+      <div class="header-right">
+        <a href="index.html">
+          <img src="https://gameboxd.s3.us-east-1.amazonaws.com/web/logoGameboxd.png" alt="GameBoXD Logo" class="logo">
+        </a>
+      </div>
+    </header>
+
+    <!-- Seccion principal -->
+    <main style="display: flex; flex-direction: column; flex: 1;">
+      <!-- Buscador -->
+      <div class="search-container">
+        <div class="search-bar">
+          <button class="search-icon-wrapper" type="button" id="btn-buscar">
+            <img src="https://gameboxd.s3.us-east-1.amazonaws.com/web/search.png" alt="Buscar">
+          </button>
+          <input type="text" class="search-input" id="search-input-field" placeholder="Encuentra tus juegos favoritos">
+        </div>
+      </div>
+
+      <!-- Sección de Resultados de Búsqueda -->
+      <section class="search-results-section">
+        <!-- Título informativo de la búsqueda -->
+        <h2 class="results-info" id="results-info-text">Buscando...</h2>
+        
+        <!-- Indicador de Carga / Spinner -->
+        <div id="search-loader" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 40px; color: #A0AEC0;">
+          <div style="width: 50px; height: 50px; border: 5px solid rgba(0, 209, 255, 0.1); border-top: 5px solid #00D1FF; border-radius: 50%; animation: search-spin 1s linear infinite; box-shadow: 0 0 15px rgba(0, 209, 255, 0.2);"></div>
+          <p>Conectando con la base de datos...</p>
+        </div>
+
+        <style>
+          @keyframes search-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        </style>
+
+        <!-- Contenedor donde se inyectan las tarjetas -->
+        <div id="results-grid" class="results-grid" style="display: none;">
+          <!-- Las tarjetas de juego se inyectarán dinámicamente -->
+        </div>
+      </section>
+    </main>
+
+    <!-- Pie de pagina -->
+    <footer class="main-footer">
+      <p>Proyecto realizado para el IES Virgen de la Paloma</p>
+      <div class="footer-social">
+        <button class="social" type="button">
+          <a href="https://www.palomafp.org/" target="_blank" rel="noopener noreferrer">
+            <img src="https://gameboxd.s3.us-east-1.amazonaws.com/web/iconoEscuela.png" alt="IES Virgen de la Paloma">
+          </a>
+        </button>
+        <button class="social" type="button">
+          <a href="https://github.com/Lepipae/GameBoXD" target="_blank" rel="noopener noreferrer">
+            <img src="https://gameboxd.s3.us-east-1.amazonaws.com/web/github.png" alt="GitHub">
+          </a>
+        </button>
+      </div>
+    </footer>
+
+    <script src="recursos/header.js"></script>
+    <script src="recursos/busqueda/busquedaScript.js"></script>
+  </body>
+</html>

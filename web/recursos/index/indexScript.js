@@ -4,7 +4,38 @@
  */
 document.addEventListener('DOMContentLoaded', () => {
     obtenerRecomendaciones(); 
+    configurarBuscador();
 });
+
+/**
+ * Configura los event listeners para la barra de búsqueda en index.html.
+ * Redirige a busqueda.html con el parámetro de consulta 'q'.
+ */
+function configurarBuscador() {
+    const searchInput = document.querySelector('.search-input');
+    const searchBtn = document.querySelector('.search-icon-wrapper');
+
+    if (searchInput) {
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const query = searchInput.value.trim();
+                if (query) {
+                    window.location.href = `busqueda.html?q=${encodeURIComponent(query)}`;
+                }
+            }
+        });
+    }
+
+    if (searchBtn && searchInput) {
+        searchBtn.addEventListener('click', () => {
+            const query = searchInput.value.trim();
+            if (query) {
+                window.location.href = `busqueda.html?q=${encodeURIComponent(query)}`;
+            }
+        });
+    }
+}
+
 
 /**
  * Realiza la petición principal a la API para obtener la lista completa de videojuegos.
