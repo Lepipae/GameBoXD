@@ -13,7 +13,7 @@ public class Desarrolladora {
     @Id
     private String id;
 
-    private int miId;
+    private Integer miId;
     private String urlImagen;
     private String nombre;
     private String pais;
@@ -33,7 +33,7 @@ public class Desarrolladora {
      * @param urlImagen URL de la imagen o logo
      * @param miId      Id interno de la base de datos
      */
-    public Desarrolladora(String id, String pais, String nombre, String urlImagen, int miId) {
+    public Desarrolladora(String id, String pais, String nombre, String urlImagen, Integer miId) {
         this.id = id;
         setPais(pais);
         setNombre(nombre);
@@ -64,7 +64,7 @@ public class Desarrolladora {
      * 
      * @return Id interno
      */
-    public int getMiId() {
+    public Integer getMiId() {
         return miId;
     }
 
@@ -73,7 +73,7 @@ public class Desarrolladora {
      * 
      * @param miId Id interno a establecer
      */
-    public void setMiId(int miId) {
+    public void setMiId(Integer miId) {
         this.miId = miId;
     }
 

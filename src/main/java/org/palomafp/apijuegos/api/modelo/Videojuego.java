@@ -15,7 +15,7 @@ public class Videojuego {
     @Id
     private String id;
 
-    private long miId;
+    private Long miId;
     private String nombre;
     private String descripcion;
     private String urlImagen;
@@ -39,7 +39,7 @@ public class Videojuego {
      * @param tags              Lista de categorias o tags
      * @param idDesarrolladora  Id de la desarrolladora
      */
-    public Videojuego(String id, long miId, String nombre, String descripcion, String urlImagen, double notaMedia, List<String> tags, int idDesarrolladora) {
+    public Videojuego(String id, Long miId, String nombre, String descripcion, String urlImagen, double notaMedia, List<String> tags, int idDesarrolladora) {
         this.id = id;
         setMiId(miId);
         setNombre(nombre);
@@ -86,7 +86,7 @@ public class Videojuego {
      * Obtiene el id interno
      * @return Id interno
      */
-    public long getMiId() {
+    public Long getMiId() {
         return miId;
     }
 
@@ -94,7 +94,7 @@ public class Videojuego {
      * Establece el id interno
      * @param miId Id interno a establecer
      */
-    public void setMiId(long miId) {
+    public void setMiId(Long miId) {
         this.miId = miId;
     }
 
