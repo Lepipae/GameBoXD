@@ -215,19 +215,52 @@ function renderizarResenyas(resenyas) {
             const card = document.createElement('div');
             card.className = 'review-card';
             
+            const userLabelId = `review-username-${r.miId}`;
+            
             const rating = document.createElement('div');
             rating.className = 'review-rating';
             rating.textContent = r.nota.toFixed(1);
             
             const content = document.createElement('div');
             content.className = 'review-content';
-            content.textContent = r.resenya;
+            content.innerHTML = `
+                <div class="review-user-name" id="${userLabelId}">Cargando usuario...</div>
+                <div class="review-text-content">"${r.resenya}"</div>
+            `;
             
             card.appendChild(rating);
             card.appendChild(content);
             container.appendChild(card);
+
+            // Cargar nombre de usuario
+            cargarNombreUsuarioReview(r.idUsuario, userLabelId);
         });
     }
+}
+
+/**
+ * Petición a la API para obtener el nombre de usuario de una reseña e inyectarlo.
+ * 
+ * @param {number} idUsuario - El ID del usuario.
+ * @param {string} labelId - El ID del elemento HTML donde se inyectará el nombre.
+ */
+function cargarNombreUsuarioReview(idUsuario, labelId) {
+    const API_URL = `https://gameboxd.duckdns.org/api/usuarios/${idUsuario}`;
+    const label = document.getElementById(labelId);
+    if (!label) return;
+
+    fetch(API_URL)
+        .then(response => {
+            if (!response.ok) throw new Error('Usuario no encontrado');
+            return response.json();
+        })
+        .then(usuario => {
+            label.textContent = usuario.nombre;
+        })
+        .catch(error => {
+            console.error("Error cargando usuario de reseña:", error);
+            label.textContent = "Usuario Anónimo";
+        });
 }
 
 /**

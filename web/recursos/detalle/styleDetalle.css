@@ -276,3 +276,20 @@
         width: 100%;
     }
 }
+
+.review-user-name {
+    color: #00DBFF;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    text-shadow: 0 0 5px rgba(0, 219, 255, 0.3);
+}
+
+.review-text-content {
+    color: #E2E8F0;
+    font-size: 16px;
+    line-height: 1.6;
+    font-style: italic;
+}
