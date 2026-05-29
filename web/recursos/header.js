@@ -24,7 +24,7 @@ function verificarSesionHeader() {
         // No hay sesión: Ocultamos la lista del header
         if (btnLista) btnLista.style.display = 'none';
         if (linkLista) linkLista.style.display = 'none';
-        
+
         // El icono de usuario redirige al formulario de acceso/registro
         if (userIconLink) {
             userIconLink.href = 'login.html';
@@ -33,7 +33,7 @@ function verificarSesionHeader() {
         // Hay sesión activa: Mostramos botones correspondientes
         if (btnLista) btnLista.style.display = 'inline-block';
         if (linkLista) linkLista.style.display = 'inline-block';
-        
+
         // El icono de usuario redirige directamente a la lista
         if (userIconLink) {
             userIconLink.href = 'miLista.html';
@@ -43,7 +43,7 @@ function verificarSesionHeader() {
     // 2. Configurar el comportamiento de clic en "Ver todos los juegos"
     if (btnTodosJuegos) {
         btnTodosJuegos.addEventListener('click', () => {
-            window.location.href = 'index.html';
+            window.location.href = 'busqueda.html?q';
         });
     }
 }
