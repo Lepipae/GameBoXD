@@ -34,11 +34,17 @@ public class EntradaListaService {
 
         if (entradas != null && !entradas.isEmpty()) {
             double suma = 0.0;
+            int count = 0;
             for (EntradaLista entrada : entradas) {
-                suma += entrada.getNota();
+                if (entrada.getNota() > 0.0) {
+                    suma += entrada.getNota();
+                    count++;
+                }
             }
-            notaMedia = suma / entradas.size();
-            notaMedia = Math.round(notaMedia * 100.0) / 100.0;
+            if (count > 0) {
+                notaMedia = suma / count;
+                notaMedia = Math.round(notaMedia * 100.0) / 100.0;
+            }
         }
 
         Videojuego videojuego = videojuegoRepo.findByMiId(idVideojuego);
