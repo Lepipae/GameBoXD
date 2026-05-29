@@ -141,6 +141,63 @@
       </div>
     </footer>
 
+    <!-- MODAL DE EDICIÓN DE JUEGO (PREMIUM GLASSMORPHIC) -->
+    <div id="edit-modal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modal-game-title">Editar entrada</h2>
+          <button id="close-modal-btn" class="close-modal" type="button">&times;</button>
+        </div>
+        <form id="edit-game-form">
+          <input type="hidden" id="edit-entry-id">
+          <input type="hidden" id="edit-entry-miid">
+          <input type="hidden" id="edit-entry-gameid">
+          <input type="hidden" id="edit-entry-userid">
+          
+          <div class="form-group">
+            <label>Estado del videojuego</label>
+            <div class="status-options">
+              <label class="status-option">
+                <input type="radio" name="edit-status" value="noEmpezado" checked>
+                <span class="status-pill status-noEmpezado">No Empezado</span>
+              </label>
+              <label class="status-option">
+                <input type="radio" name="edit-status" value="empezado">
+                <span class="status-pill status-empezado">En Progreso</span>
+              </label>
+              <label class="status-option">
+                <input type="radio" name="edit-status" value="terminado">
+                <span class="status-pill status-terminado">Terminado</span>
+              </label>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="edit-rating-input">Mi Nota</label>
+            <div class="rating-slider-container">
+              <input type="range" id="edit-rating-input" min="0" max="10" step="0.5" value="5">
+              <span id="rating-slider-value" class="rating-badge">★ 5.0/10</span>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="edit-hours-input">Horas Jugadas</label>
+            <input type="number" id="edit-hours-input" min="0" required placeholder="0">
+          </div>
+          
+          <div class="form-group">
+            <label for="edit-review-input">Mi Reseña</label>
+            <textarea id="edit-review-input" placeholder="Cuéntanos qué te ha parecido el videojuego..."></textarea>
+          </div>
+          
+          <div class="modal-actions">
+            <button type="button" id="btn-cancel-edit" class="btn-secondary">Cancelar</button>
+            <button type="submit" class="btn-primary">Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- Contenedor para alertas tipo Toast flotantes -->
     <div id="toast-container" class="toast-container"></div>
 

@@ -72,9 +72,8 @@
                             }
                             throw new Error(`Servidor devolvió código de error ${res.status}`);
                         } catch (err) {
-                            if (!settled) {
-                                console.warn(`[API] Fallo o error en servidor ${serverName} durante la carrera:`, err.message || err);
-                            }
+                            // Se registra como info en lugar de advertencia para no ensuciar la consola con errores falsos si el otro servidor funciona
+                            console.log(`[API] Servidor ${serverName} no disponible en la carrera (Fallo esperado/silencioso):`, err.message || err);
                             
                             if (isPrimary) {
                                 primaryDone = true;

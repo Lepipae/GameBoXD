@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     inicializarSesion();
     inicializarTabs();
     inicializarFormularios();
+    inicializarModal();
 });
 
 // Comprobar si hay sesión iniciada y mostrar la vista correspondiente
@@ -238,6 +239,9 @@ function cargarMiLista(idUsuario) {
             if (emptyListMessage) emptyListMessage.classList.add('hidden');
             gameGrid.innerHTML = ''; // Limpiar grid
 
+            // Inicializar el diccionario global de entradas para la edición
+            window.miListaEntradas = {};
+
             // Cargar datos en paralelo de los videojuegos asociados a las entradas
             for (const entrada of listaEntradas) {
                 await renderizarEntradaJuego(entrada, gameGrid);
@@ -268,6 +272,13 @@ async function renderizarEntradaJuego(entrada, container) {
         const response = await fetch(JUEGO_URL);
         if (!response.ok) throw new Error('Juego no encontrado');
         const game = await response.json();
+
+        // Guardar en el diccionario global para la edición
+        window.miListaEntradas = window.miListaEntradas || {};
+        window.miListaEntradas[entrada.miId] = {
+            entrada: entrada,
+            nombreJuego: game.nombre
+        };
 
         // Crear la tarjeta
         const card = document.createElement('div');
@@ -306,6 +317,7 @@ async function renderizarEntradaJuego(entrada, container) {
                 ` : ''}
                 
                 <div class="game-card-actions">
+                  <button class="edit-entry-button" type="button" onclick="abrirModalEdicion(${entrada.miId})">Editar</button>
                   <button class="delete-entry-button" type="button" onclick="eliminarDeLista(${entrada.miId})">Eliminar de mi lista</button>
                 </div>
             </div>
@@ -436,4 +448,142 @@ function showToast(message, type = 'success') {
             setTimeout(() => toast.remove(), 300);
         }
     }, 4500);
+}
+
+// Abrir modal de edición con los datos precargados de la entrada
+window.abrirModalEdicion = function(miId) {
+    const entryData = window.miListaEntradas[miId];
+    if (!entryData) return;
+
+    const entrada = entryData.entrada;
+    const nombreJuego = entryData.nombreJuego;
+
+    document.getElementById('modal-game-title').textContent = `Editar: ${nombreJuego}`;
+    document.getElementById('edit-entry-id').value = entrada.id || '';
+    document.getElementById('edit-entry-miid').value = entrada.miId;
+    document.getElementById('edit-entry-gameid').value = entrada.idVideojuego;
+    document.getElementById('edit-entry-userid').value = entrada.idUsuario;
+
+    // Seleccionar el radio correcto del estado
+    const statusRadios = document.getElementsByName('edit-status');
+    for (const radio of statusRadios) {
+        if (radio.value === entrada.estado) {
+            radio.checked = true;
+            break;
+        }
+    }
+
+    // Nota / Slider
+    const ratingInput = document.getElementById('edit-rating-input');
+    const ratingValue = document.getElementById('rating-slider-value');
+    ratingInput.value = entrada.nota;
+    ratingValue.textContent = `★ ${entrada.nota.toFixed(1)}/10`;
+
+    // Horas
+    document.getElementById('edit-hours-input').value = entrada.horasJugadas;
+
+    // Reseña
+    document.getElementById('edit-review-input').value = entrada.resenya || '';
+
+    // Mostrar modal
+    const modal = document.getElementById('edit-modal');
+    modal.classList.remove('hidden');
+};
+
+// Inicializar eventos del modal de edición
+function inicializarModal() {
+    const modal = document.getElementById('edit-modal');
+    const form = document.getElementById('edit-game-form');
+    const btnCancel = document.getElementById('btn-cancel-edit');
+    const btnClose = document.getElementById('close-modal-btn');
+    const ratingInput = document.getElementById('edit-rating-input');
+    const ratingValue = document.getElementById('rating-slider-value');
+
+    if (!modal || !form) return;
+
+    // Actualizar valor visual del slider de forma dinámica
+    ratingInput.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        ratingValue.textContent = `★ ${val.toFixed(1)}/10`;
+    });
+
+    const cerrarModal = () => {
+        modal.classList.add('hidden');
+    };
+
+    btnCancel.addEventListener('click', cerrarModal);
+    btnClose.addEventListener('click', cerrarModal);
+    
+    // Cerrar si hace clic fuera del contenido del modal
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            cerrarModal();
+        }
+    });
+
+    // Guardar cambios al enviar el formulario
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const id = document.getElementById('edit-entry-id').value;
+        const miId = parseInt(document.getElementById('edit-entry-miid').value);
+        const idVideojuego = parseInt(document.getElementById('edit-entry-gameid').value);
+        const idUsuario = parseInt(document.getElementById('edit-entry-userid').value);
+        
+        let estado = 'noEmpezado';
+        const statusRadios = document.getElementsByName('edit-status');
+        for (const radio of statusRadios) {
+            if (radio.checked) {
+                estado = radio.value;
+                break;
+            }
+        }
+
+        const nota = parseFloat(ratingInput.value);
+        const horasJugadas = parseInt(document.getElementById('edit-hours-input').value) || 0;
+        const resenya = document.getElementById('edit-review-input').value.trim();
+
+        // Crear objeto de entrada actualizada
+        const entradaActualizada = {
+            id: id || null,
+            miId: miId,
+            horasJugadas: horasJugadas,
+            nota: nota,
+            resenya: resenya,
+            estado: estado,
+            idVideojuego: idVideojuego,
+            idUsuario: idUsuario
+        };
+
+        const token = localStorage.getItem('jwt_token');
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        fetch('https://gameboxd.duckdns.org/api/lista', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(entradaActualizada)
+        })
+        .then(async response => {
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(text || 'Error al actualizar la entrada');
+            }
+            return response.json();
+        })
+        .then(data => {
+            showToast('¡Entrada de juego actualizada con éxito!', 'success');
+            cerrarModal();
+            // Volver a cargar la colección del usuario para reflejar los cambios
+            cargarMiLista(idUsuario);
+        })
+        .catch(error => {
+            console.error('Error al actualizar entrada:', error);
+            showToast(error.message || 'Error al guardar los cambios.', 'error');
+        });
+    });
 }
