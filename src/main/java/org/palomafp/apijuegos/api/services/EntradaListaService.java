@@ -124,9 +124,27 @@ public class EntradaListaService {
      */
     public EntradaLista guardar(EntradaLista entradaLista) {
         if (entradaLista.getId() == null) {
+            // Verificar si el usuario ya tiene este juego en su lista
+            EntradaLista existente = entradaListaRepo.findByIdUsuarioAndIdVideojuego(
+                entradaLista.getIdUsuario(), 
+                entradaLista.getIdVideojuego()
+            );
+            if (existente != null) {
+                throw new IllegalArgumentException("El usuario ya tiene este juego en su lista");
+            }
+
             EntradaLista ultimo = entradaListaRepo.encontrarUltimoId();
             long nuevoId = (ultimo != null) ? ultimo.getMiId() + 1 : 1;
             entradaLista.setMiId(nuevoId);
+        } else {
+            // Es una actualización. Verificamos duplicado asegurándonos de no bloquear la actualización de la misma entrada
+            EntradaLista existente = entradaListaRepo.findByIdUsuarioAndIdVideojuego(
+                entradaLista.getIdUsuario(), 
+                entradaLista.getIdVideojuego()
+            );
+            if (existente != null && !existente.getId().equals(entradaLista.getId())) {
+                throw new IllegalArgumentException("El usuario ya tiene este juego en su lista");
+            }
         }
         EntradaLista guardada = entradaListaRepo.save(entradaLista);
         actualizarNotaMedia(guardada.getIdVideojuego());

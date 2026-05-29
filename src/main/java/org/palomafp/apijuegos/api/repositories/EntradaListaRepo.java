@@ -18,6 +18,14 @@ public interface EntradaListaRepo extends MongoRepository<EntradaLista, String> 
     List<EntradaLista> findByIdUsuario(int id);
 
     /**
+     * Busca una entrada de lista para un usuario y videojuego específicos
+     * @param idUsuario Id del usuario
+     * @param idVideojuego Id del videojuego
+     * @return EntradaLista encontrada o null
+     */
+    EntradaLista findByIdUsuarioAndIdVideojuego(int idUsuario, long idVideojuego);
+
+    /**
      * Busca una entrada de la lista por su id interno
      * @param id Id interno
      * @return EntradaLista encontrada o null
