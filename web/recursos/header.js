@@ -11,15 +11,17 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 function verificarSesionHeader() {
     const token = localStorage.getItem('jwt_token');
-    const btnPerfil = document.getElementById('btn-mi-perfil');
+    const btnTodosJuegos = document.getElementById('btn-todos-juegos');
     const btnLista = document.getElementById('btn-mi-lista');
     const linkLista = document.getElementById('link-mi-lista');
     const userIconLink = document.getElementById('btn-user-icon');
 
+    // El botón "Ver todos los juegos" siempre está visible
+    if (btnTodosJuegos) btnTodosJuegos.style.display = 'inline-block';
+
     // 1. Adaptar el comportamiento y visibilidad según si existe sesión activa
     if (!token) {
-        // No hay sesión: Ocultamos el perfil y la lista del header
-        if (btnPerfil) btnPerfil.style.display = 'none';
+        // No hay sesión: Ocultamos la lista del header
         if (btnLista) btnLista.style.display = 'none';
         if (linkLista) linkLista.style.display = 'none';
         
@@ -29,7 +31,6 @@ function verificarSesionHeader() {
         }
     } else {
         // Hay sesión activa: Mostramos botones correspondientes
-        if (btnPerfil) btnPerfil.style.display = 'inline-block';
         if (btnLista) btnLista.style.display = 'inline-block';
         if (linkLista) linkLista.style.display = 'inline-block';
         
@@ -39,10 +40,9 @@ function verificarSesionHeader() {
         }
     }
 
-    // 2. Configurar el comportamiento de clic en "Mi perfil"
-    // Actualmente redirige a la página principal de GameBoXD
-    if (btnPerfil) {
-        btnPerfil.addEventListener('click', () => {
+    // 2. Configurar el comportamiento de clic en "Ver todos los juegos"
+    if (btnTodosJuegos) {
+        btnTodosJuegos.addEventListener('click', () => {
             window.location.href = 'index.html';
         });
     }
