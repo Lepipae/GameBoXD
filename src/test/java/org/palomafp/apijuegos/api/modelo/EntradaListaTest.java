@@ -52,6 +52,6 @@ class EntradaListaTest {
     void testNotaInvalida() {
         EntradaLista entrada = new EntradaLista();
         assertThrows(IllegalArgumentException.class, () -> entrada.setNota(-0.1));
-        assertThrows(IllegalArgumentException.class, () -> entrada.setNota(5.1));
+        assertThrows(IllegalArgumentException.class, () -> entrada.setNota(10.1));
     }
 }

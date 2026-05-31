@@ -7,6 +7,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.palomafp.apijuegos.api.modelo.EntradaLista;
 import org.palomafp.apijuegos.api.repositories.EntradaListaRepo;
+import org.palomafp.apijuegos.api.repositories.VideojuegoRepo;
+import org.palomafp.apijuegos.api.modelo.Videojuego;
 
 import java.util.Arrays;
 import java.util.List;
@@ -19,6 +21,9 @@ class EntradaListaServiceTest {
 
     @Mock
     private EntradaListaRepo entradaListaRepo;
+
+    @Mock
+    private VideojuegoRepo videojuegoRepo;
 
     @InjectMocks
     private EntradaListaService entradaListaService;
@@ -90,9 +95,12 @@ class EntradaListaServiceTest {
 
     @Test
     void borrarEntrada() {
+        EntradaLista e = new EntradaLista();
+        e.setIdVideojuego(1L);
+        when(entradaListaRepo.findByMiId(1L)).thenReturn(e);
         doNothing().when(entradaListaRepo).deleteByMiId(1L);
-        entradaListaService.borrarEntrada(1); // Service method accepts int, repo accepts long? wait. Service parameter is int
-        verify(entradaListaRepo, times(1)).deleteByMiId(1L); // The conversion might be implicit or explicit in the real code
+        entradaListaService.borrarEntrada(1);
+        verify(entradaListaRepo, times(1)).deleteByMiId(1L);
     }
 
     @Test

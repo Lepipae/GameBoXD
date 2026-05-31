@@ -144,7 +144,7 @@
     border-radius: 8px;
     border: none;
     cursor: pointer;
-    transition: transform 0.1s ease, filter 0.2s ease;
+    transition: transform 0.1s ease, filter 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .add-to-list-btn:hover {
@@ -153,6 +153,23 @@
 
 .add-to-list-btn:active {
     transform: scale(0.96);
+}
+
+.add-to-list-btn:disabled {
+    background-color: #4A5568;
+    color: #A0AEC0;
+    cursor: not-allowed;
+    filter: none;
+    transform: none;
+}
+
+.add-to-list-btn.already-in-list {
+    background-color: #2D3748;
+    color: #00DBFF;
+    border: 1.5px solid #00DBFF;
+    cursor: default;
+    filter: none;
+    transform: none;
 }
 
 .game-dev-box {

@@ -322,6 +322,27 @@ function verificarSesionYConfigurarBoton(idJuego) {
         return;
     }
 
+    if (btnAdd) {
+        btnAdd.disabled = true;
+        btnAdd.textContent = 'Verificando...';
+    }
+
+    // Intentar obtener el usuario de la sesión en caché local para máxima rapidez
+    const currentUserStr = localStorage.getItem('currentUser');
+    if (currentUserStr) {
+        try {
+            const userProfile = JSON.parse(currentUserStr);
+            if (userProfile && userProfile.miId) {
+                idUsuarioLogueado = userProfile.miId;
+                comprobarJuegoEnLista(idJuego, idUsuarioLogueado, token);
+                return;
+            }
+        } catch (e) {
+            console.error('Error parseando currentUser de localStorage:', e);
+        }
+    }
+
+    // Fallback: Si no está en caché, lo obtenemos de la API
     try {
         const payloadBase64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
         const payloadDecoded = JSON.parse(atob(payloadBase64));
@@ -339,11 +360,16 @@ function verificarSesionYConfigurarBoton(idJuego) {
         .then(usuario => {
             idUsuarioLogueado = usuario.miId;
             
-            if (btnAdd) {
-                btnAdd.addEventListener('click', () => {
-                    anyadirALista(idJuego, idUsuarioLogueado, token);
-                });
-            }
+            // Guardar en caché para futuras visitas instantáneas
+            const sessionObj = {
+                token: token,
+                miId: usuario.miId,
+                nombre: usuario.nombre,
+                urlImagen: usuario.urlImagen
+            };
+            localStorage.setItem('currentUser', JSON.stringify(sessionObj));
+
+            comprobarJuegoEnLista(idJuego, idUsuarioLogueado, token);
         })
         .catch(err => {
             console.error('Error fetching logged in user:', err);
@@ -356,9 +382,62 @@ function verificarSesionYConfigurarBoton(idJuego) {
 }
 
 /**
+ * Comprueba si el juego ya existe en la lista de colección del usuario
+ * y configura el botón en consecuencia.
+ */
+function comprobarJuegoEnLista(idJuego, idUsuario, token) {
+    const btnAdd = document.getElementById('add-to-list-btn');
+    if (!btnAdd) return;
+
+    fetch(`https://gameboxd.duckdns.org/api/lista/${idUsuario}`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Error al obtener la lista del usuario');
+        return response.json();
+    })
+    .then(listaEntradas => {
+        const yaAnyadido = listaEntradas.some(entrada => parseInt(entrada.idVideojuego) === parseInt(idJuego));
+        
+        if (yaAnyadido) {
+            btnAdd.textContent = '✓ En tu lista';
+            btnAdd.disabled = true;
+            btnAdd.classList.add('already-in-list');
+        } else {
+            btnAdd.textContent = 'Añadir a mi lista';
+            btnAdd.disabled = false;
+            btnAdd.classList.remove('already-in-list');
+            
+            // Registrar el evento de clic
+            btnAdd.addEventListener('click', () => {
+                anyadirALista(idJuego, idUsuario, token);
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error comprobando juego en lista:', error);
+        // Fallback: Permitir añadir por si acaso
+        btnAdd.textContent = 'Añadir a mi lista';
+        btnAdd.disabled = false;
+        btnAdd.classList.remove('already-in-list');
+        btnAdd.addEventListener('click', () => {
+            anyadirALista(idJuego, idUsuario, token);
+        });
+    });
+}
+
+/**
  * Realiza la petición POST para crear una nueva entrada en la lista del usuario.
  */
 function anyadirALista(idJuego, idUsuario, token) {
+    const btnAdd = document.getElementById('add-to-list-btn');
+    if (btnAdd) {
+        btnAdd.disabled = true;
+        btnAdd.textContent = 'Añadiendo...';
+    }
+
     const nuevaEntrada = {
         horasJugadas: 0,
         nota: 0.0,
@@ -379,13 +458,26 @@ function anyadirALista(idJuego, idUsuario, token) {
     })
     .then(response => {
         if (response.ok) {
+            if (btnAdd) {
+                btnAdd.textContent = '✓ En tu lista';
+                btnAdd.disabled = true;
+                btnAdd.classList.add('already-in-list');
+            }
             alert('¡Juego añadido a tu lista con éxito!');
         } else {
+            if (btnAdd) {
+                btnAdd.textContent = 'Añadir a mi lista';
+                btnAdd.disabled = false;
+            }
             alert('Hubo un error al añadir el juego a tu lista. Quizás ya esté añadido.');
         }
     })
     .catch(error => {
         console.error('Error adding to list:', error);
+        if (btnAdd) {
+            btnAdd.textContent = 'Añadir a mi lista';
+            btnAdd.disabled = false;
+        }
         alert('Error de conexión al añadir a la lista.');
     });
 }

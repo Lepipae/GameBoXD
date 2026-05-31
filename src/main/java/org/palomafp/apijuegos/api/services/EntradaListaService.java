@@ -129,28 +129,27 @@ public class EntradaListaService {
      * @return EntradaLista guardada
      */
     public EntradaLista guardar(EntradaLista entradaLista) {
-        if (entradaLista.getId() == null) {
-            // Verificar si el usuario ya tiene este juego en su lista
-            EntradaLista existente = entradaListaRepo.findByIdUsuarioAndIdVideojuego(
-                entradaLista.getIdUsuario(), 
-                entradaLista.getIdVideojuego()
-            );
-            if (existente != null) {
+        // Normalizar ID vacío a null para evitar problemas en MongoDB
+        if (entradaLista.getId() != null && entradaLista.getId().trim().isEmpty()) {
+            entradaLista.setId(null);
+        }
+
+        // Comprobación de duplicados robusta en memoria
+        List<EntradaLista> usuarioEntradas = entradaListaRepo.findByIdUsuario(entradaLista.getIdUsuario());
+        if (usuarioEntradas != null) {
+            boolean duplicateExists = usuarioEntradas.stream()
+                .anyMatch(e -> e.getIdVideojuego() == entradaLista.getIdVideojuego()
+                        && (entradaLista.getId() == null || !e.getId().equals(entradaLista.getId())));
+            
+            if (duplicateExists) {
                 throw new IllegalArgumentException("El usuario ya tiene este juego en su lista");
             }
+        }
 
+        if (entradaLista.getId() == null) {
             EntradaLista ultimo = entradaListaRepo.encontrarUltimoId();
             long nuevoId = (ultimo != null) ? ultimo.getMiId() + 1 : 1;
             entradaLista.setMiId(nuevoId);
-        } else {
-            // Es una actualización. Verificamos duplicado asegurándonos de no bloquear la actualización de la misma entrada
-            EntradaLista existente = entradaListaRepo.findByIdUsuarioAndIdVideojuego(
-                entradaLista.getIdUsuario(), 
-                entradaLista.getIdVideojuego()
-            );
-            if (existente != null && !existente.getId().equals(entradaLista.getId())) {
-                throw new IllegalArgumentException("El usuario ya tiene este juego en su lista");
-            }
         }
         EntradaLista guardada = entradaListaRepo.save(entradaLista);
         actualizarNotaMedia(guardada.getIdVideojuego());
