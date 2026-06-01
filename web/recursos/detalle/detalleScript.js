@@ -364,8 +364,7 @@ function verificarSesionYConfigurarBoton(idJuego) {
             const sessionObj = {
                 token: token,
                 miId: usuario.miId,
-                nombre: usuario.nombre,
-                urlImagen: usuario.urlImagen
+                nombre: usuario.nombre
             };
             localStorage.setItem('currentUser', JSON.stringify(sessionObj));
 

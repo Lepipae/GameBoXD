@@ -1,14 +1,14 @@
 /**
- * Interceptor global de fetch para GameBoXD.
- * Si el servidor API principal (gameboxd.duckdns.org) no responde o devuelve un error de servidor (5xx),
- * se realiza un reintento automático (fallback) al servidor secundario (gameboxd-2nio.onrender.com).
+ * Gestor de los 2 servidores de API (simulando un CDN?).
+ * Si el servidor API principal (gameboxd.duckdns.org) no responde o devuelve un error,
+ * se realiza un reintento automático al servidor secundario (gameboxd-2nio.onrender.com) que es gratis y no cuesta pasta.
  */
-(function() {
-    const primaryUrl = 'https://gameboxd.duckdns.org/api';
-    const fallbackUrl = 'https://gameboxd-2nio.onrender.com/api';
+(function () {
+    const primaryUrl = 'https://gameboxd.duckdns.org/api'; // api principal
+    const fallbackUrl = 'https://gameboxd-2nio.onrender.com/api'; // api secundaria
     const originalFetch = window.fetch;
 
-    window.fetch = async function(input, init) {
+    window.fetch = async function (input, init) {
         let url = "";
         if (typeof input === 'string') {
             url = input;
@@ -30,7 +30,7 @@
 
             if (isSafeMethod) {
                 console.log(`[API] Iniciando peticiones paralelas (carrera) para método seguro ${method}: ${url}`);
-                
+
                 // Preparar los inputs para ambas peticiones paralelas
                 let primaryInput;
                 let fallbackInput;
@@ -74,7 +74,7 @@
                         } catch (err) {
                             // Se registra como info en lugar de advertencia para no ensuciar la consola con errores falsos si el otro servidor funciona
                             console.log(`[API] Servidor ${serverName} no disponible en la carrera (Fallo esperado/silencioso):`, err.message || err);
-                            
+
                             if (isPrimary) {
                                 primaryDone = true;
                                 primaryError = err;

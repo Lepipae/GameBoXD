@@ -8,7 +8,6 @@ import org.mockito.MockitoAnnotations;
 import org.palomafp.apijuegos.api.modelo.EntradaLista;
 import org.palomafp.apijuegos.api.repositories.EntradaListaRepo;
 import org.palomafp.apijuegos.api.repositories.VideojuegoRepo;
-import org.palomafp.apijuegos.api.modelo.Videojuego;
 
 import java.util.Arrays;
 import java.util.List;

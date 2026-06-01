@@ -1,3 +1,4 @@
+// Al cargar el dom se ejecutan los scripts
 document.addEventListener('DOMContentLoaded', () => {
     inicializarSesion();
     inicializarTabs();
@@ -7,43 +8,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Comprobar si hay sesión iniciada y mostrar la vista correspondiente
 function inicializarSesion() {
+    // Obtenemos los elementos del dom
     const authView = document.getElementById('auth-view');
     const listView = document.getElementById('list-view');
     const userSession = localStorage.getItem('currentUser');
-
+    // Comprobamos si hay sesión iniciada
     if (!userSession) {
         authView.classList.remove('hidden');
         listView.classList.add('hidden');
-    } else {
-        authView.classList.add('hidden');
-        listView.classList.remove('hidden');
-        
-        try {
+    } else { // Si hay sesion iniciada
+        authView.classList.add('hidden'); // Ocultamos la vista de auth
+        listView.classList.remove('hidden'); // Mostramos la vista de lista
+
+        try { // Obtenemos la sesion del usuario
             const user = JSON.parse(userSession);
-            
+
             // Configurar perfil en la cabecera
             const userNameSpan = document.getElementById('user-name-span');
             if (userNameSpan) userNameSpan.textContent = user.nombre;
 
             const userAvatar = document.getElementById('user-avatar');
             const avatarPlaceholder = document.getElementById('user-avatar-placeholder');
-            
+
             if (userAvatar && avatarPlaceholder) {
-                if (user.urlImagen && user.urlImagen !== 'placeholder') {
-                    userAvatar.src = user.urlImagen;
-                    userAvatar.style.display = 'block';
-                    avatarPlaceholder.style.display = 'none';
-                    
-                    userAvatar.onerror = () => {
-                        userAvatar.style.display = 'none';
-                        avatarPlaceholder.style.display = 'flex';
-                        avatarPlaceholder.textContent = user.nombre[0].toUpperCase();
-                    };
-                } else {
-                    userAvatar.style.display = 'none';
-                    avatarPlaceholder.style.display = 'flex';
-                    avatarPlaceholder.textContent = user.nombre[0].toUpperCase();
-                }
+                userAvatar.style.display = 'none';
+                avatarPlaceholder.style.display = 'flex';
+                avatarPlaceholder.textContent = user.nombre[0].toUpperCase();
             }
 
             // Cargar colección del usuario
@@ -101,7 +91,7 @@ function inicializarFormularios() {
     if (formLogin) {
         formLogin.addEventListener('submit', (e) => {
             e.preventDefault();
-            
+
             const nombre = document.getElementById('login-username').value.trim();
             const contrasenia = document.getElementById('login-password').value;
 
@@ -118,41 +108,41 @@ function inicializarFormularios() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(bodyData)
             })
-            .then(async response => {
-                if (!response.ok) {
-                    const text = await response.text();
-                    throw new Error(text || 'Usuario o contraseña incorrectos');
-                }
-                return response.json();
-            })
-            .then(authData => {
-                // Autenticado con éxito. Ahora traemos el ID y foto de perfil del usuario por su nombre.
-                const USUARIO_URL = `https://gameboxd.duckdns.org/api/usuarios/nombre/${nombre}`;
-                
-                return fetch(USUARIO_URL)
-                    .then(response => {
-                        if (!response.ok) throw new Error('Error al cargar perfil de usuario');
-                        return response.json();
-                    })
-                    .then(userProfile => {
-                        // Guardar datos completos en localStorage
-                        const sessionObj = {
-                            token: authData.jwt,
-                            miId: userProfile.miId,
-                            nombre: userProfile.nombre,
-                            urlImagen: userProfile.urlImagen
-                        };
-                        localStorage.setItem('currentUser', JSON.stringify(sessionObj));
-                        localStorage.setItem('jwt_token', authData.jwt);
-                        
-                        showToast(`¡Bienvenido de nuevo, ${userProfile.nombre}!`, 'success');
-                        setTimeout(() => location.reload(), 1000);
-                    });
-            })
-            .catch(error => {
-                console.error('Error en login:', error);
-                showToast(error.message || 'Error al iniciar sesión. Verifica tus credenciales.', 'error');
-            });
+                .then(async response => {
+                    if (!response.ok) {
+                        const text = await response.text();
+                        throw new Error(text || 'Usuario o contraseña incorrectos');
+                    }
+                    return response.json();
+                })
+                .then(authData => {
+                    // Autenticado con éxito. Ahora traemos el ID y foto de perfil del usuario por su nombre.
+                    const USUARIO_URL = `https://gameboxd.duckdns.org/api/usuarios/nombre/${nombre}`;
+
+                    return fetch(USUARIO_URL)
+                        .then(response => {
+                            if (!response.ok) throw new Error('Error al cargar perfil de usuario');
+                            return response.json();
+                        })
+                        .then(userProfile => {
+                            // Guardar datos completos en localStorage
+                            const sessionObj = {
+                                token: authData.jwt,
+                                miId: userProfile.miId,
+                                nombre: userProfile.nombre,
+                                urlImagen: userProfile.urlImagen
+                            };
+                            localStorage.setItem('currentUser', JSON.stringify(sessionObj));
+                            localStorage.setItem('jwt_token', authData.jwt);
+
+                            showToast(`¡Bienvenido de nuevo, ${userProfile.nombre}!`, 'success');
+                            setTimeout(() => location.reload(), 1000);
+                        });
+                })
+                .catch(error => {
+                    console.error('Error en login:', error);
+                    showToast(error.message || 'Error al iniciar sesión. Verifica tus credenciales.', 'error');
+                });
         });
     }
 
@@ -189,25 +179,25 @@ function inicializarFormularios() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(bodyData)
             })
-            .then(async response => {
-                if (!response.ok) {
-                    const text = await response.text();
-                    throw new Error(text || 'Error al crear la cuenta. ¿El usuario ya existe?');
-                }
-                return response.json();
-            })
-            .then(data => {
-                showToast(`¡Cuenta registrada correctamente para "${data.nombre}"! Ya puedes iniciar sesión.`, 'success');
-                formRegister.reset();
-                
-                // Conmutar pestaña a login
-                const tabLogin = document.getElementById('tab-login');
-                if (tabLogin) tabLogin.click();
-            })
-            .catch(error => {
-                console.error('Error en registro:', error);
-                showToast(error.message || 'Error al crear la cuenta de usuario.', 'error');
-            });
+                .then(async response => {
+                    if (!response.ok) {
+                        const text = await response.text();
+                        throw new Error(text || 'Error al crear la cuenta. ¿El usuario ya existe?');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    showToast(`¡Cuenta registrada correctamente para "${data.nombre}"! Ya puedes iniciar sesión.`, 'success');
+                    formRegister.reset();
+
+                    // Conmutar pestaña a login
+                    const tabLogin = document.getElementById('tab-login');
+                    if (tabLogin) tabLogin.click();
+                })
+                .catch(error => {
+                    console.error('Error en registro:', error);
+                    showToast(error.message || 'Error al crear la cuenta de usuario.', 'error');
+                });
         });
     }
 }
@@ -377,7 +367,7 @@ function cargarNombreDesarrolladora(idDev, miIdEntrada) {
 }
 
 // Eliminar un videojuego de la colección personal del usuario (Llamada Global)
-window.eliminarDeLista = function(idEntrada) {
+window.eliminarDeLista = function (idEntrada) {
     if (!confirm('¿Estás seguro de que quieres eliminar este videojuego de tu lista personal?')) return;
 
     const DELETE_URL = `https://gameboxd.duckdns.org/api/lista/${idEntrada}`;
@@ -385,34 +375,34 @@ window.eliminarDeLista = function(idEntrada) {
     fetch(DELETE_URL, {
         method: 'DELETE'
     })
-    .then(response => {
-        if (!response.ok) throw new Error('No se pudo eliminar el videojuego de tu lista.');
-        
-        showToast('¡Videojuego eliminado con éxito de tu colección!', 'success');
-        
-        // Animación suave de desvanecimiento y remoción del DOM
-        const card = document.getElementById(`card-entry-${idEntrada}`);
-        if (card) {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(15px)';
-            card.style.transition = 'all 0.3s ease';
-            
-            setTimeout(() => {
-                card.remove();
-                
-                // Si ya no quedan tarjetas en el grid, mostrar mensaje de lista vacía
-                const gameGrid = document.getElementById('game-grid');
-                const emptyListMessage = document.getElementById('empty-list-message');
-                if (gameGrid && gameGrid.children.length === 0 && emptyListMessage) {
-                    emptyListMessage.classList.remove('hidden');
-                }
-            }, 300);
-        }
-    })
-    .catch(error => {
-        console.error('Error al eliminar entrada:', error);
-        showToast(error.message || 'Error al eliminar el videojuego.', 'error');
-    });
+        .then(response => {
+            if (!response.ok) throw new Error('No se pudo eliminar el videojuego de tu lista.');
+
+            showToast('¡Videojuego eliminado con éxito de tu colección!', 'success');
+
+            // Animación suave de desvanecimiento y remoción del DOM
+            const card = document.getElementById(`card-entry-${idEntrada}`);
+            if (card) {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(15px)';
+                card.style.transition = 'all 0.3s ease';
+
+                setTimeout(() => {
+                    card.remove();
+
+                    // Si ya no quedan tarjetas en el grid, mostrar mensaje de lista vacía
+                    const gameGrid = document.getElementById('game-grid');
+                    const emptyListMessage = document.getElementById('empty-list-message');
+                    if (gameGrid && gameGrid.children.length === 0 && emptyListMessage) {
+                        emptyListMessage.classList.remove('hidden');
+                    }
+                }, 300);
+            }
+        })
+        .catch(error => {
+            console.error('Error al eliminar entrada:', error);
+            showToast(error.message || 'Error al eliminar el videojuego.', 'error');
+        });
 };
 
 // Sistema Toast de Notificaciones
@@ -422,16 +412,16 @@ function showToast(message, type = 'success') {
 
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
-    
+
     const content = document.createElement('div');
     content.className = 'toast-content';
     content.textContent = message;
-    
+
     const closeBtn = document.createElement('button');
     closeBtn.className = 'toast-close';
     closeBtn.innerHTML = '&times;';
     closeBtn.type = 'button';
-    
+
     closeBtn.addEventListener('click', () => {
         toast.classList.add('toast-fade-out');
         setTimeout(() => toast.remove(), 300);
@@ -451,7 +441,7 @@ function showToast(message, type = 'success') {
 }
 
 // Abrir modal de edición con los datos precargados de la entrada
-window.abrirModalEdicion = function(miId) {
+window.abrirModalEdicion = function (miId) {
     const entryData = window.miListaEntradas[miId];
     if (!entryData) return;
 
@@ -513,7 +503,7 @@ function inicializarModal() {
 
     btnCancel.addEventListener('click', cerrarModal);
     btnClose.addEventListener('click', cerrarModal);
-    
+
     // Cerrar si hace clic fuera del contenido del modal
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
@@ -529,7 +519,7 @@ function inicializarModal() {
         const miId = parseInt(document.getElementById('edit-entry-miid').value);
         const idVideojuego = parseInt(document.getElementById('edit-entry-gameid').value);
         const idUsuario = parseInt(document.getElementById('edit-entry-userid').value);
-        
+
         let estado = 'noEmpezado';
         const statusRadios = document.getElementsByName('edit-status');
         for (const radio of statusRadios) {
@@ -568,22 +558,22 @@ function inicializarModal() {
             headers: headers,
             body: JSON.stringify(entradaActualizada)
         })
-        .then(async response => {
-            if (!response.ok) {
-                const text = await response.text();
-                throw new Error(text || 'Error al actualizar la entrada');
-            }
-            return response.json();
-        })
-        .then(data => {
-            showToast('¡Entrada de juego actualizada con éxito!', 'success');
-            cerrarModal();
-            // Volver a cargar la colección del usuario para reflejar los cambios
-            cargarMiLista(idUsuario);
-        })
-        .catch(error => {
-            console.error('Error al actualizar entrada:', error);
-            showToast(error.message || 'Error al guardar los cambios.', 'error');
-        });
+            .then(async response => {
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(text || 'Error al actualizar la entrada');
+                }
+                return response.json();
+            })
+            .then(data => {
+                showToast('¡Entrada de juego actualizada con éxito!', 'success');
+                cerrarModal();
+                // Volver a cargar la colección del usuario para reflejar los cambios
+                cargarMiLista(idUsuario);
+            })
+            .catch(error => {
+                console.error('Error al actualizar entrada:', error);
+                showToast(error.message || 'Error al guardar los cambios.', 'error');
+            });
     });
 }

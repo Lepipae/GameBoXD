@@ -1,5 +1,5 @@
 /**
- * Script compartido para el manejo unificado de la cabecera (Header) en todas las páginas de GameBoXD.
+ * Script compartido para el manejo de la cabecera (Header) en todas las páginas de GameBoXD.
  * Controla la visualización de los botones según la sesión activa y configura sus acciones.
  */
 document.addEventListener('DOMContentLoaded', () => {
