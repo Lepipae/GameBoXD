@@ -1,8 +1,8 @@
-# GameBoXD (VideojuegosApi) 🎮✨
+# GameBoXD (VideojuegosApi) 
 
 
-**GameBoXD** es una plataforma full-stack moderna e interactiva diseñada para la gestión, recomendación y valoración de videojuegos. Inspirada en plataformas como Letterboxd o Backloggd, GameBoXD permite a los usuarios  escribir reseñas calificar juegos y mantener un seguimiento de las horas que lleva jugadas.
-El sistema se compone de una **API REST** en el backend, un **frontend estático optimizado** con efectos de neón y una infraestructura con despliegues automatizados (CI/CD) y alta disponibilidad híbrida, usando AWS EC2 y Render.
+**GameBoXD** es una plataforma full-stack interactiva diseñada para la gestión, recomendación y valoración de videojuegos. Inspirada en plataformas como Letterboxd o Backloggd, GameBoXD permite a los usuarios  escribir reseñas calificar juegos y mantener un seguimiento de las horas que lleva jugadas.
+El sistema se compone de una **API REST** en el backend, un **frontend estático** y una infraestructura con despliegues automatizados (CI/CD) y alta disponibilidad híbrida, usando AWS EC2 y Render.
 
 ---
 
