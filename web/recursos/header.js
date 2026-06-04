@@ -29,6 +29,12 @@ function verificarSesionHeader() {
         if (userIconLink) {
             userIconLink.href = 'login.html';
         }
+
+        // Eliminar el botón "Añadir juego" dinámico si existe
+        const linkInsertar = document.getElementById('link-insertar');
+        if (linkInsertar) {
+            linkInsertar.remove();
+        }
     } else {
         // Hay sesión activa: Mostramos botones correspondientes
         if (btnLista) btnLista.style.display = 'inline-block';
@@ -37,6 +43,23 @@ function verificarSesionHeader() {
         // El icono de usuario redirige directamente a la lista
         if (userIconLink) {
             userIconLink.href = 'miLista.html';
+        }
+
+        // Crear e inyectar el botón "Añadir juego" dinámicamente si no existe ya
+        const headerLeft = document.querySelector('.header-left');
+        if (headerLeft && !document.getElementById('link-insertar')) {
+            const linkInsertar = document.createElement('a');
+            linkInsertar.href = 'insertar.html';
+            linkInsertar.id = 'link-insertar';
+
+            const btnInsertar = document.createElement('button');
+            btnInsertar.id = 'btn-insertar';
+            btnInsertar.className = 'nav-button';
+            btnInsertar.type = 'button';
+            btnInsertar.textContent = 'Añadir juego';
+
+            linkInsertar.appendChild(btnInsertar);
+            headerLeft.appendChild(linkInsertar);
         }
     }
 
