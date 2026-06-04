@@ -126,9 +126,10 @@ function renderizarTags(tags) {
     tagsContainer.innerHTML = ''; // Limpiar tags previos si los hubiera
     if (tags && tags.length > 0) {
         tags.forEach(tag => {
-            const tagEl = document.createElement('span');
+            const tagEl = document.createElement('a');
             tagEl.className = 'game-tag';
             tagEl.textContent = tag;
+            tagEl.href = `busqueda.html?tag=${encodeURIComponent(tag)}`;
             tagsContainer.appendChild(tagEl);
         });
     }
@@ -294,6 +295,11 @@ function cargarDesarrolladora(idDesarrolladora) {
  */
 function renderizarDesarrolladora(desarrolladora) {
     document.getElementById('game-dev-box').style.display = 'block';
+    
+    const devLink = document.getElementById('dev-link');
+    if (devLink) {
+        devLink.href = `busqueda.html?dev=${desarrolladora.miId}&devName=${encodeURIComponent(desarrolladora.nombre)}`;
+    }
     
     const logoImg = document.getElementById('dev-logo');
     if (desarrolladora.urlImagen === "placeholder" || !desarrolladora.urlImagen) {

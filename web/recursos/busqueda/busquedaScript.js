@@ -17,6 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
 function inicializarBusqueda() {
     const params = new URLSearchParams(window.location.search);
     const query = params.get('q') || '';
+    const tag = params.get('tag') || '';
+    const dev = params.get('dev') || '';
+    const devName = params.get('devName') || '';
 
     // Elementos del DOM
     const searchInput = document.getElementById('search-input-field');
@@ -24,7 +27,11 @@ function inicializarBusqueda() {
 
     // Pre-rellenar el input con la búsqueda actual
     if (searchInput) {
-        searchInput.value = query;
+        if (tag || dev) {
+            searchInput.value = '';
+        } else {
+            searchInput.value = query;
+        }
         searchInput.focus();
     }
 
@@ -44,16 +51,23 @@ function inicializarBusqueda() {
     }
 
     // Cargar juegos y aplicar el filtro inicial
-    cargarYFiltrarJuegos(query);
+    cargarYFiltrarJuegos(query, tag, dev, devName);
 
     // Escuchar el evento de retroceso/avance del navegador para mantener sincronizados los resultados
     window.addEventListener('popstate', () => {
         const nuevosParams = new URLSearchParams(window.location.search);
         const nuevaQuery = nuevosParams.get('q') || '';
+        const nuevoTag = nuevosParams.get('tag') || '';
+        const nuevoDev = nuevosParams.get('dev') || '';
+        const nuevoDevName = nuevosParams.get('devName') || '';
         if (searchInput) {
-            searchInput.value = nuevaQuery;
+            if (nuevoTag || nuevoDev) {
+                searchInput.value = '';
+            } else {
+                searchInput.value = nuevaQuery;
+            }
         }
-        filtrarYRenderizar(nuevaQuery);
+        filtrarYRenderizar(nuevaQuery, nuevoTag, nuevoDev, nuevoDevName);
     });
 }
 
@@ -74,10 +88,13 @@ function realizarBusquedaInteractiva(query) {
  * Carga todos los juegos de la API si no están en caché, y luego aplica el filtrado.
  * 
  * @param {string} query - Término de búsqueda inicial.
+ * @param {string} tag - Etiqueta para filtrar opcionalmente.
+ * @param {string} dev - ID de desarrolladora para filtrar opcionalmente.
+ * @param {string} devName - Nombre de desarrolladora para filtrar opcionalmente.
  */
-function cargarYFiltrarJuegos(query) {
+function cargarYFiltrarJuegos(query, tag, dev, devName) {
     if (cacheJuegos.length > 0) {
-        filtrarYRenderizar(query);
+        filtrarYRenderizar(query, tag, dev, devName);
         return;
     }
 
@@ -98,7 +115,7 @@ function cargarYFiltrarJuegos(query) {
         .then(juegos => {
             // Filtrar juegos inválidos (sin imagen o nombre)
             cacheJuegos = filtrarJuegosValidos(juegos);
-            filtrarYRenderizar(query);
+            filtrarYRenderizar(query, tag, dev, devName);
         })
         .catch(error => {
             if (loader) loader.style.display = 'none';
@@ -123,8 +140,11 @@ function filtrarJuegosValidos(juegos) {
  * Filtra localmente los juegos en caché y los renderiza en la cuadrícula.
  * 
  * @param {string} query - Término de búsqueda.
+ * @param {string} tag - Etiqueta opcional para filtrar.
+ * @param {string} dev - ID de desarrolladora opcional para filtrar.
+ * @param {string} devName - Nombre de desarrolladora opcional para filtrar.
  */
-function filtrarYRenderizar(query) {
+function filtrarYRenderizar(query, tag, dev, devName) {
     const loader = document.getElementById('search-loader');
     const grid = document.getElementById('results-grid');
     const infoText = document.getElementById('results-info-text');
@@ -132,16 +152,33 @@ function filtrarYRenderizar(query) {
     if (loader) loader.style.display = 'none';
     if (grid) grid.style.display = 'grid';
 
-    const queryLimpia = query.trim().toLowerCase();
-    
-    // Filtrado: coincidencia parcial case-insensitive del título del videojuego
-    const juegosFiltrados = cacheJuegos.filter(juego => 
-        juego.nombre.toLowerCase().includes(queryLimpia)
-    );
+    let juegosFiltrados = [];
+
+    if (dev) {
+        const devIdInt = parseInt(dev);
+        juegosFiltrados = cacheJuegos.filter(juego => 
+            parseInt(juego.idDesarrolladora) === devIdInt
+        );
+    } else if (tag) {
+        const tagLimpia = tag.trim().toLowerCase();
+        juegosFiltrados = cacheJuegos.filter(juego => 
+            juego.tags && juego.tags.some(t => t.toLowerCase() === tagLimpia)
+        );
+    } else {
+        const queryLimpia = query.trim().toLowerCase();
+        // Filtrado: coincidencia parcial case-insensitive del título del videojuego
+        juegosFiltrados = cacheJuegos.filter(juego => 
+            juego.nombre.toLowerCase().includes(queryLimpia)
+        );
+    }
 
     // Actualizar texto informativo de resultados
     if (infoText) {
-        if (queryLimpia) {
+        if (dev) {
+            infoText.innerHTML = `Juegos desarrollados por "<span>${escapeHTML(devName || 'Desarrolladora')}</span>" (${juegosFiltrados.length} encontrados)`;
+        } else if (tag) {
+            infoText.innerHTML = `Juegos con la etiqueta "<span>${escapeHTML(tag)}</span>" (${juegosFiltrados.length} encontrados)`;
+        } else if (query.trim()) {
             infoText.innerHTML = `Resultados para "<span>${escapeHTML(query)}</span>" (${juegosFiltrados.length} encontrados)`;
         } else {
             infoText.innerHTML = `Todos los videojuegos (${juegosFiltrados.length})`;
@@ -155,7 +192,13 @@ function filtrarYRenderizar(query) {
         if (juegosFiltrados.length === 0) {
             // Mostrar pantalla de sin resultados
             grid.style.display = 'block'; // Para centrar el contenedor de no resultados
-            grid.appendChild(crearVistaSinResultados(query));
+            let searchLabel = query;
+            if (dev) {
+                searchLabel = `desarrolladora: ${devName || dev}`;
+            } else if (tag) {
+                searchLabel = `etiqueta: ${tag}`;
+            }
+            grid.appendChild(crearVistaSinResultados(searchLabel));
         } else {
             grid.style.display = 'grid';
             juegosFiltrados.forEach(juego => {

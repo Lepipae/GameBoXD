@@ -57,6 +57,15 @@
     backdrop-filter: blur(4px);
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.game-tag:hover {
+    background-color: #00DBFF;
+    color: #1A202C;
+    box-shadow: 0 0 15px rgba(0, 219, 255, 0.6);
+    transform: translateY(-2px);
 }
 
 .game-col-right {
@@ -186,6 +195,20 @@
     font-size: 20px;
     margin-bottom: 16px;
     font-weight: 600;
+}
+
+.dev-link-wrapper {
+    display: inline-block;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s ease, filter 0.2s ease;
+    cursor: pointer;
+    border-radius: 12px;
+}
+
+.dev-link-wrapper:hover {
+    transform: translateX(4px);
+    filter: brightness(1.2);
 }
 
 .dev-info {
