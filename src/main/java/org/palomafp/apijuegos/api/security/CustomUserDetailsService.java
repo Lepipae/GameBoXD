@@ -2,15 +2,17 @@ package org.palomafp.apijuegos.api.security;
 
 import org.jspecify.annotations.NullMarked;
 import org.palomafp.apijuegos.api.modelo.Usuario;
+import org.palomafp.apijuegos.api.modelo.enums.Rol;
 import org.palomafp.apijuegos.api.repositories.UsuarioRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Servicio encargado de proveer a Spring Security la información del usuario 
@@ -42,8 +44,13 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("Usuario no encontrado con el nombre: " + username);
         }
 
-        // Devolvemos una instancia de "User" de Spring Security, pasando nombre, contraseña y permisos vacíos (o los roles si existen).
-        // Si tienes roles en `Usuario` puedes inyectarlos aquí. Por defecto agregamos un ArrayList vacío de authorities.
-        return new User(usuario.getNombre(), usuario.getContrasenia(), new ArrayList<>());
+        // Traducimos el rol del usuario a una autoridad de Spring Security con el prefijo "ROLE_",
+        // que es el que espera hasRole('administrador') en los @PreAuthorize de los controladores.
+        // Sin este paso el token se validaria pero no autorizaria nada.
+        Rol rol = usuario.getRol() == null ? Rol.usuarioNormal : usuario.getRol();
+        SimpleGrantedAuthority autoridad = new SimpleGrantedAuthority("ROLE_" + rol.name());
+
+        // Devolvemos una instancia de "User" de Spring Security con nombre, contraseña y su rol.
+        return new User(usuario.getNombre(), usuario.getContrasenia(), List.of(autoridad));
     }
 }

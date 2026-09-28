@@ -3,6 +3,7 @@ package org.palomafp.apijuegos.api.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -22,6 +23,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  */
 @Configuration
 @EnableWebSecurity
+// Imprescindible: sin esta anotacion los @PreAuthorize de los controladores se
+// ignoran silenciosamente y la autorizacion por rol no se aplica.
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Autowired
@@ -56,16 +60,36 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
                 // Configuramos las reglas de autorización por rutas
                 .authorizeHttpRequests(auth -> auth
+                        // ---------------------------------------------------------
+                        // PÚBLICAS: solo lectura del catálogo y el registro/login
+                        // ---------------------------------------------------------
+                        // El preflight de CORS debe pasar siempre: el frontend vive en
+                        // otro dominio (GitHub Pages) y lo dispara en cada POST/DELETE.
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Rutas públicas que nos pidió el usuario: Login y Registro
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/usuarios").permitAll()
                         // Rutas públicas solicitadas: GET de Videojuegos y Desarrolladoras
                         .requestMatchers(HttpMethod.GET, "/api/videojuegos", "/api/videojuegos/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/desarrolladoras", "/api/desarrolladoras/**").permitAll()
+                        // Ficha de un juego: necesita saber quantas listas lo incluyen
+                        .requestMatchers(HttpMethod.GET, "/api/lista/juego/**").permitAll()
+                        // Perfiles públicos de usuario por id o por nombre. Ya no exponen
+                        // credenciales (contrasenia es WRITE_ONLY), asi que un visitante
+                        // anonimo puede ver quien ha escrito una reseña.
+                        // OJO: seelistan a proposito, sin "/**", para no abrir
+                        // GET /api/usuarios (listado completo), que exige administrador.
+                        .requestMatchers(HttpMethod.GET, "/api/usuarios/*", "/api/usuarios/nombre/*").permitAll()
                         // Para acceder a Swagger/OpenAPI si es necesario que estén públicas
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        // Cualquier otra petición no especificada arriba requerirá estar autenticado (con token válido)
-                        .anyRequest().permitAll()
+                        // ---------------------------------------------------------
+                        // TODO LO DEMÁS REQUIERE TOKEN
+                        // ---------------------------------------------------------
+                        // Incluye las escrituras (POST de juegos y desarrolladoras) y
+                        // toda la gestión de listas. Los endpoints destructivos y el
+                        // listado de usuarios se restringen aún más con @PreAuthorize
+                        // en cada método (@EnableMethodSecurity).
+                        .anyRequest().authenticated()
                 )
                 // Indicamos que queremos manejar sesiones de forma Stateless (Sin Guardar Sesión en el servidor)
                 .sessionManagement(session -> session

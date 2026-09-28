@@ -3,6 +3,7 @@ package org.palomafp.apijuegos.api.controladores;
 import org.palomafp.apijuegos.api.modelo.Desarrolladora;
 import org.palomafp.apijuegos.api.services.DesarrolladoraService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -63,6 +64,7 @@ public class DesarrolladoraController {
      * @param id    Id de la desarrolladora que se quiere borrar
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('administrador')")
     public void borrarDesarrolladora(@PathVariable int id) {
         desarrolladoraService.borrarDesarrolladora(id);
     }

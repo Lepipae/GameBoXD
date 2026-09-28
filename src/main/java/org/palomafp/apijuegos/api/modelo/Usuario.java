@@ -1,5 +1,6 @@
 package org.palomafp.apijuegos.api.modelo;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.palomafp.apijuegos.api.modelo.enums.Rol;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -16,7 +17,21 @@ public class Usuario {
     private int miId;
     private String nombre;
     private String urlImagen;
+
+    /**
+     * Contraseña del usuario (siempre guardada en formato BCrypt).
+     *
+     * WRITE_ONLY hace que Jackson la acepte al deserializar (registro) pero la
+     * omita al serializar, de modo que el hash nunca viaja en las respuestas.
+     * No se usa {@code @JsonIgnore} porque también bloquearía la entrada de la
+     * contraseña y el registro dejaría de funcionar.
+     *
+     * El getter sigue disponible para Java: lo necesitan
+     * {@code UsuarioService} y {@code CustomUserDetailsService} para autenticar.
+     */
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String contrasenia;
+
     private Rol rol;
 
     /**

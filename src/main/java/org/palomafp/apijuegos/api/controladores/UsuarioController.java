@@ -3,6 +3,7 @@ package org.palomafp.apijuegos.api.controladores;
 import org.palomafp.apijuegos.api.modelo.Usuario;
 import org.palomafp.apijuegos.api.services.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class UsuarioController {
      * @return  Lista conteniendo todos los usuarios
      */
     @GetMapping
+    @PreAuthorize("hasRole('administrador')")
     public List<Usuario> obtenerTodos() {
         return usuarioService.obtenerTodos();
     }
@@ -52,6 +54,7 @@ public class UsuarioController {
      * @param miId  Id del usuario que se quiere borrar
      */
     @DeleteMapping("/{miId}")
+    @PreAuthorize("hasRole('administrador')")
     public void borrarUsuarioPorMiId(@PathVariable int miId) {
         usuarioService.borrarPorMiId(miId);
     }

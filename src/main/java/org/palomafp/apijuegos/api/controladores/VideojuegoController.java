@@ -3,6 +3,7 @@ package org.palomafp.apijuegos.api.controladores;
 import org.palomafp.apijuegos.api.modelo.Videojuego;
 import org.palomafp.apijuegos.api.services.VideojuegoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -82,6 +83,7 @@ public class VideojuegoController {
      * @param miId  Id del videojuego que se quiere borrar
      */
     @DeleteMapping("/{miId}")
+    @PreAuthorize("hasRole('administrador')")
     public void borrarVideojuego(@PathVariable long miId) {
         videojuegoService.borrarVideojuego(miId);
     }
