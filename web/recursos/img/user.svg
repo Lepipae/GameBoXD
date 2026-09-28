@@ -1,0 +1,8 @@
+<svg width="48" height="48" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Usuario">
+  <title>Usuario</title>
+  <!-- Fondo claro, hace juego con el .icon-button (#E2E8F0) -->
+  <rect width="48" height="48" rx="12" fill="#E2E8F0"/>
+  <circle cx="24" cy="19" r="7.5" fill="#1A202C"/>
+  <path d="M8 43c0-8.2 7.2-14 16-14s16 5.8 16 14a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2z" fill="#1A202C"/>
+  <path d="M8 43c0-8.2 7.2-14 16-14" fill="none" stroke="#00DBFF" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

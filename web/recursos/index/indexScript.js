@@ -1,3 +1,6 @@
+// Acceso al gestor centralizado de imágenes definido en api.js
+const { esUrlImagenValida, aplicarImagen } = window.GameBoXDImagenes;
+
 /**
  * Event listener que se ejecuta cuando el DOM está completamente cargado.
  * Inicia el proceso para obtener y mostrar recomendaciones de juegos.
@@ -66,11 +69,11 @@ function obtenerRecomendaciones() {
  * Filtra el array de juegos para descartar aquellos que no posean una URL de imagen válida.
  * 
  * @param {Object[]} juegos - Array completo de videojuegos devueltos por la API.
- * @returns {Object[]} Array de videojuegos que contienen un campo urlImagen no vacío.
+ * @returns {Object[]} Array de videojuegos cuya urlImagen es una URL http(s) utilizable.
  */
 function filtrarJuegosValidos(juegos) {
     // Nos quedamos solo con los juegos que tienen una imagen válida
-    return juegos.filter(juego => juego.urlImagen && juego.urlImagen.trim() !== '');
+    return juegos.filter(juego => esUrlImagenValida(juego.urlImagen));
 }
 
 /**
@@ -113,7 +116,7 @@ function renderizarRecomendaciones(recomendaciones) {
             enlace.href = `detalleJuego.html?id=${juego.miId}`;
 
             const img = document.createElement('img');
-            img.src = juego.urlImagen;
+            aplicarImagen(img, juego.urlImagen);
             img.alt = juego.nombre;
             img.title = juego.nombre;
 
@@ -150,7 +153,7 @@ function mostrarErrorConPistachos(error) {
 
     // Crear y añadir la imagen
     const errorImg = document.createElement('img');
-    errorImg.src = 'https://gameboxd.s3.us-east-1.amazonaws.com/web/pistachos.png';
+    errorImg.src = 'recursos/img/error-pistachos.svg';
     errorImg.style.maxWidth = '90%';
     errorImg.style.maxHeight = '90%';
     errorImg.style.borderRadius = '20px';

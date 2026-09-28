@@ -77,6 +77,26 @@ Navega a `http://localhost:3000` y ahi estara la web.
 
 ---
 
+##  Recursos gráficos del frontend
+
+Las imagenes de la interfaz se dividen en dos grupos, para que ninguna vuelva a depender de un hosting externo que pueda desaparecer:
+
+*   **Iconos y marca (`web/recursos/img/`)**: son SVG dibujados a medida y versionados en el propio repositorio (`logo-gameboxd`, `favicon`, `user`, `search`, `search-empty`, `flecha`, `github`, `escuela`, `placeholder-game`, `error-pistachos`). No dependen de ninguna red, asi que siempre se ven.
+*   **Imagenes de juegos**: son portadas reales alojadas por terceros, habitualmente enlaces a [SteamGridDB](https://www.steamgriddb.com/), que es de donde el propio formulario de `insertar.html` sugiere sacar las URLs.
+
+Ademas, `web/recursos/api.js` expone el gestor `window.GameBoXDImagenes` para centralizar el uso de imagenes:
+
+*   `esUrlImagenValida(url)`: descarta vacios y el texto literal `placeholder` que el backend guarda cuando el usuario no facilita una portada.
+*   `aplicarImagen(img, url, [alFallar])`: asigna la portada y, si la URL no es valida o el host ya no responde, cae a la portada local `placeholder-game.svg` en lugar de mostrar el icono de imagen rota. El tercer parametro permite otro comportamiento, por ejemplo ocultar el logo de una desarrolladora que no tenga uno.
+
+Esto es importante porque el bucket de S3 que usaba el proyecto dejo de existir, y **las URLs antiguas siguen guardadas en la base de datos**: por eso los juegos con portada antigua se muestran con la portada generica en lugar de romperse.
+
+> Las imagenes de juegos usadas por defecto en la portada de la web provienen de
+> [SteamGridDB](https://www.steamgriddb.com/game/5403655) (Helldivers II), un proyecto
+> sin fines de lucro; se agradece el enlace si se reutilizan sus imagenes.
+
+---
+
 ##  Despliegue de Producción con Docker
 
 El proyecto cuenta con un `Dockerfile` para compilar y servir de manera óptima:

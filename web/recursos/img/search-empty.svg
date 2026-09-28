@@ -1,0 +1,17 @@
+<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Sin resultados">
+  <title>Sin resultados</title>
+  <defs>
+    <linearGradient id="srGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#00DBFF"/>
+      <stop offset="100%" stop-color="#00A6C4"/>
+    </linearGradient>
+  </defs>
+  <!-- Lupa cian para los estados vacíos sobre fondo oscuro -->
+  <g fill="none" stroke="url(#srGrad)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="27" cy="27" r="15"/>
+    <path d="M38 38 L52 52"/>
+    <!-- Guion doble dentro de la lupa: no hay nada que mostrar -->
+    <path d="M20 27 h6" stroke-width="3.5" opacity="0.85"/>
+    <path d="M29 27 h6" stroke-width="3.5" opacity="0.85"/>
+  </g>
+</svg>

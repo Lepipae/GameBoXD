@@ -1,0 +1,21 @@
+<svg width="120" height="220" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 220" role="img" aria-label="Siguiente">
+  <title>Siguiente</title>
+  <defs>
+    <linearGradient id="arrowGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#00DBFF" stop-opacity="0.25"/>
+      <stop offset="45%" stop-color="#00DBFF"/>
+      <stop offset="100%" stop-color="#00DBFF" stop-opacity="0.25"/>
+    </linearGradient>
+    <filter id="arrowGlow" x="-60%" y="-30%" width="220%" height="160%">
+      <feGaussianBlur stdDeviation="9" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <!-- Doble galón apuntando a la derecha, con brillo cian -->
+  <g filter="url(#arrowGlow)">
+    <g fill="none" stroke="url(#arrowGrad)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M42 52 L86 110 L42 168"/>
+      <path d="M14 52 L58 110 L14 168" opacity="0.45"/>
+    </g>
+  </g>
+</svg>

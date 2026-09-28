@@ -3,6 +3,9 @@
  * Obtiene los juegos de la API y los filtra localmente para un rendimiento óptimo.
  */
 
+// Acceso al gestor centralizado de imágenes definido en api.js
+const { esUrlImagenValida, aplicarImagen } = window.GameBoXDImagenes;
+
 // Caché global de videojuegos para evitar múltiples peticiones innecesarias
 let cacheJuegos = [];
 
@@ -132,7 +135,7 @@ function cargarYFiltrarJuegos(query, tag, dev, devName) {
 function filtrarJuegosValidos(juegos) {
     return juegos.filter(juego => 
         juego.nombre && juego.nombre.trim() !== '' && 
-        juego.urlImagen && juego.urlImagen.trim() !== ''
+        esUrlImagenValida(juego.urlImagen)
     );
 }
 
@@ -226,7 +229,7 @@ function crearTarjetaJuego(juego) {
     imgContainer.className = 'card-img-container';
 
     const img = document.createElement('img');
-    img.src = juego.urlImagen;
+    aplicarImagen(img, juego.urlImagen);
     img.alt = juego.nombre;
     img.loading = 'lazy'; // Carga diferida de imágenes para optimizar rendimiento
 
@@ -254,7 +257,7 @@ function crearVistaSinResultados(query) {
     contenedor.className = 'no-results-container';
 
     const img = document.createElement('img');
-    img.src = 'https://gameboxd.s3.us-east-1.amazonaws.com/web/search.png';
+    img.src = 'recursos/img/search-empty.svg';
     img.className = 'no-results-img';
     img.alt = 'Sin resultados';
 
@@ -324,7 +327,7 @@ function mostrarErrorConPistachos(error) {
 
     // Imagen divertida de los pistachos
     const errorImg = document.createElement('img');
-    errorImg.src = 'https://gameboxd.s3.us-east-1.amazonaws.com/web/pistachos.png';
+    errorImg.src = 'recursos/img/error-pistachos.svg';
     errorImg.style.maxWidth = '90%';
     errorImg.style.maxHeight = '90%';
     errorImg.style.borderRadius = '20px';

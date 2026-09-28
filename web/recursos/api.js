@@ -138,3 +138,71 @@
         return originalFetch(input, init);
     };
 })();
+
+/**
+ * Gestor centralizado de imágenes de GameBoXD.
+ *
+ * Las URLs de portada las introduce el usuario al crear un juego, así que pueden
+ * apuntar a hosts que ya no existen (el antiguo bucket de S3 fue retirado).
+ * Este gestor centraliza la validación y garantiza que toda imagen del sitio
+ * degrade con elegancia a una portada local en lugar de mostrar un icono de error.
+ */
+(function () {
+    /** Portada local usada siempre que la URL remota no sea válida o falle al cargar. */
+    const IMAGEN_PLACEHOLDER = 'recursos/img/placeholder-game.svg';
+
+    /**
+     * Comprueba si un valor puede usarse como URL de imagen.
+     * Descarta vacíos y el texto literal "placeholder" que el backend almacena
+     * cuando el usuario no facilitate ninguna imagen.
+     *
+     * @param {*} url - Valor a comprobar.
+     * @returns {boolean} true si es una URL http(s) con contenido.
+     */
+    function esUrlImagenValida(url) {
+        return typeof url === 'string' && /^https?:\/\/\S+$/i.test(url.trim());
+    }
+
+    /**
+     * Asigna la imagen a un elemento <img> con respaldo local.
+     *
+     * El listener de "error" se desconecta a sí mismo antes de reintentar, de modo
+     * que si el placeholder local fallara alguna vez no entraría en un bucle
+     * infinito de peticiones.
+     *
+     * @param {HTMLImageElement} img - Elemento <img> destino.
+     * @param {string} url - URL remota candidata; si no es válida se usa el placeholder.
+     * @param {Function} [alFallar] - Callback opcional que sustituye al placeholder
+     *        (por ejemplo, para ocultar el logo de una desarrolladora sin logo real).
+     */
+    function aplicarImagen(img, url, alFallar) {
+        if (!img) return;
+
+        const recurrir = function () {
+            if (typeof alFallar === 'function') {
+                alFallar(img);
+            } else {
+                img.src = IMAGEN_PLACEHOLDER;
+            }
+        };
+
+        // Una URL ausente o con el texto "placeholder" no llega ni a solicitarse.
+        if (!esUrlImagenValida(url)) {
+            recurrir();
+            return;
+        }
+
+        img.addEventListener('error', function manejarErrorImagen() {
+            img.removeEventListener('error', manejarErrorImagen);
+            recurrir();
+        });
+
+        img.src = url.trim();
+    }
+
+    window.GameBoXDImagenes = {
+        IMAGEN_PLACEHOLDER: IMAGEN_PLACEHOLDER,
+        esUrlImagenValida: esUrlImagenValida,
+        aplicarImagen: aplicarImagen
+    };
+})();

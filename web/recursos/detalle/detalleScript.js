@@ -1,3 +1,6 @@
+// Acceso al gestor centralizado de imágenes definido en api.js
+const { aplicarImagen } = window.GameBoXDImagenes;
+
 /**
  * Event listener que se ejecuta cuando el DOM está completamente cargado.
  * Inicia la carga de los detalles del juego si se proporciona un ID en la URL.
@@ -112,7 +115,7 @@ function cambiarTitulo(nombreJuego) {
  * @param {string} juego.descripcion - El texto de descripción del juego.
  */
 function renderizarInformacionBasica(juego) {
-    document.getElementById('game-cover').src = juego.urlImagen;
+    aplicarImagen(document.getElementById('game-cover'), juego.urlImagen);
     document.getElementById('game-desc').textContent = juego.descripcion;
 }
 
@@ -302,11 +305,10 @@ function renderizarDesarrolladora(desarrolladora) {
     }
     
     const logoImg = document.getElementById('dev-logo');
-    if (desarrolladora.urlImagen === "placeholder" || !desarrolladora.urlImagen) {
-        logoImg.style.display = 'none'; // Ocultar imagen si es placeholder
-    } else {
-        logoImg.src = desarrolladora.urlImagen;
-    }
+    // Sin logo real no mostramos nada: encoger la portada genérica aquí sería un engaño.
+    aplicarImagen(logoImg, desarrolladora.urlImagen, function (el) {
+        el.style.display = 'none';
+    });
     
     document.getElementById('dev-name').textContent = desarrolladora.nombre;
     document.getElementById('dev-country').textContent = desarrolladora.pais;

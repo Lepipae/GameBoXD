@@ -1,3 +1,6 @@
+// Acceso al gestor centralizado de imágenes definido en api.js
+const { aplicarImagen } = window.GameBoXDImagenes;
+
 // Al cargar el dom se ejecutan los scripts
 document.addEventListener('DOMContentLoaded', () => {
     inicializarSesion();
@@ -277,7 +280,7 @@ async function renderizarEntradaJuego(entrada, container) {
 
         card.innerHTML = `
             <div class="game-card-img-container">
-                <img src="${game.urlImagen || 'https://gameboxd.s3.us-east-1.amazonaws.com/web/helldivers.jpg'}" alt="${game.nombre}" onerror="this.src='https://gameboxd.s3.us-east-1.amazonaws.com/web/helldivers.jpg'">
+                <img alt="${game.nombre}">
             </div>
             <div class="game-card-content">
                 <div class="game-card-header">
@@ -312,6 +315,10 @@ async function renderizarEntradaJuego(entrada, container) {
                 </div>
             </div>
         `;
+
+        // La portada se asigna con el gestor centralizado, que valida la URL y
+        // recurre a la imagen local si el enlace remoto ha muerto.
+        aplicarImagen(card.querySelector('.game-card-img-container img'), game.urlImagen);
 
         container.appendChild(card);
 
