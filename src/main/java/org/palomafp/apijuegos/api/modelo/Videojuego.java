@@ -138,10 +138,7 @@ public class Videojuego {
      * @return URL de la portada, o null si el juego no tiene imagen
      */
     public String getUrlImagen() {
-        if (urlImagen == null || ValidadorUrlImagen.VALOR_HEREDADO.equalsIgnoreCase(urlImagen.trim())) {
-            return null;
-        }
-        return urlImagen;
+        return ValidadorUrlImagen.esAusente(urlImagen) ? null : urlImagen;
     }
 
     /**

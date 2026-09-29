@@ -3,9 +3,14 @@ package org.palomafp.apijuegos.api.controladores;
 import org.palomafp.apijuegos.api.excepciones.RecursoNoEncontradoException;
 import org.palomafp.apijuegos.api.modelo.Desarrolladora;
 import org.palomafp.apijuegos.api.services.DesarrolladoraService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -18,8 +23,16 @@ import java.util.List;
 @RequestMapping("/api/desarrolladoras")
 public class DesarrolladoraController {
 
-    @Autowired
-    private DesarrolladoraService desarrolladoraService;    // El servicio de desarrolladora
+    private final DesarrolladoraService desarrolladoraService; // El servicio de desarrolladora
+
+    /**
+     * Inyección por constructor: la dependencia queda {@code final}.
+     *
+     * @param desarrolladoraService Servicio de desarrolladoras.
+     */
+    public DesarrolladoraController(DesarrolladoraService desarrolladoraService) {
+        this.desarrolladoraService = desarrolladoraService;
+    }
 
     /**
      * Metodo que devuelve todas las desarrolladoras en la base de datos
@@ -37,7 +50,7 @@ public class DesarrolladoraController {
      */
     @GetMapping("/nombre/{nombre}")
     public Desarrolladora obtenerPorNombre(@PathVariable String nombre) {
-        Desarrolladora desarrolladora = desarrolladoraService.obtenerPorNombre(nombre);
+        var desarrolladora = desarrolladoraService.obtenerPorNombre(nombre);
         if (desarrolladora == null) {
             throw new RecursoNoEncontradoException("No existe ninguna desarrolladora llamada " + nombre);
         }
@@ -51,7 +64,7 @@ public class DesarrolladoraController {
      */
     @GetMapping("/id/{id}")
     public Desarrolladora obtenerPorId(@PathVariable int id) {
-        Desarrolladora desarrolladora = desarrolladoraService.obtenerPorId(id);
+        var desarrolladora = desarrolladoraService.obtenerPorId(id);
         if (desarrolladora == null) {
             throw new RecursoNoEncontradoException("No existe ninguna desarrolladora con el id " + id);
         }

@@ -3,7 +3,6 @@ package org.palomafp.apijuegos.api.security;
 import org.palomafp.apijuegos.api.modelo.EntradaLista;
 import org.palomafp.apijuegos.api.modelo.Usuario;
 import org.palomafp.apijuegos.api.services.UsuarioService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
@@ -28,8 +27,19 @@ public class Autorizacion {
     /** Rol con permisos plenos. */
     private static final String ROL_ADMINISTRADOR = "administrador";
 
-    @Autowired
-    private UsuarioService usuarioService;
+    /** Autoridad completa equivalente a {@link #ROL_ADMINISTRADOR}. */
+    private static final String AUTORIDAD_ADMINISTRADOR = PREFIJO_ROL + ROL_ADMINISTRADOR;
+
+    private final UsuarioService usuarioService;
+
+    /**
+     * Inyección por constructor: la dependencia queda {@code final}.
+     *
+     * @param usuarioService Servicio para resolver el usuario autenticado.
+     */
+    public Autorizacion(UsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
+    }
 
     /**
      * Indica si la petición en curso la ha hecho un administrador.
@@ -42,7 +52,7 @@ public class Autorizacion {
             return false;
         }
         return auth.getAuthorities().stream()
-                .anyMatch(a -> (PREFIJO_ROL + ROL_ADMINISTRADOR).equals(a.getAuthority()));
+                .anyMatch(autoridad -> AUTORIDAD_ADMINISTRADOR.equals(autoridad.getAuthority()));
     }
 
     /**

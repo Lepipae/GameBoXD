@@ -3,7 +3,6 @@ package org.palomafp.apijuegos.api.services;
 import org.palomafp.apijuegos.api.excepciones.RecursoDuplicadoException;
 import org.palomafp.apijuegos.api.modelo.Videojuego;
 import org.palomafp.apijuegos.api.repositories.VideojuegoRepo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,8 +14,19 @@ import java.util.List;
 @Service
 public class VideojuegoService {
 
-    @Autowired
-    private VideojuegoRepo videojuegoRepo;
+    private final VideojuegoRepo videojuegoRepo;
+    private final EntradaListaService entradaListaService;
+
+    /**
+     * Inyección por constructor: ambas dependencias quedan {@code final}.
+     *
+     * @param videojuegoRepo    Repositorio de videojuegos.
+     * @param entradaListaService Servicio de entradas de lista, para la cascada de borrado.
+     */
+    public VideojuegoService(VideojuegoRepo videojuegoRepo, EntradaListaService entradaListaService) {
+        this.videojuegoRepo = videojuegoRepo;
+        this.entradaListaService = entradaListaService;
+    }
 
     /**
      * Metodo que devuelve todos los videojuegos de la base de datos
@@ -34,7 +44,6 @@ public class VideojuegoService {
     public Videojuego obtenerPorId(long idVideojuego) {
         return videojuegoRepo.findByMiId(idVideojuego);
     }
-
 
     /**
      * Obtiene un videojuego a partir de su nombre
@@ -67,29 +76,25 @@ public class VideojuegoService {
      * Guarda un videojuego en la base de datos
      * @param videojuego Objeto a guardar
      * @return Videojuego guardado
-     * @throws IllegalArgumentException si el videojuego ya existe
+     * @throws RecursoDuplicadoException si el videojuego ya existe
      */
     public Videojuego guardar(Videojuego videojuego) {
         if (videojuego.getId() == null) {
             Videojuego ultimo = videojuegoRepo.encontrarUltimoId();
-            long nuevoId = (ultimo != null) ? ultimo.getMiId() + 1 : 1;
-            videojuego.setMiId(nuevoId);
-
-            Videojuego videojuegoViejo = videojuegoRepo.findByNombre(videojuego.getNombre());
-            if (videojuegoViejo != null) {
-                throw new RecursoDuplicadoException("Ya existe un videojuego con ese nombre");
-            }
-        } else {
-            Videojuego videojuegoViejo = videojuegoRepo.findByNombre(videojuego.getNombre());
-            if (videojuegoViejo != null && !videojuegoViejo.getId().equals(videojuego.getId())) {
-                throw new RecursoDuplicadoException("Ya existe un videojuego con ese nombre");
-            }
+            videojuego.setMiId(ultimo != null ? ultimo.getMiId() + 1 : 1);
         }
+
+        // Igual que en UsuarioService: al actualizar, el registro con el mismo
+        // nombre solo es duplicado si es OTRO juego distinto del que se guarda.
+        Videojuego previo = videojuegoRepo.findByNombre(videojuego.getNombre());
+        boolean esOtro = previo != null
+                && (videojuego.getId() == null || !previo.getId().equals(videojuego.getId()));
+        if (esOtro) {
+            throw new RecursoDuplicadoException("Ya existe un videojuego con ese nombre");
+        }
+
         return videojuegoRepo.save(videojuego);
     }
-
-    @Autowired
-    private EntradaListaService entradaListaService;
 
     /**
      * Borra un videojuego a partir de su id interno y elimina sus entradas asociadas

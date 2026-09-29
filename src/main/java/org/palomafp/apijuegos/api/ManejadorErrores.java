@@ -2,6 +2,7 @@ package org.palomafp.apijuegos.api;
 
 import org.palomafp.apijuegos.api.excepciones.RecursoDuplicadoException;
 import org.palomafp.apijuegos.api.excepciones.RecursoNoEncontradoException;
+import org.palomafp.apijuegos.api.modelo.dto.RespuestaError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -14,10 +15,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import java.time.Instant;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 /**
  * Manejador global de errores de la API.
  *
@@ -26,10 +23,12 @@ import java.util.Map;
  * un error de negocio corriente ("ese juego ya existe", "la nota debe estar
  * entre 0 y 10") era indistinguible de una caída real del servidor.</p>
  *
- * <p>El formato de la respuesta es siempre el mismo:</p>
- * <pre>
+ * <p>El formato de la respuesta es siempre el mismo, y lo fija el record
+ * {@link RespuestaError}:</p>
+ *
+ * <pre>{@code
  * { "error": "mensaje legible", "status": 409, "timestamp": "2026-09-28T10:00:00Z" }
- * </pre>
+ * }</pre>
  *
  * @author Andrés López
  */
@@ -45,12 +44,8 @@ public class ManejadorErrores {
      * @param mensaje Mensaje legible para el cliente.
      * @return Respuesta con el cuerpo de error.
      */
-    private ResponseEntity<Map<String, Object>> error(HttpStatus estado, String mensaje) {
-        Map<String, Object> cuerpo = new LinkedHashMap<>();
-        cuerpo.put("error", mensaje);
-        cuerpo.put("status", estado.value());
-        cuerpo.put("timestamp", Instant.now().toString());
-        return ResponseEntity.status(estado).body(cuerpo);
+    private ResponseEntity<RespuestaError> error(HttpStatus estado, String mensaje) {
+        return ResponseEntity.status(estado).body(RespuestaError.de(mensaje, estado.value()));
     }
 
     /**
@@ -59,7 +54,7 @@ public class ManejadorErrores {
      * @return Respuesta 409.
      */
     @ExceptionHandler(RecursoDuplicadoException.class)
-    public ResponseEntity<Map<String, Object>> duplicado(RecursoDuplicadoException ex) {
+    public ResponseEntity<RespuestaError> duplicado(RecursoDuplicadoException ex) {
         return error(HttpStatus.CONFLICT, ex.getMessage());
     }
 
@@ -69,7 +64,7 @@ public class ManejadorErrores {
      * @return Respuesta 404.
      */
     @ExceptionHandler(RecursoNoEncontradoException.class)
-    public ResponseEntity<Map<String, Object>> noEncontrado(RecursoNoEncontradoException ex) {
+    public ResponseEntity<RespuestaError> noEncontrado(RecursoNoEncontradoException ex) {
         return error(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
@@ -82,7 +77,7 @@ public class ManejadorErrores {
      * @return Respuesta 403.
      */
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<Map<String, Object>> accesoDenegado(AccessDeniedException ex) {
+    public ResponseEntity<RespuestaError> accesoDenegado(AccessDeniedException ex) {
         return error(HttpStatus.FORBIDDEN, ex.getMessage());
     }
 
@@ -92,7 +87,7 @@ public class ManejadorErrores {
      * @return Respuesta 401.
      */
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<Map<String, Object>> credencialesInvalidas(BadCredentialsException ex) {
+    public ResponseEntity<RespuestaError> credencialesInvalidas(BadCredentialsException ex) {
         return error(HttpStatus.UNAUTHORIZED, "Usuario o contraseña incorrectos");
     }
 
@@ -102,7 +97,7 @@ public class ManejadorErrores {
      * @return Respuesta 400.
      */
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> datoInvalido(IllegalArgumentException ex) {
+    public ResponseEntity<RespuestaError> datoInvalido(IllegalArgumentException ex) {
         return error(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
@@ -112,15 +107,17 @@ public class ManejadorErrores {
      * @return Respuesta 400.
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<Map<String, Object>> cuerpoInvalido(HttpMessageNotReadableException ex) {
+    public ResponseEntity<RespuestaError> cuerpoInvalido(HttpMessageNotReadableException ex) {
         // Cuando los setters del modelo rechazan un campo (por ejemplo un nombre
         // vacio), Jackson envuelve el IllegalArgumentException y el mensaje
         // concreto se perderia. Se recupera para que el cliente sepa qué corregir.
-        Throwable causa = ex.getMostSpecificCause();
+        var causa = ex.getMostSpecificCause();
         logger.warn("Cuerpo de la petición no interpretable: {}", causa.getMessage());
 
-        if (causa instanceof IllegalArgumentException && causa.getMessage() != null) {
-            return error(HttpStatus.BAD_REQUEST, causa.getMessage());
+        // Pattern matching: la variable `ilegal` solo existe dentro de la rama
+        // en la que la causa es realmente un IllegalArgumentException.
+        if (causa instanceof IllegalArgumentException ilegal && ilegal.getMessage() != null) {
+            return error(HttpStatus.BAD_REQUEST, ilegal.getMessage());
         }
         return error(HttpStatus.BAD_REQUEST, "Los datos enviados no son válidos");
     }
@@ -131,8 +128,9 @@ public class ManejadorErrores {
      * @return Respuesta 400.
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<Map<String, Object>> tipoIncorrecto(MethodArgumentTypeMismatchException ex) {
-        return error(HttpStatus.BAD_REQUEST, "El valor '" + ex.getValue() + "' no es válido para " + ex.getName());
+    public ResponseEntity<RespuestaError> tipoIncorrecto(MethodArgumentTypeMismatchException ex) {
+        return error(HttpStatus.BAD_REQUEST,
+                "El valor '" + ex.getValue() + "' no es válido para " + ex.getName());
     }
 
     /**
@@ -141,8 +139,9 @@ public class ManejadorErrores {
      * @return Respuesta 400.
      */
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<Map<String, Object>> parametroAusente(MissingServletRequestParameterException ex) {
-        return error(HttpStatus.BAD_REQUEST, "Falta el parámetro obligatorio '" + ex.getParameterName() + "'");
+    public ResponseEntity<RespuestaError> parametroAusente(MissingServletRequestParameterException ex) {
+        return error(HttpStatus.BAD_REQUEST,
+                "Falta el parámetro obligatorio '" + ex.getParameterName() + "'");
     }
 
     /**
@@ -153,7 +152,7 @@ public class ManejadorErrores {
      * @return Respuesta 500.
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> errorInesperado(Exception ex) {
+    public ResponseEntity<RespuestaError> errorInesperado(Exception ex) {
         logger.error("Error no controlado en la API", ex);
         return error(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno del servidor");
     }

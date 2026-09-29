@@ -2,7 +2,6 @@ package org.palomafp.apijuegos.api.services;
 
 import org.palomafp.apijuegos.api.modelo.Desarrolladora;
 import org.palomafp.apijuegos.api.repositories.DesarrolladoraRepo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,8 +13,16 @@ import java.util.List;
 @Service
 public class DesarrolladoraService {
 
-    @Autowired
-    private DesarrolladoraRepo desarrolladoraRepo;
+    private final DesarrolladoraRepo desarrolladoraRepo;
+
+    /**
+     * Inyección por constructor: la dependencia queda {@code final}.
+     *
+     * @param desarrolladoraRepo Repositorio de desarrolladoras.
+     */
+    public DesarrolladoraService(DesarrolladoraRepo desarrolladoraRepo) {
+        this.desarrolladoraRepo = desarrolladoraRepo;
+    }
 
     /**
      * Obtiene todas las desarrolladoras almacenadas
@@ -50,9 +57,8 @@ public class DesarrolladoraService {
      */
     public Desarrolladora guardar(Desarrolladora desarrolladora) {
         if (desarrolladora.getId() == null) {
-            Desarrolladora ultimo = desarrolladoraRepo.encontrarUltimoId();
-            int nuevoId = (ultimo != null) ? ultimo.getMiId() + 1 : 1;
-            desarrolladora.setMiId(nuevoId);
+            var ultimo = desarrolladoraRepo.encontrarUltimoId();
+            desarrolladora.setMiId(ultimo != null ? ultimo.getMiId() + 1 : 1);
         }
         return desarrolladoraRepo.save(desarrolladora);
     }

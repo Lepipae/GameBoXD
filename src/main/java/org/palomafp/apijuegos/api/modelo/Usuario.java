@@ -118,10 +118,7 @@ public class Usuario {
      * @return URL de la imagen, o null si el usuario no tiene imagen
      */
     public String getUrlImagen() {
-        if (urlImagen == null || ValidadorUrlImagen.VALOR_HEREDADO.equalsIgnoreCase(urlImagen.trim())) {
-            return null;
-        }
-        return urlImagen;
+        return ValidadorUrlImagen.esAusente(urlImagen) ? null : urlImagen;
     }
 
     /**

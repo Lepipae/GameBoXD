@@ -2,16 +2,16 @@ package org.palomafp.apijuegos.api.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -23,18 +23,24 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
+    /** Vigencia del token: 10 horas desde que se emite. */
+    private static final Duration VALIDEZ = Duration.ofHours(10);
+
     // Clave secreta para firmar el token JWT. En un entorno de producción, esto debería estar en variables de entorno o application.properties.
     // Esta cadena debe tener al menos 256 bits (32 caracteres).
     @Value("${CLAVE_CIFRADO}")
-    private String SECRET_KEY;
+    private String secretKey;
 
     /**
      * Obtiene la clave secreta generada a partir de la cadena de texto para firmar o validar tokens.
      * @return La clave criptográfica para JWT.
      */
     private SecretKey getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(java.util.Base64.getEncoder().encodeToString(SECRET_KEY.getBytes()));
-        return Keys.hmacShaKeyFor(keyBytes);
+        // El código anterior hacía encode base64 de los bytes y acto seguido los
+        // decodificaba. Decodificar lo que se acaba de codificar devuelve los
+        // bytes originales, así que el viaje de ida y vuelta era un no-op:
+        // la clave firmada es exactamente la misma que la de antes.
+        return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
     /**
@@ -63,8 +69,7 @@ public class JwtUtil {
      * @return Valor del claim solicitado.
      */
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
+        return claimsResolver.apply(extractAllClaims(token));
     }
 
     /**
@@ -85,8 +90,8 @@ public class JwtUtil {
      * @param token Token a comprobar.
      * @return true si la fecha de expiración es anterior al momento actual.
      */
-    private Boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+    private boolean isTokenExpired(String token) {
+        return extractExpiration(token).toInstant().isBefore(Instant.now());
     }
 
     /**
@@ -95,24 +100,23 @@ public class JwtUtil {
      * @return Una cadena de texto que representa el token firmado.
      */
     public String generateToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>();
-        // Puedes agregar más información al token aquí si lo deseas
-        return createToken(claims, userDetails.getUsername());
+        return createToken(userDetails.getUsername());
     }
 
     /**
      * Método auxiliar encargado de la construcción interna del token con la librería JJWT.
-     * @param claims Información adicional a inyectar.
      * @param subject El nombre de usuario que será el sujeto del token.
      * @return El token JWT en formato String.
      */
-    private String createToken(Map<String, Object> claims, String subject) {
+    private String createToken(String subject) {
+        // El código anterior pasaba un Map de claims vacío. No aportaba nada
+        // propio al token, asi que se ha quitado: JJWT genera la cabecera y la
+        // firma por su cuenta.
+        Instant ahora = Instant.now();
         return Jwts.builder()
-                .claims(claims)
                 .subject(subject)
-                .issuedAt(new Date(System.currentTimeMillis()))
-                // El token expira en 10 horas desde su creación
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
+                .issuedAt(Date.from(ahora))
+                .expiration(Date.from(ahora.plus(VALIDEZ)))
                 .signWith(getSigningKey())
                 .compact();
     }
@@ -123,8 +127,7 @@ public class JwtUtil {
      * @param userDetails Datos del usuario encontrados en la base de datos.
      * @return true si el token es totalmente válido para ese usuario.
      */
-    public Boolean validateToken(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    public boolean validateToken(String token, UserDetails userDetails) {
+        return extractUsername(token).equals(userDetails.getUsername()) && !isTokenExpired(token);
     }
 }

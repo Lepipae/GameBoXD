@@ -5,48 +5,55 @@ import org.palomafp.apijuegos.api.modelo.EntradaLista;
 import org.palomafp.apijuegos.api.modelo.Videojuego;
 import org.palomafp.apijuegos.api.repositories.EntradaListaRepo;
 import org.palomafp.apijuegos.api.repositories.VideojuegoRepo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Servicio que gestiona la logica de negocio de EntradaLista
- * 
+ *
  * @author Andrés López
  */
 @Service
 public class EntradaListaService {
 
-    @Autowired
-    private EntradaListaRepo entradaListaRepo; // Repo de Entradalista
+    private final EntradaListaRepo entradaListaRepo; // Repo de EntradaLista
+    private final VideojuegoRepo videojuegoRepo;       // Repo de Videojuego
 
-    @Autowired
-    private VideojuegoRepo videojuegoRepo; // Repo de Videojuego
+    /**
+     * Inyección por constructor: ambas dependencias quedan {@code final}.
+     *
+     * @param entradaListaRepo Repositorio de entradas de lista.
+     * @param videojuegoRepo    Repositorio de videojuegos, para recalcular la nota media.
+     */
+    public EntradaListaService(EntradaListaRepo entradaListaRepo, VideojuegoRepo videojuegoRepo) {
+        this.entradaListaRepo = entradaListaRepo;
+        this.videojuegoRepo = videojuegoRepo;
+    }
 
     /**
      * Actualiza la nota media de un videojuego basado en sus entradas de lista
-     * 
+     *
+     * <p>Solo entran en la media las notas estrictamente mayores que 0: una entrada
+     * sin puntuar no debe arrastrar la nota del juego hacia abajo. El resultado se
+     * redondea a dos decimales para no arrastrar errores de coma flotante al JSON.</p>
+     *
      * @param idVideojuego Id del videojuego
      */
     private void actualizarNotaMedia(long idVideojuego) {
-        List<EntradaLista> entradas = entradaListaRepo.findByIdVideojuego(idVideojuego);
-        double notaMedia = 0.0;
+        // Optional por el contrato del repositorio: findByIdVideojuego puede devolver
+        // null, y antes estaba protegido con un if que ocupaba medio método.
+        var notasPuestas = Optional.ofNullable(entradaListaRepo.findByIdVideojuego(idVideojuego))
+                .orElseGet(List::of)
+                .stream()
+                .map(EntradaLista::getNota)
+                .filter(nota -> nota > 0.0)
+                .toList();
 
-        if (entradas != null && !entradas.isEmpty()) {
-            double suma = 0.0;
-            int count = 0;
-            for (EntradaLista entrada : entradas) {
-                if (entrada.getNota() > 0.0) {
-                    suma += entrada.getNota();
-                    count++;
-                }
-            }
-            if (count > 0) {
-                notaMedia = suma / count;
-                notaMedia = Math.round(notaMedia * 100.0) / 100.0;
-            }
-        }
+        double notaMedia = notasPuestas.isEmpty()
+                ? 0.0
+                : Math.round(notasPuestas.stream().mapToDouble(Double::doubleValue).average().orElse(0.0) * 100.0) / 100.0;
 
         Videojuego videojuego = videojuegoRepo.findByMiId(idVideojuego);
         if (videojuego != null) {
@@ -57,7 +64,7 @@ public class EntradaListaService {
 
     /**
      * Obtiene las entradas de la lista pertenecientes a un usuario
-     * 
+     *
      * @param id Id del usuario
      * @return Lista de entradas del usuario
      */
@@ -76,7 +83,6 @@ public class EntradaListaService {
 
     /**
      * Obtiene una entrada de la lista a partir de su id interno
-     * 
      * @param id Id interno
      * @return EntradaLista encontrada o null
      */
@@ -86,7 +92,7 @@ public class EntradaListaService {
 
     /**
      * Borra una entrada a partir de su id interno
-     * 
+     *
      * @param id Id interno
      */
     public void borrarEntrada(int id) {
@@ -100,7 +106,7 @@ public class EntradaListaService {
 
     /**
      * Borra las entradas asociadas a un videojuego
-     * 
+     *
      * @param idVideojuego Id del videojuego
      */
     public void borrarPorVideojuego(long idVideojuego) {
@@ -109,49 +115,55 @@ public class EntradaListaService {
 
     /**
      * Borra las entradas asociadas a un usuario
-     * 
+     *
      * @param idUsuario Id del usuario
      */
     public void borrarPorUsuario(int idUsuario) {
-        List<EntradaLista> entradas = entradaListaRepo.findByIdUsuario(idUsuario);
+        // Se leen ANTES de borrar, porque hay que recalcular la media de cada juego
+        // afectado y, una vez borradas, ya no sabríamos cuáles son.
+        var idsAfectados = Optional.ofNullable(entradaListaRepo.findByIdUsuario(idUsuario))
+                .orElseGet(List::of)
+                .stream()
+                .map(EntradaLista::getIdVideojuego)
+                .distinct()
+                .toList();
+
         entradaListaRepo.deleteByIdUsuario(idUsuario);
-        if (entradas != null) {
-            entradas.stream()
-                    .map(EntradaLista::getIdVideojuego)
-                    .distinct()
-                    .forEach(this::actualizarNotaMedia);
-        }
+
+        // El borrado va antes del recálculo a propósito: actualizarNotaMedia vuelve a
+        // leer las entradas del juego, y si se calculara con las entradas aún
+        // presentes la notaMedia del videojuego se quedaría con el valor viejo.
+        idsAfectados.forEach(this::actualizarNotaMedia);
     }
 
     /**
      * Guarda una entrada en la base de datos
-     * 
      * @param entradaLista Objeto a guardar
      * @return EntradaLista guardada
+     * @throws RecursoDuplicadoException si el usuario ya tiene ese juego en su lista
      */
     public EntradaLista guardar(EntradaLista entradaLista) {
         // Normalizar ID vacío a null para evitar problemas en MongoDB
-        if (entradaLista.getId() != null && entradaLista.getId().trim().isEmpty()) {
+        if (entradaLista.getId() != null && entradaLista.getId().isBlank()) {
             entradaLista.setId(null);
         }
 
         // Comprobación de duplicados robusta en memoria
-        List<EntradaLista> usuarioEntradas = entradaListaRepo.findByIdUsuario(entradaLista.getIdUsuario());
-        if (usuarioEntradas != null) {
-            boolean duplicateExists = usuarioEntradas.stream()
-                .anyMatch(e -> e.getIdVideojuego() == entradaLista.getIdVideojuego()
-                        && (entradaLista.getId() == null || !e.getId().equals(entradaLista.getId())));
-            
-            if (duplicateExists) {
-                throw new RecursoDuplicadoException("El usuario ya tiene este juego en su lista");
-            }
+        boolean duplicada = Optional.ofNullable(entradaListaRepo.findByIdUsuario(entradaLista.getIdUsuario()))
+                .orElseGet(List::of)
+                .stream()
+                .anyMatch(existente -> existente.getIdVideojuego() == entradaLista.getIdVideojuego()
+                        && (entradaLista.getId() == null || !existente.getId().equals(entradaLista.getId())));
+
+        if (duplicada) {
+            throw new RecursoDuplicadoException("El usuario ya tiene este juego en su lista");
         }
 
         if (entradaLista.getId() == null) {
             EntradaLista ultimo = entradaListaRepo.encontrarUltimoId();
-            long nuevoId = (ultimo != null) ? ultimo.getMiId() + 1 : 1;
-            entradaLista.setMiId(nuevoId);
+            entradaLista.setMiId(ultimo != null ? ultimo.getMiId() + 1 : 1);
         }
+
         EntradaLista guardada = entradaListaRepo.save(entradaLista);
         actualizarNotaMedia(guardada.getIdVideojuego());
         return guardada;

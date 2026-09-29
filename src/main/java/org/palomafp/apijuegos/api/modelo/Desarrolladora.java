@@ -88,10 +88,7 @@ public class Desarrolladora {
      * @return URL de la imagen, o null si no tiene logo
      */
     public String getUrlImagen() {
-        if (urlImagen == null || ValidadorUrlImagen.VALOR_HEREDADO.equalsIgnoreCase(urlImagen.trim())) {
-            return null;
-        }
-        return urlImagen;
+        return ValidadorUrlImagen.esAusente(urlImagen) ? null : urlImagen;
     }
 
     /**
@@ -144,5 +141,4 @@ public class Desarrolladora {
         }
         this.pais = pais;
     }
-    // comentario para probar el push de actions 6 :)
 }

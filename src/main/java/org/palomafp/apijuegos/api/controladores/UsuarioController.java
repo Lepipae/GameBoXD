@@ -3,9 +3,14 @@ package org.palomafp.apijuegos.api.controladores;
 import org.palomafp.apijuegos.api.excepciones.RecursoNoEncontradoException;
 import org.palomafp.apijuegos.api.modelo.Usuario;
 import org.palomafp.apijuegos.api.services.UsuarioService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -17,8 +22,17 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
-    @Autowired
-    private UsuarioService usuarioService;
+
+    private final UsuarioService usuarioService;
+
+    /**
+     * Inyección por constructor: la dependencia queda {@code final}.
+     *
+     * @param usuarioService Servicio de usuarios.
+     */
+    public UsuarioController(UsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
+    }
 
     /**
      * Metodo que devuelve todos los usuarios en la base de datos
@@ -37,7 +51,7 @@ public class UsuarioController {
      */
     @GetMapping("/{miId}")
     public Usuario obtenerUsuarioPorId(@PathVariable int miId) {
-        Usuario usuario = usuarioService.obtenerPorMiId(miId);
+        var usuario = usuarioService.obtenerPorMiId(miId);
         if (usuario == null) {
             throw new RecursoNoEncontradoException("No existe ningun usuario con el id " + miId);
         }
@@ -51,7 +65,7 @@ public class UsuarioController {
      */
     @GetMapping("/nombre/{nombre}")
     public Usuario obtenerUsuarioPorNombre(@PathVariable String nombre) {
-        Usuario usuario = usuarioService.obtenerPorNombre(nombre);
+        var usuario = usuarioService.obtenerPorNombre(nombre);
         if (usuario == null) {
             throw new RecursoNoEncontradoException("No existe ningun usuario llamado " + nombre);
         }
@@ -60,7 +74,7 @@ public class UsuarioController {
 
     /**
      * Metodo para eliminar un usuario de la base de datos
-     * @param miId  Id del usuario que se quiere borrar
+     * @param miId  Id interno del usuario que se quiere borrar
      */
     @DeleteMapping("/{miId}")
     @PreAuthorize("hasRole('administrador')")

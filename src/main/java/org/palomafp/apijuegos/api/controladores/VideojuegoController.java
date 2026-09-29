@@ -3,9 +3,14 @@ package org.palomafp.apijuegos.api.controladores;
 import org.palomafp.apijuegos.api.excepciones.RecursoNoEncontradoException;
 import org.palomafp.apijuegos.api.modelo.Videojuego;
 import org.palomafp.apijuegos.api.services.VideojuegoService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -17,8 +22,17 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/videojuegos")
 public class VideojuegoController {
-    @Autowired
-    private VideojuegoService videojuegoService;
+
+    private final VideojuegoService videojuegoService;
+
+    /**
+     * Inyección por constructor: la dependencia queda {@code final}.
+     *
+     * @param videojuegoService Servicio de videojuegos.
+     */
+    public VideojuegoController(VideojuegoService videojuegoService) {
+        this.videojuegoService = videojuegoService;
+    }
 
     /**
      * Metodo que devuelve todos los videojuegos en la base de datos
@@ -36,7 +50,7 @@ public class VideojuegoController {
      */
     @GetMapping("/{miId}")
     public Videojuego obtenerPorId(@PathVariable long miId) {
-        Videojuego juego = videojuegoService.obtenerPorId(miId);
+        var juego = videojuegoService.obtenerPorId(miId);
         if (juego == null) {
             throw new RecursoNoEncontradoException("No existe ningun videojuego con el id " + miId);
         }
@@ -50,7 +64,7 @@ public class VideojuegoController {
      */
     @GetMapping("/nombre/{nombre}")
     public Videojuego obtenerPorNombre(@PathVariable String nombre) {
-        Videojuego juego = videojuegoService.obtenerPorNombre(nombre);
+        var juego = videojuegoService.obtenerPorNombre(nombre);
         if (juego == null) {
             throw new RecursoNoEncontradoException("No existe ningun videojuego llamado " + nombre);
         }
@@ -89,7 +103,7 @@ public class VideojuegoController {
 
     /**
      * Metodo para eliminar un videojuego de la base de datos
-     * @param miId  Id del videojuego que se quiere borrar
+     * @param miId  Id interno del videojuego que se quiere borrar
      */
     @DeleteMapping("/{miId}")
     @PreAuthorize("hasRole('administrador')")

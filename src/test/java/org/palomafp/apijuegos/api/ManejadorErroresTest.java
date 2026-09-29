@@ -4,17 +4,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.palomafp.apijuegos.api.modelo.Usuario;
+import org.palomafp.apijuegos.api.modelo.Videojuego;
 import org.palomafp.apijuegos.api.modelo.enums.Rol;
 import org.palomafp.apijuegos.api.repositories.UsuarioRepo;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.palomafp.apijuegos.api.repositories.VideojuegoRepo;
 import org.palomafp.apijuegos.api.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -22,7 +23,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -57,7 +57,7 @@ class ManejadorErroresTest {
     private String tokenNormal() {
         // El filtro JWT resuelve el token contra el repositorio, asi que el
         // usuario del token tiene que existir ahi.
-        Usuario escritor = new Usuario("escritor", "https://x.com/a.png", "clave12345", Rol.usuarioNormal, 1);
+        var escritor = new Usuario("escritor", "https://x.com/a.png", "clave12345", Rol.usuarioNormal, 1);
         when(usuarioRepo.findByNombre("escritor")).thenReturn(escritor);
 
         UserDetails detalles = new User("escritor", "clave12345",
@@ -81,12 +81,21 @@ class ManejadorErroresTest {
     @Test
     @DisplayName("Un nombre repetido devuelve 409 Conflict, no 500")
     void nombreRepetidoDevuelve409() throws Exception {
-        when(videojuegoRepo.findByNombre("Minecraft")).thenReturn(new org.palomafp.apijuegos.api.modelo.Videojuego());
+        when(videojuegoRepo.findByNombre("Minecraft")).thenReturn(new Videojuego());
 
+        // Text block: el JSON se lee como JSON, sin una cascada de \" por medio.
         String cuerpo = mockMvc.perform(post("/api/videojuegos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", "Bearer " + tokenNormal())
-                        .content("{\"nombre\":\"Minecraft\",\"descripcion\":\"d\",\"urlImagen\":\"https://x.com/a.png\",\"notaMedia\":8,\"idDesarrolladora\":1,\"tags\":[\"RPG\"]}"))
+                        .content("""
+                                {
+                                  "nombre": "Minecraft",
+                                  "descripcion": "d",
+                                  "urlImagen": "https://x.com/a.png",
+                                  "notaMedia": 8,
+                                  "idDesarrolladora": 1,
+                                  "tags": ["RPG"]
+                                }"""))
                 .andExpect(status -> assertEquals(409, status.getResponse().getStatus()))
                 .andReturn().getResponse().getContentAsString();
 
@@ -102,8 +111,15 @@ class ManejadorErroresTest {
         String cuerpo = mockMvc.perform(post("/api/videojuegos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", "Bearer " + tokenNormal())
-                        .content("{\"nombre\":\"\",\"descripcion\":\"d\",\"urlImagen\":\"https://x.com/a.png\","
-                                + "\"notaMedia\":7.0,\"idDesarrolladora\":1,\"tags\":[\"RPG\"]}"))
+                        .content("""
+                                {
+                                  "nombre": "",
+                                  "descripcion": "d",
+                                  "urlImagen": "https://x.com/a.png",
+                                  "notaMedia": 7.0,
+                                  "idDesarrolladora": 1,
+                                  "tags": ["RPG"]
+                                }"""))
                 .andExpect(status -> assertEquals(400, status.getResponse().getStatus()))
                 .andReturn().getResponse().getContentAsString();
 
@@ -116,6 +132,8 @@ class ManejadorErroresTest {
         String cuerpo = mockMvc.perform(post("/api/videojuegos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", "Bearer " + tokenNormal())
+                        // String normal y no text block a proposito: el espacio final
+                        // importa, y en un text block se perderia al cerrar el bloque.
                         .content("{ esto no es json "))
                 .andExpect(status -> assertEquals(400, status.getResponse().getStatus()))
                 .andReturn().getResponse().getContentAsString();
@@ -124,13 +142,14 @@ class ManejadorErroresTest {
     }
 
     @Test
-    @DisplayName("Un cuerpo al que le falta un campo obligatorio devuelve 400 explaining que")
+    @DisplayName("Un cuerpo al que le falta un campo obligatorio devuelve 400 explicando que")
     void campoObligatorioAusenteDevuelve400() throws Exception {
         // Usuario.miId es un int primitivo: si no viene en el JSON el backend no
         // puede deserializar. Antes de este manejador la respuesta era un 500 opaco.
         String cuerpo = mockMvc.perform(post("/api/usuarios")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"nombre\":\"nuevo\",\"contrasenia\":\"clave12345\"}"))
+                        .content("""
+                                {"nombre": "nuevo", "contrasenia": "clave12345"}"""))
                 .andExpect(status -> assertEquals(400, status.getResponse().getStatus()))
                 .andReturn().getResponse().getContentAsString();
 
@@ -147,12 +166,19 @@ class ManejadorErroresTest {
     @Test
     @DisplayName("Un usuario repetido devuelve 409")
     void usuarioRepetidoDevuelve409() throws Exception {
-        Usuario existente = new Usuario("repetido", "https://x.com/a.png", "clave12345", Rol.usuarioNormal, 1);
+        var existente = new Usuario("repetido", "https://x.com/a.png", "clave12345", Rol.usuarioNormal, 1);
         when(usuarioRepo.findByNombre("repetido")).thenReturn(existente);
 
         var res = mockMvc.perform(post("/api/usuarios")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"nombre\":\"repetido\",\"urlImagen\":\"https://x.com/a.png\",\"contrasenia\":\"clave12345\",\"rol\":\"usuarioNormal\",\"miId\":0}"))
+                        .content("""
+                                {
+                                  "nombre": "repetido",
+                                  "urlImagen": "https://x.com/a.png",
+                                  "contrasenia": "clave12345",
+                                  "rol": "usuarioNormal",
+                                  "miId": 0
+                                }"""))
                 .andReturn().getResponse();
 
         assertEquals(409, res.getStatus(), res.getContentAsString());

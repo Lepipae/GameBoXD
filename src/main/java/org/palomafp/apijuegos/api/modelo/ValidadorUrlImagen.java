@@ -49,7 +49,7 @@ public final class ValidadorUrlImagen {
             return null;
         }
 
-        String limpia = urlImagen.trim();
+        var limpia = urlImagen.trim();
 
         // Sin imagen, o el valor heredado que se guardaba antes: se trata como ausencia.
         if (limpia.isEmpty() || VALOR_HEREDADO.equalsIgnoreCase(limpia)) {
@@ -57,10 +57,34 @@ public final class ValidadorUrlImagen {
         }
 
         if (!URL_HTTP.matcher(limpia).matches()) {
-            throw new IllegalArgumentException(
-                    "La URL de la imagen debe empezar por http:// o https:// (valor recibido: " + limpia + ")");
+            throw new IllegalArgumentException("""
+                    La URL de la imagen debe empezar por http:// o https:// \
+                    (valor recibido: %s)""".formatted(limpia));
         }
 
         return limpia;
+    }
+
+    /**
+     * Indica si una URL almacenada debe exponerse al cliente como ausencia de imagen.
+     *
+     * <p>Los getters de los tres modelos delegan aquí, en vez de repetir la misma
+     * comprobación del literal heredado en cada clase: era la única forma de que
+     * {@code "placeholder"} no saliera nunca en las respuestas, y tres copias
+     * invitan a que una se quede sin actualizar.</p>
+     *
+     * <p>Una cadena en blanco también cuenta como ausencia. El setter nunca guarda
+     * una, pero si quedara alguna escrita directamente en la base de datos,
+     * devolverla tal cual haría que el frontend intentara cargar una imagen inexistente.</p>
+     *
+     * @param urlImagen Valor tal y como está en el campo del modelo.
+     * @return true si no hay imagen que enseñar.
+     */
+    public static boolean esAusente(String urlImagen) {
+        if (urlImagen == null) {
+            return true;
+        }
+        var limpia = urlImagen.trim();
+        return limpia.isEmpty() || VALOR_HEREDADO.equalsIgnoreCase(limpia);
     }
 }

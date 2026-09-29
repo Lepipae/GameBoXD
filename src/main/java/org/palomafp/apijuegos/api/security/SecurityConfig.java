@@ -1,13 +1,13 @@
 package org.palomafp.apijuegos.api.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -29,8 +29,16 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private JwtRequestFilter jwtRequestFilter;
+    private final JwtRequestFilter jwtRequestFilter;
+
+    /**
+     * Inyección por constructor: el filtro queda {@code final}.
+     *
+     * @param jwtRequestFilter Filtro que valida el token JWT de cada petición.
+     */
+    public SecurityConfig(JwtRequestFilter jwtRequestFilter) {
+        this.jwtRequestFilter = jwtRequestFilter;
+    }
 
     /**
      * Define el tipo de encriptación a usar para las contraseñas (BCrypt).
@@ -55,8 +63,9 @@ public class SecurityConfig {
      * @return Cadena de filtros de seguridad.
      */
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {        // Habilitamos CORS y deshabilitamos CSRF porque nuestra API es Stateless usando JWT
-        http.cors(org.springframework.security.config.Customizer.withDefaults())
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        // Habilitamos CORS y deshabilitamos CSRF porque nuestra API es Stateless usando JWT
+        http.cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 // Sin esto, Spring responde 403 a las peticiones sin token, cuando lo
                 // correcto es 401: el cliente debe distinguir entre "no has iniciado

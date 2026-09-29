@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -39,6 +40,9 @@ class AutorizacionIntegrationTest {
 
     private static final int MI_ID_PROPIO = 1;
     private static final int MI_ID_AJENO = 2;
+
+    /** Spring Boot 4 ya no registra un bean ObjectMapper, asi que usamos uno local. */
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
     private MockMvc mockMvc;
@@ -128,21 +132,23 @@ class AutorizacionIntegrationTest {
     void anonimoNoCreaVideojuego() throws Exception {
         mockMvc.perform(post("/api/videojuegos")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"nombre\":\"X\"}"))
+                        .content("""
+                                {"nombre":"X"}"""))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     @DisplayName("Un usuario normal puede crear un juego")
     void usuarioNormalCreaVideojuego() throws Exception {
-        String token = tokenPara("normal", MI_ID_PROPIO, Rol.usuarioNormal);
+        var token = tokenPara("normal", MI_ID_PROPIO, Rol.usuarioNormal);
 
         // Llega al controlador: lo que devuelve depende de los repositorios simulados.
         mockMvc.perform(post("/api/videojuegos")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"nombre\":\"X\"}"))
-                .andExpect(result -> org.junit.jupiter.api.Assertions.assertNotEquals(
+                        .content("""
+                                {"nombre":"X"}"""))
+                .andExpect(result -> assertNotEquals(
                         401, result.getResponse().getStatus(), "No debe responder 401"));
     }
 
@@ -153,7 +159,7 @@ class AutorizacionIntegrationTest {
     @Test
     @DisplayName("Un usuario normal NO puede borrar un juego")
     void usuarioNormalNoBorraVideojuego() throws Exception {
-        String token = tokenPara("normal", MI_ID_PROPIO, Rol.usuarioNormal);
+        var token = tokenPara("normal", MI_ID_PROPIO, Rol.usuarioNormal);
 
         mockMvc.perform(delete("/api/videojuegos/1")
                         .header("Authorization", "Bearer " + token))
@@ -163,11 +169,11 @@ class AutorizacionIntegrationTest {
     @Test
     @DisplayName("Un administrador SI puede borrar un juego")
     void administradorBorraVideojuego() throws Exception {
-        String token = tokenPara("admin", MI_ID_PROPIO, Rol.administrador);
+        var token = tokenPara("admin", MI_ID_PROPIO, Rol.administrador);
 
         mockMvc.perform(delete("/api/videojuegos/1")
                         .header("Authorization", "Bearer " + token))
-                .andExpect(result -> org.junit.jupiter.api.Assertions.assertNotEquals(
+                .andExpect(result -> assertNotEquals(
                         403, result.getResponse().getStatus(), "No debe responder 403"));
     }
 
@@ -177,15 +183,15 @@ class AutorizacionIntegrationTest {
         mockMvc.perform(get("/api/usuarios"))
                 .andExpect(status().isUnauthorized());
 
-        String tokenNormal = tokenPara("normal", MI_ID_PROPIO, Rol.usuarioNormal);
+        var tokenNormal = tokenPara("normal", MI_ID_PROPIO, Rol.usuarioNormal);
         mockMvc.perform(get("/api/usuarios")
                         .header("Authorization", "Bearer " + tokenNormal))
                 .andExpect(status().isForbidden());
 
-        String tokenAdmin = tokenPara("admin", MI_ID_PROPIO, Rol.administrador);
+        var tokenAdmin = tokenPara("admin", MI_ID_PROPIO, Rol.administrador);
         mockMvc.perform(get("/api/usuarios")
                         .header("Authorization", "Bearer " + tokenAdmin))
-                .andExpect(result -> org.junit.jupiter.api.Assertions.assertNotEquals(
+                .andExpect(result -> assertNotEquals(
                         403, result.getResponse().getStatus(), "No debe responder 403"));
     }
 
@@ -196,9 +202,9 @@ class AutorizacionIntegrationTest {
     @Test
     @DisplayName("Un usuario NO puede escribir una entrada en la lista de otro")
     void usuarioNoEscribeEnListaAjena() throws Exception {
-        String token = tokenPara("normal", MI_ID_PROPIO, Rol.usuarioNormal);
+        var token = tokenPara("normal", MI_ID_PROPIO, Rol.usuarioNormal);
 
-        String cuerpo = new ObjectMapper().writeValueAsString(
+        var cuerpo = objectMapper.writeValueAsString(
                 new EntradaLista(9, 10, 7.5, "Reseña", null, 1, MI_ID_AJENO));
 
         mockMvc.perform(post("/api/lista")
@@ -211,7 +217,7 @@ class AutorizacionIntegrationTest {
     @Test
     @DisplayName("Un usuario NO puede leer la lista de otro")
     void usuarioNoLeeListaAjena() throws Exception {
-        String token = tokenPara("normal", MI_ID_PROPIO, Rol.usuarioNormal);
+        var token = tokenPara("normal", MI_ID_PROPIO, Rol.usuarioNormal);
 
         mockMvc.perform(get("/api/lista/" + MI_ID_AJENO)
                         .header("Authorization", "Bearer " + token))
@@ -221,11 +227,11 @@ class AutorizacionIntegrationTest {
     @Test
     @DisplayName("Un usuario SI puede leer su propia lista")
     void usuarioLeeSuLista() throws Exception {
-        String token = tokenPara("normal", MI_ID_PROPIO, Rol.usuarioNormal);
+        var token = tokenPara("normal", MI_ID_PROPIO, Rol.usuarioNormal);
 
         mockMvc.perform(get("/api/lista/" + MI_ID_PROPIO)
                         .header("Authorization", "Bearer " + token))
-                .andExpect(result -> org.junit.jupiter.api.Assertions.assertNotEquals(
+                .andExpect(result -> assertNotEquals(
                         403, result.getResponse().getStatus(), "No debe responder 403"));
     }
 }

@@ -3,11 +3,16 @@ package org.palomafp.apijuegos.api.controladores;
 import org.palomafp.apijuegos.api.modelo.EntradaLista;
 import org.palomafp.apijuegos.api.security.Autorizacion;
 import org.palomafp.apijuegos.api.services.EntradaListaService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -20,11 +25,19 @@ import java.util.List;
 @RequestMapping("/api/lista")
 public class EntradaListaController {
 
-    @Autowired
-    private EntradaListaService entradaListaService;    // Servicio de la clase entradalista
+    private final EntradaListaService entradaListaService; // Servicio de la clase entradalista
+    private final Autorizacion autorizacion;
 
-    @Autowired
-    private Autorizacion autorizacion;
+    /**
+     * Inyección por constructor: las dependencias quedan {@code final}.
+     *
+     * @param entradaListaService Servicio de entradas de lista.
+     * @param autorizacion        Reglas de propiedad para las expresiones SpEL.
+     */
+    public EntradaListaController(EntradaListaService entradaListaService, Autorizacion autorizacion) {
+        this.entradaListaService = entradaListaService;
+        this.autorizacion = autorizacion;
+    }
 
     /**
      * Metodo que devuelve todas las entradas asociadas a un usuario
@@ -64,7 +77,7 @@ public class EntradaListaController {
      */
     @GetMapping("/id/{id}")
     public EntradaLista findById(@PathVariable("id") long id, Authentication auth) {
-        EntradaLista entrada = entradaListaService.findById(id);
+        var entrada = entradaListaService.findById(id);
         if (!autorizacion.puedeEditarEntrada(entrada, auth)) {
             throw new AccessDeniedException("Esa entrada no pertenece a tu lista");
         }
@@ -82,7 +95,7 @@ public class EntradaListaController {
      */
     @DeleteMapping("/{miId}")
     public void borrarEntrada(@PathVariable("miId") int id, Authentication auth) {
-        EntradaLista entrada = entradaListaService.findById(id);
+        var entrada = entradaListaService.findById(id);
         if (!autorizacion.puedeEditarEntrada(entrada, auth)) {
             throw new AccessDeniedException("Esa entrada no pertenece a tu lista");
         }
@@ -104,6 +117,5 @@ public class EntradaListaController {
     public EntradaLista guardar(@RequestBody EntradaLista entradaLista) {
         return entradaListaService.guardar(entradaLista);
     }
-
 
 }

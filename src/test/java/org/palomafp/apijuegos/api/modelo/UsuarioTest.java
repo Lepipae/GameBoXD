@@ -114,8 +114,13 @@ class UsuarioTest {
      */
     @Test
     void testContraseniaSiSeDeserializa() throws Exception {
-        String json = "{\"nombre\":\"TestUser\",\"urlImagen\":\"http://imagen.com\","
-                + "\"contrasenia\":\"12345678\",\"rol\":\"usuarioNormal\"}";
+        String json = """
+                {
+                  "nombre": "TestUser",
+                  "urlImagen": "http://imagen.com",
+                  "contrasenia": "12345678",
+                  "rol": "usuarioNormal"
+                }""";
 
         Usuario usuario = new ObjectMapper().readValue(json, Usuario.class);
 

@@ -26,7 +26,11 @@
         <url/>
     </scm>
     <properties>
-        <java.version>21</java.version>
+        <!-- Java 26. El parent's maven-compiler-plugin usa esta propiedad como
+             maven.compiler.release, asi que compila con -release 26 y el
+             class file sale en version 70. Cualquier JDK >= 26 vale para construir. -->
+        <java.version>26</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <dependencies>
 
@@ -113,7 +117,10 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.12</version>
+                <!-- 0.8.15 es la primera version con soporte oficial de Java 26.
+                     Las anteriores fallan con "Unsupported class file major version 70"
+                     al intentar instrumentar las clases compiladas. -->
+                <version>0.8.15</version>
                 <executions>
                     <execution>
                         <goals>

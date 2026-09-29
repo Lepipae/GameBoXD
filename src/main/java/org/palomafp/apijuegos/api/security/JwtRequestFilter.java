@@ -5,7 +5,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.jspecify.annotations.NullMarked;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,11 +25,24 @@ import java.io.IOException;
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private CustomUserDetailsService userDetailsService;
+    private static final Logger logger = LoggerFactory.getLogger(JwtRequestFilter.class);
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    /** Prefijo estándar de la cabecera Authorization para los tokens JWT. */
+    private static final String PREFIJO_BEARER = "Bearer ";
+
+    private final CustomUserDetailsService userDetailsService;
+    private final JwtUtil jwtUtil;
+
+    /**
+     * Inyección por constructor: ambas dependencias quedan {@code final}.
+     *
+     * @param userDetailsService Servicio que carga el usuario desde MongoDB.
+     * @param jwtUtil           Utilidad que emite y valida los tokens.
+     */
+    public JwtRequestFilter(CustomUserDetailsService userDetailsService, JwtUtil jwtUtil) {
+        this.userDetailsService = userDetailsService;
+        this.jwtUtil = jwtUtil;
+    }
 
     @Override
     @NullMarked
@@ -36,19 +50,23 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         // Obtenemos la cabecera llamada "Authorization"
-        final String authorizationHeader = request.getHeader("Authorization");
+        var authorizationHeader = request.getHeader("Authorization");
 
         String username = null;
         String jwt = null;
 
         // Comprobamos que la cabecera existe y que su contenido empiece por "Bearer " (estándar de JWT)
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            jwt = authorizationHeader.substring(7); // Extraemos solo el token (quitamos la palabra Bearer)
+        if (authorizationHeader != null && authorizationHeader.startsWith(PREFIJO_BEARER)) {
+            jwt = authorizationHeader.substring(PREFIJO_BEARER.length()); // Extraemos solo el token
             try {
                 // Sacamos el nombre de usuario de dentro del token
                 username = jwtUtil.extractUsername(jwt);
             } catch (Exception e) {
-                System.out.println("No se ha podido extraer el token JWT");
+                // Se captura de forma deliberadamente amplia: un token corrupto,
+                // caducado o manipulado no debe tumbar la petición, simplemente
+                // se deja sin autenticar y la cadena sigue su curso hacia la
+                // configuración de seguridad, que responderá 401 si hacia falta.
+                logger.debug("No se ha podido extraer el token JWT: {}", e.getMessage());
             }
         }
 
@@ -62,19 +80,18 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             if (jwtUtil.validateToken(jwt, userDetails)) {
 
                 // Si es válido, creamos un token interno de Spring Security para autorizar al usuario en este momento
-                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+                var autenticacion = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
-                
+
                 // Añadimos detalles de la petición HTTP a este token de autenticación
-                usernamePasswordAuthenticationToken
-                        .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                
+                autenticacion.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
                 // Registramos al usuario como "Autenticado" para esta petición en particular.
                 // Como es Stateless, esto se borrará tras devolver la respuesta al cliente.
-                SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                SecurityContextHolder.getContext().setAuthentication(autenticacion);
             }
         }
-        
+
         // Continuamos con la cadena de filtros permitiendo que la petición siga su curso (hacia el controlador)
         chain.doFilter(request, response);
     }
