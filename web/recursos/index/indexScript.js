@@ -1,5 +1,5 @@
 // Acceso al gestor centralizado de imágenes definido en api.js
-const { esUrlImagenValida, aplicarImagen } = window.GameBoXDImagenes;
+const { tieneUrlImagen, aplicarImagen } = window.GameBoXDImagenes;
 
 /**
  * Event listener que se ejecuta cuando el DOM está completamente cargado.
@@ -69,11 +69,13 @@ function obtenerRecomendaciones() {
  * Filtra el array de juegos para descartar aquellos que no posean una URL de imagen válida.
  * 
  * @param {Object[]} juegos - Array completo de videojuegos devueltos por la API.
- * @returns {Object[]} Array de videojuegos cuya urlImagen es una URL http(s) utilizable.
+ * @returns {Object[]} Array de videojuegos con nombre y con imagen.
  */
 function filtrarJuegosValidos(juegos) {
-    // Nos quedamos solo con los juegos que tienen una imagen válida
-    return juegos.filter(juego => esUrlImagenValida(juego.urlImagen));
+    return juegos.filter(juego =>
+        juego.nombre && juego.nombre.trim() !== '' &&
+        tieneUrlImagen(juego.urlImagen)
+    );
 }
 
 /**

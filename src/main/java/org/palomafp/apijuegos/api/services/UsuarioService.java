@@ -1,5 +1,6 @@
 package org.palomafp.apijuegos.api.services;
 
+import org.palomafp.apijuegos.api.excepciones.RecursoDuplicadoException;
 import org.palomafp.apijuegos.api.modelo.Usuario;
 import org.palomafp.apijuegos.api.repositories.UsuarioRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,12 +81,12 @@ public class UsuarioService {
 
             Usuario viejo1 = usuarioRepo.findByNombre(usuario.getNombre());
             if (viejo1 != null) {
-                throw new IllegalArgumentException("Usuario existente");
+                throw new RecursoDuplicadoException("Ya existe un usuario con ese nombre");
             }
         } else {
             Usuario viejo1 = usuarioRepo.findByNombre(usuario.getNombre());
             if (viejo1 != null && !viejo1.getId().equals(usuario.getId())) {
-                throw new IllegalArgumentException("Usuario existente");
+                throw new RecursoDuplicadoException("Ya existe un usuario con ese nombre");
             }
         }
         return usuarioRepo.save(usuario);

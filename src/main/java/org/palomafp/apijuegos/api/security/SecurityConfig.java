@@ -1,6 +1,7 @@
 package org.palomafp.apijuegos.api.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -54,10 +55,18 @@ public class SecurityConfig {
      * @return Cadena de filtros de seguridad.
      */
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // Habilitamos CORS y deshabilitamos CSRF porque nuestra API es Stateless usando JWT
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {        // Habilitamos CORS y deshabilitamos CSRF porque nuestra API es Stateless usando JWT
         http.cors(org.springframework.security.config.Customizer.withDefaults())
-            .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.disable())
+                // Sin esto, Spring responde 403 a las peticiones sin token, cuando lo
+                // correcto es 401: el cliente debe distinguir entre "no has iniciado
+                // sesion" (401) y "has iniciado sesion pero no tienes permiso" (403).
+                .exceptionHandling(excepciones -> excepciones
+                        .authenticationEntryPoint((peticion, respuesta, error) ->
+                                respuesta.sendError(HttpServletResponse.SC_UNAUTHORIZED))
+                        .accessDeniedHandler((peticion, respuesta, error) ->
+                                respuesta.sendError(HttpServletResponse.SC_FORBIDDEN))
+                )
                 // Configuramos las reglas de autorización por rutas
                 .authorizeHttpRequests(auth -> auth
                         // ---------------------------------------------------------

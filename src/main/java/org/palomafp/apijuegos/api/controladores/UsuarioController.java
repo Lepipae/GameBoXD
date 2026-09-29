@@ -1,5 +1,6 @@
 package org.palomafp.apijuegos.api.controladores;
 
+import org.palomafp.apijuegos.api.excepciones.RecursoNoEncontradoException;
 import org.palomafp.apijuegos.api.modelo.Usuario;
 import org.palomafp.apijuegos.api.services.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +37,11 @@ public class UsuarioController {
      */
     @GetMapping("/{miId}")
     public Usuario obtenerUsuarioPorId(@PathVariable int miId) {
-        return usuarioService.obtenerPorMiId(miId);
+        Usuario usuario = usuarioService.obtenerPorMiId(miId);
+        if (usuario == null) {
+            throw new RecursoNoEncontradoException("No existe ningun usuario con el id " + miId);
+        }
+        return usuario;
     }
 
     /**
@@ -46,7 +51,11 @@ public class UsuarioController {
      */
     @GetMapping("/nombre/{nombre}")
     public Usuario obtenerUsuarioPorNombre(@PathVariable String nombre) {
-        return usuarioService.obtenerPorNombre(nombre);
+        Usuario usuario = usuarioService.obtenerPorNombre(nombre);
+        if (usuario == null) {
+            throw new RecursoNoEncontradoException("No existe ningun usuario llamado " + nombre);
+        }
+        return usuario;
     }
 
     /**

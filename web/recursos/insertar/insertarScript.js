@@ -187,22 +187,29 @@ function inicializarFormularios() {
             const bodyData = {
                 nombre: nombre,
                 pais: pais,
-                urlImagen: urlImagen || 'placeholder'
+                // Sin logo se envia null: el backend ya no guarda el texto "placeholder".
+                urlImagen: urlImagen || null
             };
 
             const API_URL = 'https://gameboxd.duckdns.org/api/desarrolladoras';
 
+            // La API exige token para crear, asi que hay que enviarlo.
+            const token = localStorage.getItem('jwt_token');
+            const cabeceras = {
+                'Content-Type': 'application/json'
+            };
+            if (token) {
+                cabeceras['Authorization'] = `Bearer ${token}`;
+            }
+
             fetch(API_URL, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: cabeceras,
                 body: JSON.stringify(bodyData)
             })
                 .then(async response => {
                     if (!response.ok) {
-                        const text = await response.text();
-                        throw new Error(text || 'Error al guardar la desarrolladora');
+                        throw new Error(await GameBoXDErrores.mensajeError(response, 'Error al guardar la desarrolladora'));
                     }
                     return response.json();
                 })
@@ -262,17 +269,23 @@ function inicializarFormularios() {
 
             const API_URL = 'https://gameboxd.duckdns.org/api/videojuegos';
 
+            // La API exige token para crear, asi que hay que enviarlo.
+            const token = localStorage.getItem('jwt_token');
+            const cabeceras = {
+                'Content-Type': 'application/json'
+            };
+            if (token) {
+                cabeceras['Authorization'] = `Bearer ${token}`;
+            }
+
             fetch(API_URL, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: cabeceras,
                 body: JSON.stringify(bodyData)
             })
                 .then(async response => {
                     if (!response.ok) {
-                        const text = await response.text();
-                        throw new Error(text || 'Error al guardar el videojuego');
+                        throw new Error(await GameBoXDErrores.mensajeError(response, 'Error al guardar el videojuego'));
                     }
                     return response.json();
                 })

@@ -109,9 +109,18 @@ public class Usuario {
 
     /**
      * Obtiene la url de la imagen de perfil
-     * @return URL de la imagen
+     *
+     * <p>Los registros antiguos guardaban el texto {@code "placeholder"} en este
+     * campo. Se devuelve como {@code null} para que ese valor heredado no llegue
+     * a la API ni al frontend. La fila antigua se corrige sola la proxima vez que
+     * se guarde el usuario.</p>
+     *
+     * @return URL de la imagen, o null si el usuario no tiene imagen
      */
     public String getUrlImagen() {
+        if (urlImagen == null || ValidadorUrlImagen.VALOR_HEREDADO.equalsIgnoreCase(urlImagen.trim())) {
+            return null;
+        }
         return urlImagen;
     }
 
@@ -120,11 +129,7 @@ public class Usuario {
      * @param urlImagen URL a establecer
      */
     public void setUrlImagen(String urlImagen) {
-        if (urlImagen == null || urlImagen.isBlank()) {
-            this.urlImagen = "placeholder";
-        } else {
-            this.urlImagen = urlImagen;
-        }
+        this.urlImagen = ValidadorUrlImagen.normalizar(urlImagen);
     }
 
     /**

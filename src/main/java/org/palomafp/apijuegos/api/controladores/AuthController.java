@@ -38,7 +38,7 @@ public class AuthController {
      * @throws Exception Si las credenciales son incorrectas lanza BadCredentialsException.
      */
     @PostMapping("/login")
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthRequest authRequest) throws Exception {
+    public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthRequest authRequest) {
 
         try {
             // Intentamos autenticar al usuario usando el gestor de autenticación de Spring Security.
@@ -47,8 +47,9 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(authRequest.getNombre(), authRequest.getContrasenia())
             );
         } catch (BadCredentialsException e) {
-            // Si la contraseña o usuario no concuerdan lanzamos un error que se traducirá en un 401 Unauthorized para el cliente
-            throw new Exception("Usuario o contraseña incorrectos", e);
+            // Se relanza como BadCredentialsException (no como Exception genérica) para que
+            // ManejadorErrores lo traduzca a un 401 Unauthorized. Antes acababa en un 500.
+            throw e;
         }
 
         // Si la autenticación es exitosa, procedemos a generar el Token JWT

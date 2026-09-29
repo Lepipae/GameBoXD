@@ -144,23 +144,26 @@
  *
  * Las URLs de portada las introduce el usuario al crear un juego, así que pueden
  * apuntar a hosts que ya no existen (el antiguo bucket de S3 fue retirado).
- * Este gestor centraliza la validación y garantiza que toda imagen del sitio
- * degrade con elegancia a una portada local en lugar de mostrar un icono de error.
+ * El backend garantiza que el campo urlImagen está vacío o contiene una URL
+ * http(s) válida; este gestor cubre el otro caso inevitable: que la URL sea
+ * válida pero el host ya no responda, y degrade a una portada local.
  */
 (function () {
-    /** Portada local usada siempre que la URL remota no sea válida o falle al cargar. */
+    /** Portada local usada siempre que el juego no tenga imagen o esta falle al cargar. */
     const IMAGEN_PLACEHOLDER = 'recursos/img/placeholder-game.svg';
 
     /**
-     * Comprueba si un valor puede usarse como URL de imagen.
-     * Descarta vacíos y el texto literal "placeholder" que el backend almacena
-     * cuando el usuario no facilitate ninguna imagen.
+     * Indica si el registro trae una imagen propia.
+     *
+     * Antes esta función también descartaba el texto "placeholder" que el backend
+     * guardaba en el campo URL. Ese literal ya no existe: el backend almacena null
+     * cuando no hay imagen y rechaza cualquier valor que no sea una URL http(s).
      *
      * @param {*} url - Valor a comprobar.
-     * @returns {boolean} true si es una URL http(s) con contenido.
+     * @returns {boolean} true si hay una URL de imagen.
      */
-    function esUrlImagenValida(url) {
-        return typeof url === 'string' && /^https?:\/\/\S+$/i.test(url.trim());
+    function tieneUrlImagen(url) {
+        return typeof url === 'string' && url.trim() !== '';
     }
 
     /**
@@ -186,8 +189,8 @@
             }
         };
 
-        // Una URL ausente o con el texto "placeholder" no llega ni a solicitarse.
-        if (!esUrlImagenValida(url)) {
+        // Sin URL no hay ni una petición: se muestra la portada local directamente.
+        if (!tieneUrlImagen(url)) {
             recurrir();
             return;
         }
@@ -202,7 +205,48 @@
 
     window.GameBoXDImagenes = {
         IMAGEN_PLACEHOLDER: IMAGEN_PLACEHOLDER,
-        esUrlImagenValida: esUrlImagenValida,
+        tieneUrlImagen: tieneUrlImagen,
         aplicarImagen: aplicarImagen
+    };
+})();
+
+/**
+ * Lector de mensajes de error de la API.
+ *
+ * La API responde siempre con { "error": "mensaje", "status": n } (ver
+ * ManejadorErrores). Antes de que existiera ese manejador, un error de negocio
+ * llegaba como 500 con el cuerpo por defecto de Spring y los avisos al usuario
+ * mostraban un volcado de JSON sin sentido.
+ */
+(function () {
+    /**
+     * Extrae un mensaje legible de una respuesta de error.
+     *
+     * @param {Response} response - Respuesta fallida de la API.
+     * @param {string} porDefecto - Texto a usar si la API no devuelve mensaje.
+     * @returns {Promise<string>} El mensaje de error legible.
+     */
+    async function mensajeError(response, porDefecto) {
+        try {
+            const cuerpo = await response.json();
+            if (cuerpo && typeof cuerpo.error === 'string' && cuerpo.error.trim() !== '') {
+                return cuerpo.error;
+            }
+        } catch (e) {
+            // La respuesta no traía JSON (o ya se había consumido): usamos el texto plano.
+        }
+        try {
+            const texto = await response.text();
+            if (texto && texto.trim() !== '') {
+                return texto.trim();
+            }
+        } catch (e) {
+            // Sin cuerpo legible: nos quedamos con el mensaje por defecto.
+        }
+        return porDefecto;
+    }
+
+    window.GameBoXDErrores = {
+        mensajeError: mensajeError
     };
 })();

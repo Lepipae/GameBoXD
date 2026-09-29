@@ -15,7 +15,7 @@ class VideojuegoTest {
         vj.setMiId(10L);
         vj.setNombre("Juego 1");
         vj.setDescripcion("Desc");
-        vj.setUrlImagen("img.jpg");
+        vj.setUrlImagen("https://ejemplo.com/img.jpg");
         vj.setNotaMedia(4.5);
         vj.setIdDesarrolladora(2);
         
@@ -27,7 +27,7 @@ class VideojuegoTest {
         assertEquals(10L, vj.getMiId());
         assertEquals("Juego 1", vj.getNombre());
         assertEquals("Desc", vj.getDescripcion());
-        assertEquals("img.jpg", vj.getUrlImagen());
+        assertEquals("https://ejemplo.com/img.jpg", vj.getUrlImagen());
         assertEquals(4.5, vj.getNotaMedia());
         assertEquals(2, vj.getIdDesarrolladora());
         assertEquals(1, vj.getTags().size());
@@ -37,13 +37,13 @@ class VideojuegoTest {
     void testConstructorConParametros() {
         ArrayList<String> tags = new ArrayList<>();
         tags.add("Aventura");
-        Videojuego vj = new Videojuego("2", 20L, "Juego 2", "Desc 2", "img2.jpg", 3.0, tags, 5);
+        Videojuego vj = new Videojuego("2", 20L, "Juego 2", "Desc 2", "https://ejemplo.com/img2.jpg", 3.0, tags, 5);
 
         assertEquals("2", vj.getId());
         assertEquals(20L, vj.getMiId());
         assertEquals("Juego 2", vj.getNombre());
         assertEquals("Desc 2", vj.getDescripcion());
-        assertEquals("img2.jpg", vj.getUrlImagen());
+        assertEquals("https://ejemplo.com/img2.jpg", vj.getUrlImagen());
         assertEquals(3.0, vj.getNotaMedia());
         assertEquals(5, vj.getIdDesarrolladora());
         assertEquals(1, vj.getTags().size());

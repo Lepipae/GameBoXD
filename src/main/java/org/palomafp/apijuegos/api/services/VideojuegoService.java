@@ -1,5 +1,6 @@
 package org.palomafp.apijuegos.api.services;
 
+import org.palomafp.apijuegos.api.excepciones.RecursoDuplicadoException;
 import org.palomafp.apijuegos.api.modelo.Videojuego;
 import org.palomafp.apijuegos.api.repositories.VideojuegoRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,12 +77,12 @@ public class VideojuegoService {
 
             Videojuego videojuegoViejo = videojuegoRepo.findByNombre(videojuego.getNombre());
             if (videojuegoViejo != null) {
-                throw new IllegalArgumentException("Videojuego existente");
+                throw new RecursoDuplicadoException("Ya existe un videojuego con ese nombre");
             }
         } else {
             Videojuego videojuegoViejo = videojuegoRepo.findByNombre(videojuego.getNombre());
             if (videojuegoViejo != null && !videojuegoViejo.getId().equals(videojuego.getId())) {
-                throw new IllegalArgumentException("Videojuego existente");
+                throw new RecursoDuplicadoException("Ya existe un videojuego con ese nombre");
             }
         }
         return videojuegoRepo.save(videojuego);

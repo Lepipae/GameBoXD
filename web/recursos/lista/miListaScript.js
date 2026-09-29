@@ -113,8 +113,7 @@ function inicializarFormularios() {
             })
                 .then(async response => {
                     if (!response.ok) {
-                        const text = await response.text();
-                        throw new Error(text || 'Usuario o contraseña incorrectos');
+                        throw new Error(await GameBoXDErrores.mensajeError(response, 'Usuario o contraseña incorrectos'));
                     }
                     return response.json();
                 })
@@ -171,8 +170,14 @@ function inicializarFormularios() {
             const bodyData = {
                 nombre: nombre,
                 contrasenia: contrasenia,
-                urlImagen: urlImagen || 'placeholder',
-                rol: 'usuario' // Rol por defecto
+                // Sin avatar se envia null: el backend ya no guarda el texto "placeholder".
+                urlImagen: urlImagen || null,
+                // El enum Rol solo admite 'administrador' y 'usuarioNormal'.
+                // Antes se mandaba 'usuario', que la API rechazaba con un 400.
+                rol: 'usuarioNormal',
+                // Usuario.miId es un int primitivo: si no se envia, el backend no
+                // puede deserializar el cuerpo y responde 400.
+                miId: 0
             };
 
             const REGISTER_URL = 'https://gameboxd.duckdns.org/api/usuarios';
@@ -184,8 +189,7 @@ function inicializarFormularios() {
             })
                 .then(async response => {
                     if (!response.ok) {
-                        const text = await response.text();
-                        throw new Error(text || 'Error al crear la cuenta. ¿El usuario ya existe?');
+                        throw new Error(await GameBoXDErrores.mensajeError(response, 'Error al crear la cuenta. ¿El usuario ya existe?'));
                     }
                     return response.json();
                 })
@@ -215,7 +219,14 @@ function cargarMiLista(idUsuario) {
 
     const LISTA_URL = `https://gameboxd.duckdns.org/api/lista/${idUsuario}`;
 
-    fetch(LISTA_URL)
+    // La API restringe cada lista a su propietario, asi que hace falta el token.
+    const token = localStorage.getItem('jwt_token');
+    const cabeceras = {};
+    if (token) {
+        cabeceras['Authorization'] = `Bearer ${token}`;
+    }
+
+    fetch(LISTA_URL, { headers: cabeceras })
         .then(response => {
             if (!response.ok) throw new Error('Error al conectar con la base de datos de tu lista');
             return response.json();
@@ -379,8 +390,16 @@ window.eliminarDeLista = function (idEntrada) {
 
     const DELETE_URL = `https://gameboxd.duckdns.org/api/lista/${idEntrada}`;
 
+    // La API solo deja borrar entradas de la lista propia, asi que hace falta el token.
+    const token = localStorage.getItem('jwt_token');
+    const cabeceras = {};
+    if (token) {
+        cabeceras['Authorization'] = `Bearer ${token}`;
+    }
+
     fetch(DELETE_URL, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: cabeceras
     })
         .then(response => {
             if (!response.ok) throw new Error('No se pudo eliminar el videojuego de tu lista.');
@@ -567,8 +586,7 @@ function inicializarModal() {
         })
             .then(async response => {
                 if (!response.ok) {
-                    const text = await response.text();
-                    throw new Error(text || 'Error al actualizar la entrada');
+                    throw new Error(await GameBoXDErrores.mensajeError(response, 'Error al actualizar la entrada'));
                 }
                 return response.json();
             })

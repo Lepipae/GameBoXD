@@ -1,5 +1,6 @@
 package org.palomafp.apijuegos.api.controladores;
 
+import org.palomafp.apijuegos.api.excepciones.RecursoNoEncontradoException;
 import org.palomafp.apijuegos.api.modelo.Desarrolladora;
 import org.palomafp.apijuegos.api.services.DesarrolladoraService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +37,11 @@ public class DesarrolladoraController {
      */
     @GetMapping("/nombre/{nombre}")
     public Desarrolladora obtenerPorNombre(@PathVariable String nombre) {
-        return desarrolladoraService.obtenerPorNombre(nombre);
+        Desarrolladora desarrolladora = desarrolladoraService.obtenerPorNombre(nombre);
+        if (desarrolladora == null) {
+            throw new RecursoNoEncontradoException("No existe ninguna desarrolladora llamada " + nombre);
+        }
+        return desarrolladora;
     }
 
     /**
@@ -46,7 +51,11 @@ public class DesarrolladoraController {
      */
     @GetMapping("/id/{id}")
     public Desarrolladora obtenerPorId(@PathVariable int id) {
-        return desarrolladoraService.obtenerPorId(id);
+        Desarrolladora desarrolladora = desarrolladoraService.obtenerPorId(id);
+        if (desarrolladora == null) {
+            throw new RecursoNoEncontradoException("No existe ninguna desarrolladora con el id " + id);
+        }
+        return desarrolladora;
     }
 
     /**

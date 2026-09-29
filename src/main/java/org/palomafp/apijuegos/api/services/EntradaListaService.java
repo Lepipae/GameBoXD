@@ -1,5 +1,6 @@
 package org.palomafp.apijuegos.api.services;
 
+import org.palomafp.apijuegos.api.excepciones.RecursoDuplicadoException;
 import org.palomafp.apijuegos.api.modelo.EntradaLista;
 import org.palomafp.apijuegos.api.modelo.Videojuego;
 import org.palomafp.apijuegos.api.repositories.EntradaListaRepo;
@@ -142,7 +143,7 @@ public class EntradaListaService {
                         && (entradaLista.getId() == null || !e.getId().equals(entradaLista.getId())));
             
             if (duplicateExists) {
-                throw new IllegalArgumentException("El usuario ya tiene este juego en su lista");
+                throw new RecursoDuplicadoException("El usuario ya tiene este juego en su lista");
             }
         }
 

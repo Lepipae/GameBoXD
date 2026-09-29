@@ -79,10 +79,18 @@ public class Desarrolladora {
 
     /**
      * Obtiene la url de la imagen
-     * 
-     * @return URL de la imagen
+     *
+     * <p>Los registros antiguos guardaban el texto {@code "placeholder"} en este
+     * campo. Se devuelve como {@code null} para que ese valor heredado no llegue
+     * a la API ni al frontend. La fila antigua se corrige sola la proxima vez que
+     * se guarde la desarrolladora.</p>
+     *
+     * @return URL de la imagen, o null si no tiene logo
      */
     public String getUrlImagen() {
+        if (urlImagen == null || ValidadorUrlImagen.VALOR_HEREDADO.equalsIgnoreCase(urlImagen.trim())) {
+            return null;
+        }
         return urlImagen;
     }
 
@@ -92,11 +100,7 @@ public class Desarrolladora {
      * @param urlImagen URL a establecer
      */
     public void setUrlImagen(String urlImagen) {
-        if (urlImagen == null || urlImagen.isBlank()) {
-            this.urlImagen = "placeholder";
-        } else {
-            this.urlImagen = urlImagen;
-        }
+        this.urlImagen = ValidadorUrlImagen.normalizar(urlImagen);
     }
 
     /**

@@ -45,13 +45,43 @@ class UsuarioTest {
     }
 
     @Test
-    void testSetUrlImagenVaciaAsignaPlaceholder() {
+    void testSetUrlImagenVaciaSeGuardaComoNull() {
         Usuario usuario = new Usuario();
         usuario.setUrlImagen(null);
-        assertEquals("placeholder", usuario.getUrlImagen());
+        assertNull(usuario.getUrlImagen());
 
         usuario.setUrlImagen("  ");
-        assertEquals("placeholder", usuario.getUrlImagen());
+        assertNull(usuario.getUrlImagen());
+    }
+
+    @Test
+    void testSetUrlImagenValidaSeGuarda() {
+        Usuario usuario = new Usuario();
+        usuario.setUrlImagen("  https://ejemplo.com/avatar.png  ");
+        assertEquals("https://ejemplo.com/avatar.png", usuario.getUrlImagen());
+    }
+
+    /**
+     * El backend ya no escribe el texto "placeholder" en el campo URL: lo rechaza
+     * porque no es una URL. Asi el frontend no necesita conocer ese valor.
+     */
+    @Test
+    void testSetUrlImagenNoEsUrlSeRechaza() {
+        Usuario usuario = new Usuario();
+        assertThrows(IllegalArgumentException.class, () -> usuario.setUrlImagen("no-es-una-url"));
+        assertThrows(IllegalArgumentException.class, () -> usuario.setUrlImagen("javascript:alert(1)"));
+        assertThrows(IllegalArgumentException.class, () -> usuario.setUrlImagen("ftp://ejemplo.com/a.png"));
+    }
+
+    /**
+     * El valor heredado se sigue aceptando como "sin imagen" para que los
+     * registros antiguos puedan volver a guardarse, y se devuelve como null.
+     */
+    @Test
+    void testValorHeredadoPlaceholderSeTrataComoAusencia() {
+        Usuario usuario = new Usuario();
+        usuario.setUrlImagen("placeholder");
+        assertNull(usuario.getUrlImagen());
     }
 
     @Test

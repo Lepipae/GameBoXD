@@ -4,7 +4,7 @@
  */
 
 // Acceso al gestor centralizado de imágenes definido en api.js
-const { esUrlImagenValida, aplicarImagen } = window.GameBoXDImagenes;
+const { tieneUrlImagen, aplicarImagen } = window.GameBoXDImagenes;
 
 // Caché global de videojuegos para evitar múltiples peticiones innecesarias
 let cacheJuegos = [];
@@ -127,15 +127,15 @@ function cargarYFiltrarJuegos(query, tag, dev, devName) {
 }
 
 /**
- * Filtra el array de juegos para descartar aquellos que no posean una URL de imagen o nombre válido.
+ * Filtra el array de juegos para descartar aquellos que no tengan nombre o imagen.
  * 
  * @param {Object[]} juegos - Array completo de videojuegos devueltos por la API.
  * @returns {Object[]} Array de videojuegos válidos.
  */
 function filtrarJuegosValidos(juegos) {
-    return juegos.filter(juego => 
-        juego.nombre && juego.nombre.trim() !== '' && 
-        esUrlImagenValida(juego.urlImagen)
+    return juegos.filter(juego =>
+        juego.nombre && juego.nombre.trim() !== '' &&
+        tieneUrlImagen(juego.urlImagen)
     );
 }
 

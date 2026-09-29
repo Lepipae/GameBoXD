@@ -1,5 +1,6 @@
 package org.palomafp.apijuegos.api.controladores;
 
+import org.palomafp.apijuegos.api.excepciones.RecursoNoEncontradoException;
 import org.palomafp.apijuegos.api.modelo.Videojuego;
 import org.palomafp.apijuegos.api.services.VideojuegoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +36,11 @@ public class VideojuegoController {
      */
     @GetMapping("/{miId}")
     public Videojuego obtenerPorId(@PathVariable long miId) {
-        return videojuegoService.obtenerPorId(miId);
+        Videojuego juego = videojuegoService.obtenerPorId(miId);
+        if (juego == null) {
+            throw new RecursoNoEncontradoException("No existe ningun videojuego con el id " + miId);
+        }
+        return juego;
     }
 
     /**
@@ -45,7 +50,11 @@ public class VideojuegoController {
      */
     @GetMapping("/nombre/{nombre}")
     public Videojuego obtenerPorNombre(@PathVariable String nombre) {
-        return videojuegoService.obtenerPorNombre(nombre);
+        Videojuego juego = videojuegoService.obtenerPorNombre(nombre);
+        if (juego == null) {
+            throw new RecursoNoEncontradoException("No existe ningun videojuego llamado " + nombre);
+        }
+        return juego;
     }
 
     /**

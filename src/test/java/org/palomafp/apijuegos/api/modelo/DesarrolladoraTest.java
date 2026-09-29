@@ -13,13 +13,13 @@ class DesarrolladoraTest {
         dev.setMiId(10);
         dev.setNombre("DevTest");
         dev.setPais("España");
-        dev.setUrlImagen("img.png");
+        dev.setUrlImagen("https://ejemplo.com/img.png");
 
         assertEquals("1", dev.getId());
         assertEquals(10, dev.getMiId());
         assertEquals("DevTest", dev.getNombre());
         assertEquals("España", dev.getPais());
-        assertEquals("img.png", dev.getUrlImagen());
+        assertEquals("https://ejemplo.com/img.png", dev.getUrlImagen());
     }
 
     @Test
@@ -28,12 +28,12 @@ class DesarrolladoraTest {
         dev.setMiId(20);
         dev.setNombre("Dev2");
         dev.setPais("Francia");
-        dev.setUrlImagen("img2.png");
+        dev.setUrlImagen("https://ejemplo.com/img2.png");
 
         assertEquals(20, dev.getMiId());
         assertEquals("Dev2", dev.getNombre());
         assertEquals("Francia", dev.getPais());
-        assertEquals("img2.png", dev.getUrlImagen());
+        assertEquals("https://ejemplo.com/img2.png", dev.getUrlImagen());
     }
 
     @Test
@@ -51,12 +51,32 @@ class DesarrolladoraTest {
     }
 
     @Test
-    void testSetUrlImagenInvalidaAsignaPlaceholder() {
+    void testSetUrlImagenVaciaSeGuardaComoNull() {
         Desarrolladora dev = new Desarrolladora();
         dev.setUrlImagen(null);
-        assertEquals("placeholder", dev.getUrlImagen());
+        assertNull(dev.getUrlImagen());
 
         dev.setUrlImagen("   ");
-        assertEquals("placeholder", dev.getUrlImagen());
+        assertNull(dev.getUrlImagen());
+    }
+
+    @Test
+    void testSetUrlImagenValidaSeGuarda() {
+        Desarrolladora dev = new Desarrolladora();
+        dev.setUrlImagen(" https://ejemplo.com/logo.png ");
+        assertEquals("https://ejemplo.com/logo.png", dev.getUrlImagen());
+    }
+
+    @Test
+    void testSetUrlImagenNoEsUrlSeRechaza() {
+        Desarrolladora dev = new Desarrolladora();
+        assertThrows(IllegalArgumentException.class, () -> dev.setUrlImagen("no-es-una-url"));
+    }
+
+    @Test
+    void testValorHeredadoPlaceholderSeTrataComoAusencia() {
+        Desarrolladora dev = new Desarrolladora();
+        dev.setUrlImagen("placeholder");
+        assertNull(dev.getUrlImagen());
     }
 }

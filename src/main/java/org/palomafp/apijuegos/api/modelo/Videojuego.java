@@ -134,9 +134,13 @@ public class Videojuego {
 
     /**
      * Obtiene la url de la portada
-     * @return URL de la imagen
+     *
+     * @return URL de la portada, o null si el juego no tiene imagen
      */
     public String getUrlImagen() {
+        if (urlImagen == null || ValidadorUrlImagen.VALOR_HEREDADO.equalsIgnoreCase(urlImagen.trim())) {
+            return null;
+        }
         return urlImagen;
     }
 
@@ -145,7 +149,7 @@ public class Videojuego {
      * @param urlImagen URL a establecer
      */
     public void setUrlImagen(String urlImagen) {
-        this.urlImagen = urlImagen;
+        this.urlImagen = ValidadorUrlImagen.normalizar(urlImagen);
     }
 
     /**
