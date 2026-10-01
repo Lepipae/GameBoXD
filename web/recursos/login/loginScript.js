@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             // Peticion al servidor para iniciar sesion
-            const response = await fetch('https://gameboxd.duckdns.org/api/auth/login', {
+            const response = await fetch(`${GameBoXDApi.BASE_URL}/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // También obtenemos el perfil completo para sincronizar con la lista y otros componentes
                 try {
-                    const profileResponse = await fetch(`https://gameboxd.duckdns.org/api/usuarios/nombre/${nombre}`);
+                    const profileResponse = await fetch(`${GameBoXDApi.BASE_URL}/usuarios/nombre/${nombre}`);
                     if (profileResponse.ok) {
                         const userProfile = await profileResponse.json();
                         const sessionObj = {
@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         // Llamada a la api para registrar el usuario
         try {
-            const response = await fetch('https://gameboxd.duckdns.org/api/usuarios', {
+            const response = await fetch(`${GameBoXDApi.BASE_URL}/usuarios`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

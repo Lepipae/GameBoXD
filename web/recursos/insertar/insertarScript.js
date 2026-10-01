@@ -13,7 +13,7 @@ function cargarDesarrolladoras() {
     const selectDesarrolladora = document.getElementById('videojuego-desarrolladora');
     if (!selectDesarrolladora) return;
 
-    const API_URL = 'https://gameboxd.duckdns.org/api/desarrolladoras';
+    const API_URL = `${GameBoXDApi.BASE_URL}/desarrolladoras`;
 
     // Fetch a la api
     fetch(API_URL)
@@ -191,7 +191,7 @@ function inicializarFormularios() {
                 urlImagen: urlImagen || null
             };
 
-            const API_URL = 'https://gameboxd.duckdns.org/api/desarrolladoras';
+            const API_URL = `${GameBoXDApi.BASE_URL}/desarrolladoras`;
 
             // La API exige token para crear, asi que hay que enviarlo.
             const token = localStorage.getItem('jwt_token');
@@ -267,7 +267,7 @@ function inicializarFormularios() {
                 tags: tags
             };
 
-            const API_URL = 'https://gameboxd.duckdns.org/api/videojuegos';
+            const API_URL = `${GameBoXDApi.BASE_URL}/videojuegos`;
 
             // La API exige token para crear, asi que hay que enviarlo.
             const token = localStorage.getItem('jwt_token');

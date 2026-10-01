@@ -100,6 +100,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/usuarios/*", "/api/usuarios/nombre/*").permitAll()
                         // Para acceder a Swagger/OpenAPI si es necesario que estén públicas
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        // Sonda de salud de Render. Sin esto devuelve 401, el servicio
+                        // nunca llega a "healthy" y el despliegue se queda colgado.
+                        // Es seguro: el actuator solo expone /actuator/health, y no dice
+                        // nada del estado de la base de datos ni de ningún usuario.
+                        .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
                         // ---------------------------------------------------------
                         // TODO LO DEMÁS REQUIERE TOKEN
                         // ---------------------------------------------------------

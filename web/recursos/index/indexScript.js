@@ -46,7 +46,7 @@ function configurarBuscador() {
  * En caso de error, muestra una pantalla de fallo.
  */
 function obtenerRecomendaciones() {
-    const API_URL = 'https://gameboxd.duckdns.org/api/videojuegos';
+    const API_URL = `${GameBoXDApi.BASE_URL}/videojuegos`;
 
     fetch(API_URL)
         .then(response => {

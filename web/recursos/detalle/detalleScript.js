@@ -34,7 +34,7 @@ function obtenerIdDeUrl() {
  * @param {string} idJuego - El ID del videojuego a cargar.
  */
 function cargarDetallesJuego(idJuego) {
-    const API_URL = `https://gameboxd.duckdns.org/api/videojuegos/${idJuego}`;
+    const API_URL = `${GameBoXDApi.BASE_URL}/videojuegos/${idJuego}`;
     
     fetch(API_URL)
         .then(response => {
@@ -177,7 +177,7 @@ function renderizarValoracion(notaMedia) {
  * @param {string} idJuego - El ID del videojuego.
  */
 function cargarResenyasJuego(idJuego) {
-    const API_URL = `https://gameboxd.duckdns.org/api/lista/juego/${idJuego}`;
+    const API_URL = `${GameBoXDApi.BASE_URL}/lista/juego/${idJuego}`;
     
     fetch(API_URL)
         .then(response => {
@@ -249,7 +249,7 @@ function renderizarResenyas(resenyas) {
  * @param {string} labelId - El ID del elemento HTML donde se inyectará el nombre.
  */
 function cargarNombreUsuarioReview(idUsuario, labelId) {
-    const API_URL = `https://gameboxd.duckdns.org/api/usuarios/${idUsuario}`;
+    const API_URL = `${GameBoXDApi.BASE_URL}/usuarios/${idUsuario}`;
     const label = document.getElementById(labelId);
     if (!label) return;
 
@@ -273,7 +273,7 @@ function cargarNombreUsuarioReview(idUsuario, labelId) {
  * @param {number} idDesarrolladora - El ID de la desarrolladora.
  */
 function cargarDesarrolladora(idDesarrolladora) {
-    const API_URL = `https://gameboxd.duckdns.org/api/desarrolladoras/id/${idDesarrolladora}`;
+    const API_URL = `${GameBoXDApi.BASE_URL}/desarrolladoras/id/${idDesarrolladora}`;
     
     fetch(API_URL)
         .then(response => {
@@ -356,7 +356,7 @@ function verificarSesionYConfigurarBoton(idJuego) {
         const payloadDecoded = JSON.parse(atob(payloadBase64));
         const username = payloadDecoded.sub;
 
-        fetch(`https://gameboxd.duckdns.org/api/usuarios/nombre/${username}`, {
+        fetch(`${GameBoXDApi.BASE_URL}/usuarios/nombre/${username}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -396,7 +396,7 @@ function comprobarJuegoEnLista(idJuego, idUsuario, token) {
     const btnAdd = document.getElementById('add-to-list-btn');
     if (!btnAdd) return;
 
-    fetch(`https://gameboxd.duckdns.org/api/lista/${idUsuario}`, {
+    fetch(`${GameBoXDApi.BASE_URL}/lista/${idUsuario}`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -455,7 +455,7 @@ function anyadirALista(idJuego, idUsuario, token) {
         miId: 0
     };
 
-    fetch('https://gameboxd.duckdns.org/api/lista', {
+    fetch(`${GameBoXDApi.BASE_URL}/lista`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

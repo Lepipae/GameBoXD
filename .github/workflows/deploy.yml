@@ -1,4 +1,4 @@
-name: Despliegue de la API a EC2
+name: Despliegue de la API a Render
 
 on:
   push:
@@ -6,10 +6,13 @@ on:
       - main
     paths:
       - 'src/**'
+      - 'pom.xml'
+      - 'Dockerfile'
+      - 'render.yaml'
 
 jobs:
   build:
-    name: Build & Package
+    name: Build
     runs-on: ubuntu-latest
 
     steps:
@@ -23,67 +26,37 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
+      # El build de Render es el que manda, pero compilar aqui evita que un
+      # error llegue a Render y deje el servicio caido o con un deploy fallido.
+      # No se lanzan los tests: dependen de MongoDB Atlas y cuando Atlas va
+      # lento el contexto tarda 30 minutos en cargar y tumban 9 tests en cascada.
       - name: Make Maven Wrapper executable
         run: chmod +x mvnw
 
-      - name: Build with Maven
-        run: ./mvnw clean package -DskipTests
+      - name: Compilar el jar
+        run: ./mvnw -B clean package -DskipTests
 
-      - name: Upload artifact for deployment
-        uses: actions/upload-artifact@v4
-        with:
-          name: api-jar
-          path: target/api-0.0.1-SNAPSHOT.jar
-          retention-days: 1
+      - name: Comprobar que las clases son de Java 26
+        run: |
+          unzip -p target/api-0.0.1-SNAPSHOT.jar BOOT-INF/classes/org/palomafp/apijuegos/api/ApiApplication.class \
+            | od -An -tu1 -N8 | awk '{ print "major version:", $7*256+$8 }'
 
   deploy:
-    name: Deploy to EC2
+    name: Deploy a Render
     needs: build
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: api-jar
-          path: .
-
-      - name: Copy JAR file to EC2
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: "api-0.0.1-SNAPSHOT.jar"
-          target: "~/app"
-
-      - name: Execute remote commands via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            # Crear directorio de la aplicación si no existe
-            mkdir -p ~/app
-            cd ~/app
-            
-            # Generar o sobreescribir el archivo .env utilizando los secretos de GitHub
-            echo "MONGO_USER=${{ secrets.MONGO_USER }}" > .env
-            echo "MONGO_PASS=${{ secrets.MONGO_PASS }}" >> .env
-            echo "MONGO_DB=${{ secrets.MONGO_DB }}" >> .env
-            echo "CLAVE_CIFRADO=${{ secrets.CLAVE_CIFRADO }}" >> .env
-            
-            # Reiniciar el servicio gestionado por systemd
-            echo "Reiniciando el servicio de la API..."
-            sudo systemctl restart miapp.service
-            
-            # Comprobar que el servicio está activo y sin errores
-            sleep 5
-            if sudo systemctl is-active --quiet miapp.service; then
-              echo "¡API levantada exitosamente en EC2 a través de systemd!"
-            else
-              echo "ADVERTENCIA: El servicio falló al iniciar. Revisa los logs ejecutando:"
-              echo "sudo journalctl -u miapp.service -n 50"
-              exit 1
-            fi
+      # Render genera un "deploy hook" por servicio en
+      # Settings > Deploy > Deploy Hook. Ese es el único secreto que hace
+      # falta aqui: las credenciales de Mongo viven en el panel de Render.
+      - name: Disparar el deploy hook de Render
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
+            echo "::error::Falta el secreto RENDER_DEPLOY_HOOK_URL en el repositorio."
+            exit 1
+          fi
+          curl --fail --silent --show-error --request POST "$RENDER_DEPLOY_HOOK"
+          echo "Render ha recibido el deploy. El estado se ve en el panel de Render."

@@ -1,5 +1,7 @@
-# Etapa 1: Construir el .jar usando Maven y Java 21
-FROM maven:3.9-eclipse-temurin-21 AS build
+# Etapa 1: Construir el .jar usando Maven y Java 26
+# El <java.version>26</java.version> del pom se traduce en maven.compiler.release=26,
+# asi que un JDK 21 no vale: falla con "release version 26 not supported".
+FROM maven:3.9-eclipse-temurin-26 AS build
 WORKDIR /app
 # Copiamos el pom y el código fuente
 COPY pom.xml .
@@ -7,8 +9,8 @@ COPY src ./src
 # Compilamos saltando los tests para que el despliegue sea más rápido
 RUN mvn clean package -DskipTests
 
-# Etapa 2: Ejecutar la aplicación (Usamos la imagen ligera de Java 21)
-FROM eclipse-temurin:21-jre-alpine
+# Etapa 2: Ejecutar la aplicación (Usamos la imagen ligera de Java 26)
+FROM eclipse-temurin:26-jre-alpine
 WORKDIR /app
 # Copiamos el .jar generado en la etapa 1
 COPY --from=build /app/target/*.jar app.jar

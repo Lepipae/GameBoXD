@@ -1,0 +1,25 @@
+# Blueprint de Render: https://render.com/docs/blueprint-spec
+#
+# Sustituye al despliegue manual por SSH contra el EC2 (deploy.yml), que ya no
+# existe. El servicio se puede crear desde la interfaz de Render con
+# "New > Blueprint" apuntando a este repositorio, o desde el CLI.
+#
+# Lo que se declara aquí:
+#   - runtime docker: el build lo hace el Dockerfile del repositorio (Java 26).
+#   - MONGO_* y CLAVE_CIFRADO: NO se declaran a propósito. Render guarda los
+#     secretos en el panel del servicio, y ponerlos aquí publicaría las
+#     credenciales de Atlas en el repositorio.
+services:
+  - type: web
+    name: gameboxd-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: frankfurt
+    # Render inyecta PORT; Spring Boot lo lee solo, asi que no hace falta
+    # mapearlo a 8080 en ningun sitio.
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: JAVA_OPTS
+        # El plan gratuito da 512MB: 256m de heap deja sitio al resto.
+        value: -Xmx256m -XX:+UseSerialGC

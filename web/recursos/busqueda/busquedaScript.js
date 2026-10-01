@@ -101,7 +101,7 @@ function cargarYFiltrarJuegos(query, tag, dev, devName) {
         return;
     }
 
-    const API_URL = 'https://gameboxd.duckdns.org/api/videojuegos';
+    const API_URL = `${GameBoXDApi.BASE_URL}/videojuegos`;
     const loader = document.getElementById('search-loader');
     const grid = document.getElementById('results-grid');
 
