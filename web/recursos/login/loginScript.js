@@ -56,8 +56,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.error('Error fetching user profile during login:', profileError);
                 }
 
-                // Redirigir a la página principal u otra página
-                window.location.href = 'index.html';
+                // Redirigir a la página de origen (miLista.html, detalleJuego.html...)
+                // o a index.html por defecto. También soporta ?next= en la URL de login.
+                const redirect = window.GameBoXDRedirect;
+                const returnUrl = redirect
+                    ? (redirect.getReturnUrl() || redirect.getLoginRedirectUrl())
+                    : 'index.html';
+                if (redirect) {
+                    redirect.clearReturnUrl();
+                }
+                window.location.href = returnUrl;
             } else {
                 loginError.textContent = 'Credenciales inválidas. Inténtalo de nuevo.';
             }

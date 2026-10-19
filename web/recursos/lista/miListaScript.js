@@ -199,7 +199,18 @@ function inicializarFormularios() {
                             localStorage.setItem('jwt_token', authData.jwt);
 
                             showToast(`¡Bienvenido de nuevo, ${userProfile.nombre}!`, 'success');
-                            setTimeout(() => location.reload(), 1000);
+                            setTimeout(() => {
+                    const redirect = window.GameBoXDRedirect;
+                    const returnUrl = redirect
+                        ? (redirect.getReturnUrl() ||
+                           redirect.getLoginRedirectUrl() ||
+                           'index.html')
+                        : 'index.html';
+                    if (redirect) {
+                        redirect.clearReturnUrl();
+                    }
+                    window.location.href = returnUrl;
+                }, 1000);
                         });
                 })
                 .catch(error => {

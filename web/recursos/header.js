@@ -21,13 +21,28 @@ function verificarSesionHeader() {
 
     // 1. Adaptar el comportamiento y visibilidad según si existe sesión activa
     if (!token) {
-        // No hay sesión: Ocultamos la lista del header
+        // No hay sesión: ocultamos el botón de lista, pero dejamos el enlace
+        // a miLista.html visible para que pueda usarse el formulario de acceso
+        // que hay en esa página. Guardamos la página actual para volver a ella
+        // tras iniciar sesión.
         if (btnLista) btnLista.style.display = 'none';
-        if (linkLista) linkLista.style.display = 'none';
+        if (linkLista) {
+            linkLista.style.display = 'inline-block';
+            linkLista.addEventListener('click', () => {
+                if (window.GameBoXDRedirect) {
+                    window.GameBoXDRedirect.saveReturnUrl();
+                }
+            });
+        }
 
         // El icono de usuario redirige al formulario de acceso/registro
         if (userIconLink) {
             userIconLink.href = 'login.html';
+            userIconLink.addEventListener('click', () => {
+                if (window.GameBoXDRedirect) {
+                    window.GameBoXDRedirect.saveReturnUrl();
+                }
+            });
         }
 
         // Eliminar el botón "Añadir juego" dinámico si existe
