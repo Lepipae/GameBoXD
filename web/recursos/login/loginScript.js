@@ -24,38 +24,46 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            // Peticion al servidor para iniciar sesion
-            const response = await fetch(`${GameBoXDApi.BASE_URL}/auth/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ nombre, contrasenia })
-            });
+            const auth = window.GameBoXDAuth;
+            let loginSuccess = false;
 
-            if (response.ok) {
-                const data = await response.json();
-                // Guardamos el JWT en localStorage para usarlo en otras peticiones
-                localStorage.setItem('jwt_token', data.jwt);
+            if (auth && typeof auth.login === 'function') {
+                const session = await auth.login(nombre, contrasenia);
+                loginSuccess = !!session;
+            } else {
+                // Fallback manual si no estuviera cargado el módulo auth
+                const response = await fetch(`${GameBoXDApi.BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ nombre, contrasenia })
+                });
 
-                // También obtenemos el perfil completo para sincronizar con la lista y otros componentes
-                try {
-                    const profileResponse = await fetch(`${GameBoXDApi.BASE_URL}/usuarios/nombre/${nombre}`);
-                    if (profileResponse.ok) {
-                        const userProfile = await profileResponse.json();
-                        const sessionObj = {
-                            token: data.jwt,
-                            miId: userProfile.miId,
-                            nombre: userProfile.nombre,
-                            urlImagen: userProfile.urlImagen
-                        };
-                        // Guardamos el objeto de sesion en localStorage para usarlo en otras peticiones
-                        localStorage.setItem('currentUser', JSON.stringify(sessionObj));
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('jwt_token', data.jwt);
+
+                    try {
+                        const profileResponse = await fetch(`${GameBoXDApi.BASE_URL}/usuarios/nombre/${nombre}`);
+                        if (profileResponse.ok) {
+                            const userProfile = await profileResponse.json();
+                            const sessionObj = {
+                                token: data.jwt,
+                                miId: userProfile.miId,
+                                nombre: userProfile.nombre,
+                                urlImagen: userProfile.urlImagen
+                            };
+                            localStorage.setItem('currentUser', JSON.stringify(sessionObj));
+                        }
+                    } catch (profileError) {
+                        console.error('Error fetching user profile during login:', profileError);
                     }
-                } catch (profileError) {
-                    console.error('Error fetching user profile during login:', profileError);
+                    loginSuccess = true;
                 }
+            }
 
+            if (loginSuccess) {
                 // Redirigir a la página de origen (miLista.html, detalleJuego.html...)
                 // o a index.html por defecto. También soporta ?next= en la URL de login.
                 const redirect = window.GameBoXDRedirect;

@@ -75,18 +75,18 @@ function inicializarSesion() {
     // Obtenemos los elementos del dom
     const authView = document.getElementById('auth-view');
     const listView = document.getElementById('list-view');
-    const userSession = localStorage.getItem('currentUser');
+    const user = getCurrentUser();
+    const token = getToken();
+
     // Comprobamos si hay sesión iniciada
-    if (!userSession) {
+    if (!user || !token) {
         authView.classList.remove('hidden');
         listView.classList.add('hidden');
     } else { // Si hay sesion iniciada
         authView.classList.add('hidden'); // Ocultamos la vista de auth
         listView.classList.remove('hidden'); // Mostramos la vista de lista
 
-        try { // Obtenemos la sesion del usuario
-            const user = JSON.parse(userSession);
-
+        try {
             // Configurar perfil en la cabecera
             const userNameSpan = document.getElementById('user-name-span');
             if (userNameSpan) userNameSpan.textContent = user.nombre;
@@ -104,8 +104,7 @@ function inicializarSesion() {
             cargarMiLista(user.miId);
         } catch (e) {
             console.error('Error parseando sesión local:', e);
-            localStorage.removeItem('currentUser');
-            localStorage.removeItem('jwt_token');
+            clearSession();
             location.reload();
         }
     }
@@ -114,8 +113,7 @@ function inicializarSesion() {
     const btnLogout = document.getElementById('btn-logout');
     if (btnLogout) {
         btnLogout.addEventListener('click', () => {
-            localStorage.removeItem('currentUser');
-            localStorage.removeItem('jwt_token');
+            logout();
             showToast('¡Sesión cerrada correctamente!', 'success');
             setTimeout(() => location.reload(), 800);
         });
@@ -167,51 +165,25 @@ function inicializarFormularios() {
             const bodyData = { nombre, contrasenia };
             const AUTH_URL = `${GameBoXDApi.BASE_URL}/auth/login`;
 
-            fetch(AUTH_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(bodyData)
-            })
-                .then(async response => {
-                    if (!response.ok) {
-                        throw new Error(await GameBoXDErrores.mensajeError(response, 'Usuario o contraseña incorrectos'));
+            login(nombre, contrasenia)
+                .then(session => {
+                    if (!session) {
+                        throw new Error('Usuario o contraseña incorrectos');
                     }
-                    return response.json();
-                })
-                .then(authData => {
-                    // Autenticado con éxito. Ahora traemos el ID y foto de perfil del usuario por su nombre.
-                    const USUARIO_URL = `${GameBoXDApi.BASE_URL}/usuarios/nombre/${nombre}`;
-
-                    return fetch(USUARIO_URL)
-                        .then(response => {
-                            if (!response.ok) throw new Error('Error al cargar perfil de usuario');
-                            return response.json();
-                        })
-                        .then(userProfile => {
-                            // Guardar datos completos en localStorage
-                            const sessionObj = {
-                                token: authData.jwt,
-                                miId: userProfile.miId,
-                                nombre: userProfile.nombre,
-                                urlImagen: userProfile.urlImagen
-                            };
-                            localStorage.setItem('currentUser', JSON.stringify(sessionObj));
-                            localStorage.setItem('jwt_token', authData.jwt);
-
-                            showToast(`¡Bienvenido de nuevo, ${userProfile.nombre}!`, 'success');
-                            setTimeout(() => {
-                    const redirect = window.GameBoXDRedirect;
-                    const returnUrl = redirect
-                        ? (redirect.getReturnUrl() ||
-                           redirect.getLoginRedirectUrl() ||
-                           'index.html')
-                        : 'index.html';
-                    if (redirect) {
-                        redirect.clearReturnUrl();
-                    }
-                    window.location.href = returnUrl;
-                }, 1000);
-                        });
+                    const userName = session.user?.nombre || nombre;
+                    showToast(`¡Bienvenido de nuevo, ${userName}!`, 'success');
+                    setTimeout(() => {
+                        const redirect = window.GameBoXDRedirect;
+                        const returnUrl = redirect
+                            ? (redirect.getReturnUrl() ||
+                               redirect.getLoginRedirectUrl() ||
+                               'index.html')
+                            : 'index.html';
+                        if (redirect) {
+                            redirect.clearReturnUrl();
+                        }
+                        window.location.href = returnUrl;
+                    }, 1000);
                 })
                 .catch(error => {
                     console.error('Error en login:', error);
@@ -292,7 +264,7 @@ export function cargarMiLista(idUsuario) {
     const LISTA_URL = `${GameBoXDApi.BASE_URL}/lista/${idUsuario}`;
 
     // La API restringe cada lista a su propietario, asi que hace falta el token.
-    const token = localStorage.getItem('jwt_token');
+    const token = getToken();
     const cabeceras = {};
     if (token) {
         cabeceras['Authorization'] = `Bearer ${token}`;
@@ -471,7 +443,7 @@ window.eliminarDeLista = function (idEntrada) {
     const DELETE_URL = `${GameBoXDApi.BASE_URL}/lista/${idEntrada}`;
 
     // La API solo deja borrar entradas de la lista propia, asi que hace falta el token.
-    const token = localStorage.getItem('jwt_token');
+    const token = getToken();
     const cabeceras = {};
     if (token) {
         cabeceras['Authorization'] = `Bearer ${token}`;
@@ -651,7 +623,7 @@ function inicializarModal() {
             idUsuario: idUsuario
         };
 
-        const token = localStorage.getItem('jwt_token');
+        const token = getToken();
         const headers = {
             'Content-Type': 'application/json'
         };

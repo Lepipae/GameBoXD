@@ -97,3 +97,16 @@ export async function login(nombre, contrasenia) {
 export function logout() {
     clearSession();
 }
+
+if (typeof window !== 'undefined') {
+    window.GameBoXDAuth = {
+        setSession,
+        clearSession,
+        getToken,
+        getCurrentUser,
+        isAuthenticated,
+        login,
+        logout,
+    };
+}
+
