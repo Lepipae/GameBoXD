@@ -1,4 +1,11 @@
 // Acceso al gestor centralizado de imágenes definido en api.js
+import {
+    isAuthenticated,
+    getToken,
+    getCurrentUser,
+    setSession,
+} from '../auth.js';
+
 const { aplicarImagen } = window.GameBoXDImagenes;
 
 /**
@@ -321,12 +328,22 @@ let idUsuarioLogueado = null;
  * Si no hay sesión, oculta el botón.
  * @param {string} idJuego - El ID del juego actual.
  */
-function verificarSesionYConfigurarBoton(idJuego) {
-    const token = localStorage.getItem('jwt_token');
+export function verificarSesionYConfigurarBoton(idJuego) {
+    const token = getToken();
     const btnAdd = document.getElementById('add-to-list-btn');
     
-    if (!token) {
-        if (btnAdd) btnAdd.style.display = 'none';
+    if (!isAuthenticated() || !token) {
+        if (btnAdd) {
+            btnAdd.style.display = 'inline-block';
+            btnAdd.disabled = false;
+            btnAdd.textContent = 'Inicia sesión para añadir';
+            btnAdd.addEventListener('click', () => {
+                if (window.GameBoXDRedirect) {
+                    window.GameBoXDRedirect.saveReturnUrl();
+                    window.location.href = 'login.html';
+                }
+            });
+        }
         return;
     }
 
@@ -336,56 +353,47 @@ function verificarSesionYConfigurarBoton(idJuego) {
     }
 
     // Intentar obtener el usuario de la sesión en caché local para máxima rapidez
-    const currentUserStr = localStorage.getItem('currentUser');
-    if (currentUserStr) {
-        try {
-            const userProfile = JSON.parse(currentUserStr);
-            if (userProfile && userProfile.miId) {
-                idUsuarioLogueado = userProfile.miId;
-                comprobarJuegoEnLista(idJuego, idUsuarioLogueado, token);
-                return;
-            }
-        } catch (e) {
-            console.error('Error parseando currentUser de localStorage:', e);
-        }
+    const userProfile = getCurrentUser();
+    if (userProfile && userProfile.miId) {
+        idUsuarioLogueado = userProfile.miId;
+        comprobarJuegoEnLista(idJuego, idUsuarioLogueado, token);
+        return;
     }
 
-    // Fallback: Si no está en caché, lo obtenemos de la API
-    try {
-        const payloadBase64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-        const payloadDecoded = JSON.parse(atob(payloadBase64));
-        const username = payloadDecoded.sub;
-
-        fetch(`${GameBoXDApi.BASE_URL}/usuarios/nombre/${username}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        })
-        .then(response => {
-            if (!response.ok) throw new Error('Failed to fetch user data');
-            return response.json();
-        })
-        .then(usuario => {
-            idUsuarioLogueado = usuario.miId;
-            
-            // Guardar en caché para futuras visitas instantáneas
-            const sessionObj = {
-                token: token,
-                miId: usuario.miId,
-                nombre: usuario.nombre
-            };
-            localStorage.setItem('currentUser', JSON.stringify(sessionObj));
-
-            comprobarJuegoEnLista(idJuego, idUsuarioLogueado, token);
-        })
-        .catch(err => {
-            console.error('Error fetching logged in user:', err);
-            if (btnAdd) btnAdd.style.display = 'none';
-        });
-    } catch (e) {
-        console.error('Error decoding token', e);
+    // Fallback: si no está en caché, obtenemos el nombre de la sesión en caché
+    // (poblada en el login) y consultamos la API con él.
+    const username = userProfile ? userProfile.nombre : null;
+    if (!username) {
+        console.error('No hay nombre de usuario en caché para consultar la API');
         if (btnAdd) btnAdd.style.display = 'none';
+        return;
     }
+
+    fetch(`${GameBoXDApi.BASE_URL}/usuarios/nombre/${username}`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Failed to fetch user data');
+        return response.json();
+    })
+    .then(usuario => {
+        idUsuarioLogueado = usuario.miId;
+
+        // Guardar en caché para futuras visitas instantáneas
+        setSession(token, {
+            token,
+            miId: usuario.miId,
+            nombre: usuario.nombre,
+        });
+
+        comprobarJuegoEnLista(idJuego, idUsuarioLogueado, token);
+    })
+    .catch(err => {
+        console.error('Error fetching logged in user:', err);
+        if (btnAdd) btnAdd.style.display = 'none';
+    });
 }
 
 /**
