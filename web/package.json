@@ -1,0 +1,13 @@
+{
+  "name": "gameboxd-web",
+  "private": true,
+  "version": "1.0.0",
+  "description": "GameBoXD frontend resources",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "jsdom": "^24.1.0",
+    "vitest": "^2.0.5"
+  }
+}
