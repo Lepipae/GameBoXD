@@ -68,6 +68,11 @@
         <div id="results-grid" class="results-grid" style="display: none;">
           <!-- Las tarjetas de juego se inyectarán dinámicamente -->
         </div>
+
+        <!-- Botón de paginación "Cargar más" (oculto hasta que haya más páginas) -->
+        <div id="contenedor-cargar-mas" style="display: none; margin: 32px auto 0; text-align: center;">
+          <button id="btn-cargar-mas" class="btn-cargar-mas" type="button">Cargar más</button>
+        </div>
       </section>
     </main>
 
@@ -90,6 +95,6 @@
 
     <script src="recursos/api.js"></script>
     <script src="recursos/header.js"></script>
-    <script src="recursos/busqueda/busquedaScript.js"></script>
+    <script type="module" src="recursos/busqueda/busquedaScript.js"></script>
   </body>
 </html>

@@ -114,6 +114,47 @@
     box-shadow: 0 8px 15px rgba(0, 209, 255, 0.15);
 }
 
+/* Botón de paginación "Cargar más" */
+#contenedor-cargar-mas {
+    margin: 32px auto 0;
+    text-align: center;
+}
+
+.btn-cargar-mas {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 28px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    color: #0B0E14;
+    background: #00D1FF;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-cargar-mas:hover:not(:disabled) {
+    filter: brightness(1.1);
+    box-shadow: 0 0 20px rgba(0, 209, 255, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-cargar-mas:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn-cargar-mas:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: none;
+    box-shadow: none;
+    transform: none;
+}
+
 /* Mensaje cuando no hay resultados */
 .no-results-container {
     display: flex;
