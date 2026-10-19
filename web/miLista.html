@@ -10,11 +10,13 @@
     <link rel="stylesheet" href="recursos/lista/miListaStyle.css">
   </head>
   <body>
+    <a href="#contenido-principal" class="skip-link">Saltar al contenido principal</a>
+
     <!-- Cabecera de la pagina -->
     <header class="main-header">
       <div class="header-left">
         <a href="login.html" class="icon-button" aria-label="Usuario" id="btn-user-icon">
-          <img src="recursos/img/user.svg" alt="Usuario">
+          <img src="recursos/img/user.svg" alt="">
         </a>
         <button id="btn-todos-juegos" class="nav-button" type="button">Ver todos los juegos</button>
         <a href="miLista.html" id="link-mi-lista"><button id="btn-mi-lista" class="nav-button" type="button">Mi lista</button></a>
@@ -34,7 +36,7 @@
     </header>
 
     <!-- Seccion principal -->
-    <main>
+    <main id="contenido-principal">
       <!-- VISTA DE AUTENTICACION (No logueado) -->
       <div id="auth-view" class="auth-view hidden">
         <div class="auth-card">
@@ -128,14 +130,14 @@
     <footer class="main-footer">
       <p>Proyecto realizado para el IES Virgen de la Paloma</p>
       <div class="footer-social">
-        <button class="social" type="button">
+        <button class="social" type="button" aria-label="Web del IES Virgen de la Paloma">
           <a href="https://www.palomafp.org/" target="_blank" rel="noopener noreferrer">
-            <img src="recursos/img/escuela.svg" alt="IES Virgen de la Paloma">
+            <img src="recursos/img/escuela.svg" alt="">
           </a>
         </button>
-        <button class="social" type="button">
+        <button class="social" type="button" aria-label="Repositorio de GameBoXD en GitHub">
           <a href="https://github.com/Lepipae/GameBoXD" target="_blank" rel="noopener noreferrer">
-            <img src="recursos/img/github.svg" alt="GitHub">
+            <img src="recursos/img/github.svg" alt="">
           </a>
         </button>
       </div>
@@ -146,7 +148,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h2 id="modal-game-title">Editar entrada</h2>
-          <button id="close-modal-btn" class="close-modal" type="button">&times;</button>
+          <button id="close-modal-btn" class="close-modal" type="button" aria-label="Cerrar modal de edición">&times;</button>
         </div>
         <form id="edit-game-form">
           <input type="hidden" id="edit-entry-id">
@@ -198,8 +200,8 @@
       </div>
     </div>
 
-    <!-- Contenedor para alertas tipo Toast flotantes -->
-    <div id="toast-container" class="toast-container"></div>
+    <!-- Contenedor para alertas tipo Toast flotantes (región en vivo para lectores de pantalla) -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
     <script src="recursos/api.js"></script>
     <script type="module" src="recursos/auth.js"></script>

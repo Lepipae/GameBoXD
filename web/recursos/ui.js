@@ -22,6 +22,7 @@ export function showToast(message, type = 'success') {
     closeBtn.className = 'toast-close';
     closeBtn.innerHTML = '&times;';
     closeBtn.type = 'button';
+    closeBtn.setAttribute('aria-label', 'Cerrar notificación');
 
     closeBtn.addEventListener('click', () => {
         hideToast(toast);

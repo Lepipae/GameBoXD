@@ -11,11 +11,13 @@
     <link rel="stylesheet" href="recursos/busqueda/busquedaStyle.css">
   </head>
   <body>
+    <a href="#contenido-principal" class="skip-link">Saltar al contenido principal</a>
+
     <!-- Cabecera de la pagina -->
     <header class="main-header">
       <div class="header-left">
         <a href="login.html" class="icon-button" aria-label="Usuario" id="btn-user-icon">
-          <img src="recursos/img/user.svg" alt="Usuario">
+          <img src="recursos/img/user.svg" alt="">
         </a>
         <button id="btn-todos-juegos" class="nav-button" type="button">Ver todos los juegos</button>
         <a href="miLista.html" id="link-mi-lista"><button id="btn-mi-lista" class="nav-button" type="button">Mi lista</button></a>
@@ -35,21 +37,21 @@
     </header>
 
     <!-- Seccion principal -->
-    <main style="display: flex; flex-direction: column; flex: 1;">
+    <main id="contenido-principal" style="display: flex; flex-direction: column; flex: 1;">
       <!-- Buscador -->
       <div class="search-container">
         <div class="search-bar">
-          <button class="search-icon-wrapper" type="button" id="btn-buscar">
-            <img src="recursos/img/search.svg" alt="Buscar">
+          <button class="search-icon-wrapper" type="button" id="btn-buscar" aria-label="Buscar">
+            <img src="recursos/img/search.svg" alt="">
           </button>
-          <input type="text" class="search-input" id="search-input-field" placeholder="Encuentra tus juegos favoritos">
+          <input type="text" class="search-input" id="search-input-field" placeholder="Encuentra tus juegos favoritos" aria-label="Buscar videojuegos">
         </div>
       </div>
 
       <!-- Sección de Resultados de Búsqueda -->
       <section class="search-results-section">
         <!-- Título informativo de la búsqueda -->
-        <h2 class="results-info" id="results-info-text">Buscando...</h2>
+        <h2 class="results-info" id="results-info-text" aria-live="polite">Buscando...</h2>
         
         <!-- Indicador de Carga / Spinner -->
         <div id="search-loader" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 40px; color: #A0AEC0;">
@@ -80,14 +82,14 @@
     <footer class="main-footer">
       <p>Proyecto realizado para el IES Virgen de la Paloma</p>
       <div class="footer-social">
-        <button class="social" type="button">
+        <button class="social" type="button" aria-label="Web del IES Virgen de la Paloma">
           <a href="https://www.palomafp.org/" target="_blank" rel="noopener noreferrer">
-            <img src="recursos/img/escuela.svg" alt="IES Virgen de la Paloma">
+            <img src="recursos/img/escuela.svg" alt="">
           </a>
         </button>
-        <button class="social" type="button">
+        <button class="social" type="button" aria-label="Repositorio de GameBoXD en GitHub">
           <a href="https://github.com/Lepipae/GameBoXD" target="_blank" rel="noopener noreferrer">
-            <img src="recursos/img/github.svg" alt="GitHub">
+            <img src="recursos/img/github.svg" alt="">
           </a>
         </button>
       </div>

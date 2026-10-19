@@ -9,6 +9,17 @@ import {
 const { aplicarImagen } = window.GameBoXDImagenes;
 
 /**
+ * Caché de nombres de usuario por ID de usuario (id → username).
+ * Garantiza que cada usuario se solicite a la API a lo sumo una vez por carga
+ * de página, eliminando el problema N+1 al renderizar varias reseñas de un
+ * mismo usuario. Persiste mientras la página esté abierta, así que varias
+ * renderizaciones de reseñas se benefician del mismo caché.
+ *
+ * @type {Map<string | number, string>}
+ */
+export const cacheUsuarios = new Map();
+
+/**
  * Event listener que se ejecuta cuando el DOM está completamente cargado.
  * Inicia la carga de los detalles del juego si se proporciona un ID en la URL.
  */
@@ -209,7 +220,7 @@ function cargarResenyasJuego(idJuego) {
  * 
  * @param {Object[]} resenyas - Array de objetos de entradas de lista.
  */
-function renderizarResenyas(resenyas) {
+export function renderizarResenyas(resenyas) {
     const container = document.getElementById('reviews-container');
     container.innerHTML = '';
     
@@ -222,56 +233,94 @@ function renderizarResenyas(resenyas) {
         msg.textContent = 'Aún no hay reseñas para este juego.';
         container.appendChild(msg);
     } else {
-        resenyasConTexto.forEach(r => {
-            const card = document.createElement('div');
-            card.className = 'review-card';
-            
-            const userLabelId = `review-username-${r.miId}`;
-            
-            const rating = document.createElement('div');
-            rating.className = 'review-rating';
-            rating.textContent = r.nota.toFixed(1);
-            
-            const content = document.createElement('div');
-            content.className = 'review-content';
-            content.innerHTML = `
-                <div class="review-user-name" id="${userLabelId}">Cargando usuario...</div>
-                <div class="review-text-content">"${r.resenya}"</div>
-            `;
-            
-            card.appendChild(rating);
-            card.appendChild(content);
-            container.appendChild(card);
+        // Batch: traer cada usuario único una sola vez y rellenar el caché.
+        // Renderizar N reseñas de M usuarios cuesta M peticiones (y no N),
+        // incluso cuando algún usuario repite reseña.
+        const idsUnicos = [...new Set(resenyasConTexto.map(r => r.idUsuario))];
+        const peticiones = idsUnicos.map(idUsuario => {
+            if (cacheUsuarios.has(idUsuario)) {
+                return Promise.resolve(cacheUsuarios.get(idUsuario));
+            }
+            return fetchNombreUsuario(idUsuario)
+                .then(nombre => {
+                    cacheUsuarios.set(idUsuario, nombre);
+                    return nombre;
+                })
+                .catch(error => {
+                    console.error("Error cargando usuario de reseña:", error);
+                    cacheUsuarios.set(idUsuario, 'Usuario Anónimo');
+                    return 'Usuario Anónimo';
+                });
+        });
 
-            // Cargar nombre de usuario
-            cargarNombreUsuarioReview(r.idUsuario, userLabelId);
+        Promise.all(peticiones).then(() => {
+            // Tarjetas: los nombres ya están en el caché, así que
+            // cargarNombreUsuarioReview no dispara peticiones repetidas.
+            resenyasConTexto.forEach(r => {
+                const card = document.createElement('div');
+                card.className = 'review-card';
+                
+                const userLabelId = `review-username-${r.miId}`;
+                
+                const rating = document.createElement('div');
+                rating.className = 'review-rating';
+                rating.textContent = r.nota.toFixed(1);
+                
+                const content = document.createElement('div');
+                content.className = 'review-content';
+                content.innerHTML = `
+                    <div class="review-user-name" id="${userLabelId}">Cargando usuario...</div>
+                    <div class="review-text-content">"${r.resenya}"</div>
+                `;
+                
+                card.appendChild(rating);
+                card.appendChild(content);
+                container.appendChild(card);
+
+                // Cargar nombre de usuario (lectura del caché; sin fetch repetido)
+                cargarNombreUsuarioReview(r.idUsuario, userLabelId);
+            });
         });
     }
 }
 
-/**
- * Petición a la API para obtener el nombre de usuario de una reseña e inyectarlo.
- * 
- * @param {number} idUsuario - El ID del usuario.
- * @param {string} labelId - El ID del elemento HTML donde se inyectará el nombre.
- */
-function cargarNombreUsuarioReview(idUsuario, labelId) {
-    const API_URL = `${GameBoXDApi.BASE_URL}/usuarios/${idUsuario}`;
+export function cargarNombreUsuarioReview(idUsuario, labelId) {
     const label = document.getElementById(labelId);
     if (!label) return;
 
-    fetch(API_URL)
+    // Caché hit: inyectar el nombre sin tocar la red.
+    const nombreEnCaché = cacheUsuarios.get(idUsuario);
+    if (nombreEnCaché !== undefined) {
+        label.textContent = nombreEnCaché;
+        return;
+    }
+
+    // No está en caché: se trae una sola vez, se almacena y se inyecta.
+    fetchNombreUsuario(idUsuario)
+        .then(nombre => {
+            cacheUsuarios.set(idUsuario, nombre);
+            if (label) label.textContent = nombre;
+        })
+        .catch(error => {
+            console.error("Error cargando usuario de reseña:", error);
+            cacheUsuarios.set(idUsuario, 'Usuario Anónimo');
+            if (label) label.textContent = "Usuario Anónimo";
+        });
+}
+
+/**
+ * Petición a la API para obtener el nombre de usuario de una reseña.
+ * 
+ * @param {number} idUsuario - El ID del usuario.
+ * @returns {Promise<string>} El nombre de usuario.
+ */
+function fetchNombreUsuario(idUsuario) {
+    return fetch(`${GameBoXDApi.BASE_URL}/usuarios/${idUsuario}`)
         .then(response => {
             if (!response.ok) throw new Error('Usuario no encontrado');
             return response.json();
         })
-        .then(usuario => {
-            label.textContent = usuario.nombre;
-        })
-        .catch(error => {
-            console.error("Error cargando usuario de reseña:", error);
-            label.textContent = "Usuario Anónimo";
-        });
+        .then(usuario => usuario.nombre);
 }
 
 /**

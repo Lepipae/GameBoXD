@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="recursos/insertar/insertarStyle.css">
   </head>
   <body>
+    <a href="#contenido-principal" class="skip-link">Saltar al contenido principal</a>
+
     <!-- Cabecera de la pagina -->
     <header class="main-header">
       <div class="header-left">
@@ -32,7 +34,7 @@
     </header>
 
     <!-- Seccion principal -->
-    <main>
+    <main id="contenido-principal">
       <div class="insertar-section">
         <h1 class="section-title">Panel de Inserción</h1>
         
@@ -139,21 +141,21 @@
     <footer class="main-footer">
       <p>Proyecto realizado para el IES Virgen de la Paloma</p>
       <div class="footer-social">
-        <button class="social" type="button">
+        <button class="social" type="button" aria-label="Web del IES Virgen de la Paloma">
           <a href="https://www.palomafp.org/" target="_blank" rel="noopener noreferrer">
-            <img src="recursos/img/escuela.svg" alt="IES Virgen de la Paloma">
+            <img src="recursos/img/escuela.svg" alt="">
           </a>
         </button>
-        <button class="social" type="button">
+        <button class="social" type="button" aria-label="Repositorio de GameBoXD en GitHub">
           <a href="https://github.com/Lepipae/GameBoXD" target="_blank" rel="noopener noreferrer">
-            <img src="recursos/img/github.svg" alt="GitHub">
+            <img src="recursos/img/github.svg" alt="">
           </a>
         </button>
       </div>
     </footer>
 
-    <!-- Contenedor para alertas tipo Toast flotantes -->
-    <div id="toast-container" class="toast-container"></div>
+    <!-- Contenedor para alertas tipo Toast flotantes (región en vivo para lectores de pantalla) -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
     <script src="recursos/api.js"></script>
     <script type="module" src="recursos/auth.js"></script>
