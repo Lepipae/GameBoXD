@@ -73,6 +73,16 @@ public class VideojuegoService {
     }
 
     /**
+     * Metodo que obtiene el videojuego con más entradas de lista, de cara al
+     * hero del index (lo más reseñado en el momento).
+     *
+     * @return Juego más reseñado, o null si todavía no hay entradas.
+     */
+    public Videojuego obtenerMasResenyado() {
+        return entradaListaService.juegoConMasEntradas();
+    }
+
+    /**
      * Guarda un videojuego en la base de datos
      * @param videojuego Objeto a guardar
      * @return Videojuego guardado

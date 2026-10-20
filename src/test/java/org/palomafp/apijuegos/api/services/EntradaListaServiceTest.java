@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.palomafp.apijuegos.api.modelo.EntradaLista;
+import org.palomafp.apijuegos.api.modelo.Videojuego;
 import org.palomafp.apijuegos.api.repositories.EntradaListaRepo;
 import org.palomafp.apijuegos.api.repositories.VideojuegoRepo;
 
@@ -107,5 +108,77 @@ class EntradaListaServiceTest {
         doNothing().when(entradaListaRepo).deleteByIdVideojuego(1L);
         entradaListaService.borrarPorVideojuego(1L);
         verify(entradaListaRepo, times(1)).deleteByIdVideojuego(1L);
+    }
+
+    /**
+     * El hero del index debe mostrar el juego al que más listas pertenecen.
+     * Todas las entradas cuentan, aunque no lleven texto de reseña.
+     */
+    @Test
+    void juegoConMasEntradasDevuelveElJuegoLider() {
+        when(entradaListaRepo.findAll()).thenReturn(List.of(
+                entrada(1L, 1),
+                entrada(1L, 2),
+                entrada(1L, 3),
+                entrada(2L, 1),
+                entrada(5L, 4)
+        ));
+
+        Videojuego lider = new Videojuego();
+        lider.setMiId(1L);
+        when(videojuegoRepo.findByMiId(1L)).thenReturn(lider);
+
+        Videojuego result = entradaListaService.juegoConMasEntradas();
+
+        assertSame(lider, result);
+        verify(videojuegoRepo, times(1)).findByMiId(1L);
+    }
+
+    /**
+     * Sin ninguna entrada de lista no hay candidato al hero: null y sin tocar
+     * el repositorio de videojuegos.
+     */
+    @Test
+    void juegoConMasEntradasSinEntradasDevuelveNull() {
+        when(entradaListaRepo.findAll()).thenReturn(List.of());
+
+        assertNull(entradaListaService.juegoConMasEntradas());
+        verify(videojuegoRepo, never()).findByMiId(anyLong());
+    }
+
+    /**
+     * En empate se queda con el menor id de juego para que el hero sea
+     * estable entre consultas (mismos datos, mismo resultado).
+     */
+    @Test
+    void juegoConMasEntradasConEmpateSeQuedaConElMenorId() {
+        when(entradaListaRepo.findAll()).thenReturn(List.of(
+                entrada(7L, 1),
+                entrada(3L, 2)
+        ));
+
+        Videojuego lider = new Videojuego();
+        lider.setMiId(3L);
+        when(videojuegoRepo.findByMiId(3L)).thenReturn(lider);
+
+        Videojuego result = entradaListaService.juegoConMasEntradas();
+
+        assertSame(lider, result);
+        verify(videojuegoRepo, never()).findByMiId(7L);
+    }
+
+    /**
+     * Entrada de lista de prueba con el juego y usuario indicados.
+     *
+     * @param idVideojuego Id del videojuego de la entrada.
+     * @param idUsuario    Id del usuario de la entrada.
+     * @return Entrada lista sin texto de reseña (para probar que igual cuenta).
+     */
+    private EntradaLista entrada(long idVideojuego, int idUsuario) {
+        EntradaLista entrada = new EntradaLista();
+        entrada.setIdVideojuego(idVideojuego);
+        entrada.setIdUsuario(idUsuario);
+        entrada.setResenya(null);
+        return entrada;
     }
 }

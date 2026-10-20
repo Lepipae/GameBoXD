@@ -324,6 +324,12 @@ img {
     justify-content: flex-end;
 }
 
+/* El hero se oculta hasta que llega el juego con más reseñas; sin esta regla
+   el display:flex de arriba anularía el atributo hidden del navegador. */
+.hero-right[hidden] {
+    display: none;
+}
+
 .hero-image {
     width: 100%;
     max-width: 580px;

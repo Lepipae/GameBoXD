@@ -92,6 +92,24 @@ public class VideojuegoController {
     }
 
     /**
+     * Metodo que devuelve el videojuego al que pertenecen más entradas de lista
+     * (lo más reseñado en el momento). Alimenta el hero del index.
+     *
+     * <p>Público como el resto de lecturas de catálogo: no expone datos de
+     * usuarios, solo el juego más popular.</p>
+     *
+     * @return Juego con más entradas de lista
+     */
+    @GetMapping("/mas-resenyas")
+    public Videojuego obtenerMasResenyado() {
+        var juego = videojuegoService.obtenerMasResenyado();
+        if (juego == null) {
+            throw new RecursoNoEncontradoException("Todavia no hay ninguna entrada de lista");
+        }
+        return juego;
+    }
+
+    /**
      * Metodo para guardar un videojuego en la base de datos
      * @param videojuego    Objeto videojuego a guardar
      * @return              Objeto guardado

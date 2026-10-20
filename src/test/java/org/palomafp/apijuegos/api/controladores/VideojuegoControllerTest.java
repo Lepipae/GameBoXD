@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.palomafp.apijuegos.api.excepciones.RecursoNoEncontradoException;
 import org.palomafp.apijuegos.api.modelo.Videojuego;
 import org.palomafp.apijuegos.api.services.VideojuegoService;
 
@@ -13,6 +14,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 class VideojuegoControllerTest {
@@ -93,5 +95,33 @@ class VideojuegoControllerTest {
         doNothing().when(videojuegoService).borrarVideojuego(1L);
         videojuegoController.borrarVideojuego(1L);
         verify(videojuegoService, times(1)).borrarVideojuego(1L);
+    }
+
+    /**
+     * El endpoint del hero devuelve el juego con más entradas de la lista.
+     */
+    @Test
+    void obtenerMasResenyado() {
+        Videojuego v = new Videojuego();
+        v.setMiId(9L);
+        when(videojuegoService.obtenerMasResenyado()).thenReturn(v);
+
+        Videojuego result = videojuegoController.obtenerMasResenyado();
+
+        assertNotNull(result);
+        assertEquals(9L, result.getMiId());
+        verify(videojuegoService, times(1)).obtenerMasResenyado();
+    }
+
+    /**
+     * Sin ninguna entrada de lista no hay hero: 404 con mensaje claro en vez
+     * de un cuerpo null silencioso.
+     */
+    @Test
+    void obtenerMasResenyadoSinDatosLanzaNoEncontrado() {
+        when(videojuegoService.obtenerMasResenyado()).thenReturn(null);
+
+        assertThrows(RecursoNoEncontradoException.class,
+                () -> videojuegoController.obtenerMasResenyado());
     }
 }

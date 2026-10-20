@@ -7,7 +7,9 @@ import org.palomafp.apijuegos.api.repositories.EntradaListaRepo;
 import org.palomafp.apijuegos.api.repositories.VideojuegoRepo;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -79,6 +81,40 @@ public class EntradaListaService {
      */
     public List<EntradaLista> findByIdVideojuego(long idVideojuego) {
         return entradaListaRepo.findByIdVideojuego(idVideojuego);
+    }
+
+    /**
+     * Devuelve el videojuego al que pertenecen más entradas de lista (el más
+     * "reseñado" de cara al hero del index).
+     *
+     * <p>Cuentan todas las entradas, aunque no lleven texto de reseña: una
+     * entrada con solo nota u horas ya es un jugador que ha traté ese juego.
+     * En empate se queda con el menor id de juego para que el resultado sea
+     * estable entre consultas (mismos datos, mismo héroe).</p>
+     *
+     * @return El juego con más entradas, o null si todavía no hay ninguna.
+     */
+    public Videojuego juegoConMasEntradas() {
+        List<EntradaLista> entradas = entradaListaRepo.findAll();
+        if (entradas == null || entradas.isEmpty()) {
+            return null;
+        }
+
+        Map<Long, Long> entradasPorJuego = new HashMap<>();
+        for (EntradaLista entrada : entradas) {
+            entradasPorJuego.merge(entrada.getIdVideojuego(), 1L, Long::sum);
+        }
+
+        long idLider = -1;
+        long maximo = -1;
+        for (Map.Entry<Long, Long> cuenta : entradasPorJuego.entrySet()) {
+            if (cuenta.getValue() > maximo || (cuenta.getValue() == maximo && cuenta.getKey() < idLider)) {
+                maximo = cuenta.getValue();
+                idLider = cuenta.getKey();
+            }
+        }
+
+        return videojuegoRepo.findByMiId(idLider);
     }
 
     /**

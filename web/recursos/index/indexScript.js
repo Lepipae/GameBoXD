@@ -3,12 +3,60 @@ const { tieneUrlImagen, aplicarImagen } = window.GameBoXDImagenes;
 
 /**
  * Event listener que se ejecuta cuando el DOM está completamente cargado.
- * Inicia el proceso para obtener y mostrar recomendaciones de juegos.
+ * Inicia el proceso para obtener y mostrar recomendaciones de juegos y el
+ * hero con lo más reseñado.
  */
 document.addEventListener('DOMContentLoaded', () => {
-    obtenerRecomendaciones(); 
+    obtenerRecomendaciones();
+    cargarHeroMasResenyado();
     configurarBuscador();
 });
+
+/**
+ * Rellena el hero con el juego que más entradas de lista tiene en el momento
+ * (GET /api/videojuegos/mas-resenyas), usando la propia carátula del juego
+ * como imagen y enlazando a su ficha.
+ *
+ * Si el endpoint falla o todavía no hay ninguna entrada de lista, el hero se
+ * queda oculto y el resto de la página sigue funcionando con normalidad.
+ *
+ * @returns {Promise<void>}
+ */
+export async function cargarHeroMasResenyado() {
+    const contenedor = document.getElementById('hero-right');
+    if (!contenedor) return;
+
+    try {
+        const response = await fetch(`${GameBoXDApi.BASE_URL}/videojuegos/mas-resenyas`);
+        if (!response.ok) {
+            throw new Error('Todavia no hay ninguna entrada de lista');
+        }
+
+        const juego = await response.json();
+        if (!juego || juego.miId === undefined || juego.miId === null) {
+            throw new Error('La API no devolvio ningun juego');
+        }
+
+        const enlace = document.getElementById('hero-enlace');
+        const img = document.getElementById('hero-imagen');
+
+        if (enlace) {
+            enlace.href = `detalleJuego.html?id=${juego.miId}`;
+        }
+        if (img) {
+            // La carátula del propio juego: no hace falta ninguna imagen de hero fija.
+            aplicarImagen(img, juego.urlImagen);
+            img.alt = juego.nombre || '';
+            img.title = juego.nombre || '';
+        }
+
+        contenedor.hidden = false;
+    } catch (error) {
+        console.error('Error cargando el hero:', error);
+        // Sin datos fiables el hero se queda oculto: mejor nada que un juego equivocado.
+        contenedor.hidden = true;
+    }
+}
 
 /**
  * Configura los event listeners para la barra de búsqueda en index.html.
