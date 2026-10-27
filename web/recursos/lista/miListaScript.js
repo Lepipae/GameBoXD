@@ -80,8 +80,12 @@ function inicializarSesion() {
 
     // Comprobamos si hay sesión iniciada
     if (!user || !token) {
-        authView.classList.remove('hidden');
-        listView.classList.add('hidden');
+        // Mi lista requiere sesión: redirigimos al formulario de acceso.
+        if (window.GameBoXDRedirect) {
+            window.GameBoXDRedirect.saveReturnUrl();
+        }
+        window.location.href = 'login.html';
+        return;
     } else { // Si hay sesion iniciada
         authView.classList.add('hidden'); // Ocultamos la vista de auth
         listView.classList.remove('hidden'); // Mostramos la vista de lista
