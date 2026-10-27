@@ -1,7 +1,9 @@
-/* CSS Reset - Cancelaciones de estilos por defecto */
-/*
-* Tendria que documentar esto pero odio CSS y no quiero
-*/
+/* ==========================================================================
+   GameBoXD — estilos compartidos
+   Tema oscuro con profundidad: gradientes, glassmorphism, brillos y animaciones.
+   ========================================================================== */
+
+/* ---------- Reset ---------- */
 *,
 *::before,
 *::after {
@@ -10,13 +12,65 @@
     padding: 0;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 html,
 body {
     width: 100%;
     min-height: 100vh;
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: #0B0E14;
-    color: #333;
+    background-color: #05070d;
+    color: #e2e8f0;
+}
+
+body {
+    position: relative;
+    overflow-x: hidden;
+    /* Fondo con gradientes radiales para dar sensación de profundidad */
+    background:
+        radial-gradient(circle at 12% 18%, rgba(0, 209, 255, 0.16), transparent 42%),
+        radial-gradient(circle at 88% 12%, rgba(99, 102, 241, 0.20), transparent 46%),
+        radial-gradient(circle at 50% 82%, rgba(236, 72, 153, 0.12), transparent 50%),
+        #05070d;
+}
+
+/* Capa de rejilla sutil */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    pointer-events: none;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse at center, black 20%, transparent 78%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black 20%, transparent 78%);
+}
+
+/* Orbes de luz animados */
+body::after {
+    content: '';
+    position: fixed;
+    inset: -25%;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 20% 30%, rgba(0, 209, 255, 0.22), transparent 38%),
+        radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.22), transparent 42%),
+        radial-gradient(circle at 50% 72%, rgba(236, 72, 153, 0.16), transparent 46%);
+    filter: blur(50px);
+    animation: floatOrbs 22s ease-in-out infinite alternate;
+    will-change: transform;
+}
+
+@keyframes floatOrbs {
+    0%   { transform: translate3d(0, 0, 0) scale(1); }
+    50%  { transform: translate3d(4%, -3%, 0) scale(1.06); }
+    100% { transform: translate3d(-3%, 4%, 0) scale(1.02); }
 }
 
 ul,
@@ -38,9 +92,7 @@ textarea {
     background: none;
 }
 
-/* Anillo de foco visible para navegación por teclado (accesibilidad).
-   Quienes navegan con Tab ven un contorno ciano sobre los elementos focoables.
-   Los usuarios de ratón no lo ven gracias a la regla :focus:not(:focus-visible). */
+/* Anillo de foco visible para navegación por teclado (accesibilidad). */
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
@@ -61,7 +113,7 @@ button {
     cursor: pointer;
 }
 
-/* Enlace de omisión para teclado: salta directamente al contenido principal */
+/* Enlace de omisión para teclado */
 .skip-link {
     position: absolute;
     top: -10000px;
@@ -85,61 +137,164 @@ img {
     display: block;
 }
 
-/* Header Styles */
+::selection {
+    background: rgba(0, 209, 255, 0.35);
+    color: #ffffff;
+}
+
+/* ---------- Header moderno ---------- */
 .main-header {
-    background-color: #1A202C;
-    /* Color del diseño original */
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(8, 12, 20, 0.72);
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 24px;
-    height: 72px;
-    /* Altura del header */
+    padding: 0 28px;
+    height: 76px;
     color: #F8FAFC;
-    /* Color del texto del header */
+    border-bottom: 1px solid rgba(0, 209, 255, 0.18);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
 }
 
-/* Contenedores para alinear items en el header */
 .header-left,
 .header-center,
 .header-right {
     display: flex;
     align-items: center;
     flex: 1;
-    /* Distribuye el espacio equitativamente */
 }
 
-/* Parte izquierda: Botones */
 .header-left {
     justify-content: flex-start;
-    gap: 16px;
-    /* Espacio entre los botones */
+    gap: 14px;
 }
 
+.header-center {
+    justify-content: center;
+}
+
+.header-right {
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* Marca / título */
+.header-center h1 {
+    font-size: 22px;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: 0.4px;
+    background: linear-gradient(90deg, #F8FAFC 0%, #00D1FF 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 24px rgba(0, 209, 255, 0.25);
+}
+
+.brand-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.brand-link:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.1);
+}
+
+.brand-logo {
+    height: 34px;
+    width: auto;
+    filter: drop-shadow(0 0 12px rgba(0, 209, 255, 0.4));
+}
+
+/* Botón de icono (usuario) */
 .icon-button {
-    background-color: #E2E8F0;
+    background: rgba(226, 232, 240, 0.10);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 12px;
-    width: 48px;
-    height: 48px;
-    transition: transform 0.1s ease, filter 0.2s ease;
+    border-radius: 14px;
+    width: 46px;
+    height: 46px;
+    backdrop-filter: blur(8px);
+    transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+.icon-button:hover {
+    background: rgba(0, 209, 255, 0.18);
+    border-color: rgba(0, 209, 255, 0.45);
+    box-shadow: 0 0 22px rgba(0, 209, 255, 0.35);
+    transform: translateY(-1px);
+}
+
+.icon-button:active {
+    transform: scale(0.94);
+}
+
+.icon-button img {
+    width: 100%;
+    height: 100%;
+    border-radius: 14px;
+    object-fit: contain;
+}
+
+/* Botones de navegación */
+.nav-button {
+    background: linear-gradient(135deg, #00D1FF 0%, #6366f1 100%);
+    color: #0b0e14;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 10px 22px;
+    border-radius: 999px;
+    box-shadow: 0 6px 20px rgba(0, 209, 255, 0.35);
+    transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.nav-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(0, 209, 255, 0.5);
+    filter: brightness(1.08);
+}
+
+.nav-button:active {
+    transform: scale(0.96);
+}
+
+/* Logo */
+.header-right .logo {
+    height: 40px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 14px rgba(0, 209, 255, 0.35));
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.header-right .logo:hover {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 20px rgba(0, 209, 255, 0.55));
+}
+
+/* ---------- Footer ---------- */
 .main-footer {
-    background-color: #1A202C;
-    /* Color del diseño original */
+    background: rgba(8, 12, 20, 0.85);
+    backdrop-filter: blur(12px);
     color: #F8FAFC;
-    /* Color del texto del footer */
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 24px;
+    padding: 14px 28px;
     margin-top: auto;
     position: sticky;
     bottom: 0;
     z-index: 1000;
+    border-top: 1px solid rgba(0, 209, 255, 0.15);
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.4);
 }
 
 .footer-social {
@@ -152,115 +307,77 @@ img {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 30px;
-    height: 30px;
-    margin-left: 5px;
-    margin-right: 5px;
-    transition: transform 0.1s ease, filter 0.2s ease;
+    width: 34px;
+    height: 34px;
+    margin: 0 4px;
+    border-radius: 10px;
+    background: rgba(226, 232, 240, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
-.icon-button img {
-    width: 100%;
-    height: 100%;
-    border-radius: 12px;
+.social:hover {
+    transform: translateY(-2px);
+    background: rgba(0, 209, 255, 0.18);
+    box-shadow: 0 0 18px rgba(0, 209, 255, 0.35);
+}
+
+.social img {
+    width: 20px;
+    height: 20px;
     object-fit: contain;
 }
 
-.nav-button {
-    background-color: #00D1FF;
-    /* Cian vibrante de la imagen */
-    color: #1a1a1a;
-    /* Texto oscuro para buen contraste */
-    font-size: 16px;
-    font-weight: 700;
-    padding: 12px 24px;
-    border-radius: 8px;
-    transition: transform 0.1s ease, filter 0.2s ease;
-}
-
-.section-title {
-    margin-left: 20px;
-    padding: 5px 15px;
-    color: #F8FAFC;
-    background-color: #1A202C;
-    display: flex;
-    width: fit-content;
-    border-radius: 30px;
-    box-shadow: 0 0 15px 2px rgba(0, 219, 255, 0.6);
-    transition: box-shadow 0.3s ease;
-}
-
-.section-title:hover {
-    box-shadow: 0 0 20px 4px rgba(0, 219, 255, 0.8);
-}
-
-.icon-button:hover,
-.nav-button:hover {
-    filter: brightness(1.1);
-}
-
-.icon-button:active,
-.nav-button:active {
-    transform: scale(0.96);
-}
-
-/* Parte central: Título */
-.header-center {
-    justify-content: center;
-}
-
-.header-center h1 {
-    font-size: 20px;
-    font-weight: 600;
-    margin: 0;
-    color: #F8FAFC;
-    /* Color del texto del título */
-}
-
-/* Parte derecha: Logo */
-.header-right {
-    justify-content: flex-end;
-}
-
-.header-right .logo {
-    height: 44px;
-    /* Ajuste del tamaño del logo para que encaje bien */
-    object-fit: contain;
-}
-
-/* Buscador */
+/* ---------- Buscador ---------- */
 .search-container {
     display: flex;
     justify-content: center;
-    padding: 60px 24px;
+    padding: 64px 24px 32px;
 }
 
 .search-bar {
     display: flex;
     align-items: center;
-    background-color: #E2E8F0;
-    border-radius: 50px;
-    padding: 6px 24px 6px 6px;
+    background: rgba(226, 232, 240, 0.92);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 209, 255, 0.30);
+    border-radius: 999px;
+    padding: 8px 26px 8px 8px;
     width: 100%;
-    max-width: 650px;
-    box-shadow: 0 0 15px 2px rgba(0, 219, 255, 0.6);
-    transition: box-shadow 0.3s ease;
+    max-width: 680px;
+    box-shadow:
+        0 16px 48px rgba(0, 0, 0, 0.45),
+        0 0 28px rgba(0, 209, 255, 0.25);
+    transition: box-shadow 0.3s ease, transform 0.2s ease, border-color 0.3s ease;
+}
+
+.search-bar:hover {
+    transform: translateY(-1px);
 }
 
 .search-bar:focus-within {
-    box-shadow: 0 0 20px 4px rgba(0, 219, 255, 0.8);
+    border-color: rgba(0, 209, 255, 0.7);
+    box-shadow:
+        0 20px 56px rgba(0, 0, 0, 0.5),
+        0 0 36px rgba(0, 209, 255, 0.5);
 }
 
 .search-icon-wrapper {
-    background-color: #00DBFF;
-    width: 44px;
-    height: 44px;
+    background: linear-gradient(135deg, #00DBFF 0%, #6366f1 100%);
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    transition: transform 0.1s ease;
+    box-shadow: 0 4px 14px rgba(0, 209, 255, 0.4);
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.search-icon-wrapper:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(0, 209, 255, 0.6);
 }
 
 .search-icon-wrapper:active {
@@ -276,25 +393,55 @@ img {
 .search-input {
     flex: 1;
     background: transparent;
-    font-size: 20px;
+    font-size: 19px;
     font-weight: 700;
-    color: #333;
+    color: #1a202c;
     margin-left: 16px;
+    outline: none;
 }
 
 .search-input::placeholder {
-    color: #8892A0;
-    /* Un gris intermedio para el placeholder */
+    color: #64748b;
+    font-weight: 500;
 }
 
-/* Hero Section */
+/* ---------- Hero ---------- */
 .hero-section {
+    position: relative;
     display: flex;
     justify-content: space-between;
     align-items: center;
     max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px 40px 80px;
+    margin: 0 auto 24px;
+    padding: 40px 48px 90px;
+    border-radius: 32px;
+    background:
+        linear-gradient(135deg, rgba(0, 209, 255, 0.10) 0%, rgba(99, 102, 241, 0.10) 100%);
+    border: 1px solid rgba(0, 209, 255, 0.18);
+    box-shadow:
+        0 24px 70px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: -40%;
+    right: -10%;
+    width: 60%;
+    height: 180%;
+    background: radial-gradient(circle, rgba(0, 209, 255, 0.18), transparent 60%);
+    filter: blur(40px);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.hero-left,
+.hero-middle,
+.hero-right {
+    position: relative;
+    z-index: 1;
 }
 
 .hero-left {
@@ -302,20 +449,32 @@ img {
 }
 
 .hero-left h2 {
-    font-size: 52px;
-    font-weight: 800;
-    color: #F8FAFC;
-    line-height: 1.2;
+    font-size: 56px;
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #F8FAFC 0%, #00D1FF 60%, #6366f1 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 40px rgba(0, 209, 255, 0.25);
 }
 
 .hero-middle {
     flex: 0 0 auto;
-    margin: 0 40px;
+    margin: 0 32px;
 }
 
 .hero-arrows {
-    height: 220px;
+    height: 200px;
     object-fit: contain;
+    filter: drop-shadow(0 0 24px rgba(0, 209, 255, 0.4));
+    animation: pulseArrow 2.6s ease-in-out infinite;
+}
+
+@keyframes pulseArrow {
+    0%, 100% { transform: translateX(0); opacity: 0.9; }
+    50%      { transform: translateX(8px); opacity: 1; }
 }
 
 .hero-right {
@@ -324,8 +483,6 @@ img {
     justify-content: flex-end;
 }
 
-/* El hero se oculta hasta que llega el juego con más reseñas; sin esta regla
-   el display:flex de arriba anularía el atributo hidden del navegador. */
 .hero-right[hidden] {
     display: none;
 }
@@ -333,37 +490,92 @@ img {
 .hero-image {
     width: 100%;
     max-width: 580px;
-    /* Proporción fija: el banner no se deforma ni alarga la página segun la imagen que cargue */
     aspect-ratio: 16 / 9;
     border-radius: 24px;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+    box-shadow:
+        0 30px 80px rgba(0, 0, 0, 0.6),
+        0 0 40px rgba(0, 209, 255, 0.25);
     object-fit: cover;
+    border: 1px solid rgba(0, 209, 255, 0.25);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
 }
 
-/* Recomendaciones Section */
+.hero-image:hover {
+    transform: scale(1.02) translateY(-2px);
+    box-shadow:
+        0 40px 100px rgba(0, 0, 0, 0.7),
+        0 0 60px rgba(0, 209, 255, 0.4);
+}
+
+/* ---------- Títulos de sección ---------- */
+.section-title {
+    margin-left: 20px;
+    padding: 8px 20px;
+    color: #F8FAFC;
+    background: rgba(26, 32, 44, 0.7);
+    backdrop-filter: blur(10px);
+    display: flex;
+    width: fit-content;
+    border-radius: 999px;
+    border: 1px solid rgba(0, 209, 255, 0.30);
+    box-shadow: 0 0 24px rgba(0, 209, 255, 0.30);
+    transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.section-title:hover {
+    box-shadow: 0 0 32px rgba(0, 209, 255, 0.5);
+    transform: translateY(-1px);
+}
+
+/* ---------- Recomendaciones ---------- */
 .recommendations-section {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px 40px 80px;
+    padding: 20px 40px 90px;
 }
 
 .contenedor-recomendaciones {
     display: flex;
     justify-content: space-between;
-    gap: 24px;
-    margin-top: 40px;
+    gap: 26px;
+    margin-top: 44px;
 }
 
 .recomendacion {
     flex: 1;
-    border-radius: 16px;
+    border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-    aspect-ratio: 2/3;
-    /* Proporción típica de portada de juego */
-    background-color: #1A202C;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    aspect-ratio: 2 / 3;
+    background: linear-gradient(180deg, rgba(26, 32, 44, 0.9) 0%, rgba(10, 14, 22, 0.9) 100%);
+    border: 1px solid rgba(0, 209, 255, 0.16);
+    box-shadow:
+        0 16px 40px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.3s ease;
     cursor: pointer;
+    position: relative;
+}
+
+.recomendacion::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 50%, rgba(0, 209, 255, 0.12) 100%);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    pointer-events: none;
+}
+
+.recomendacion:hover {
+    transform: translateY(-10px) scale(1.01);
+    border-color: rgba(0, 209, 255, 0.5);
+    box-shadow:
+        0 28px 60px rgba(0, 0, 0, 0.6),
+        0 0 32px rgba(0, 209, 255, 0.25);
+}
+
+.recomendacion:hover::after {
+    opacity: 1;
 }
 
 .recomendacion img {
@@ -371,38 +583,63 @@ img {
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform 0.3s ease;
-}
-
-.recomendacion:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 25px rgba(0, 219, 255, 0.3);
-    /* Brillo cyan al hacer hover */
+    transition: transform 0.45s ease;
 }
 
 .recomendacion:hover img {
-    transform: scale(1.05);
+    transform: scale(1.08);
 }
 
+/* ---------- Descripción ---------- */
 .descripcion-section {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px 40px 80px;
+    padding: 20px 40px 90px;
 }
 
 .parrafo {
-    background: #1A202C;
-    border-radius: 16px;
-    padding: 32px;
+    background: rgba(26, 32, 44, 0.55);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-radius: 24px;
+    padding: 40px;
     margin: 40px auto;
-    border: 1px solid rgba(0, 219, 255, 0.1);
-    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5), 0 8px 32px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 209, 255, 0.16);
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
     color: #F8FAFC;
-    font-size: 20px;
+    font-size: 19px;
+    line-height: 1.6;
 }
 
 .contenido {
-    margin-top: 15px;
-    margin-bottom: 15px;
+    margin-top: 16px;
+    margin-bottom: 16px;
+    color: #cbd5e1;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+    .hero-section {
+        flex-direction: column;
+        text-align: center;
+        padding: 32px 24px 60px;
+    }
+    .hero-left h2 { font-size: 40px; }
+    .hero-middle { margin: 20px 0; }
+    .hero-arrows { height: 120px; }
+    .hero-right { justify-content: center; }
+    .contenedor-recomendaciones { flex-wrap: wrap; }
+    .recomendacion { flex: 1 1 45%; }
+}
+
+@media (max-width: 600px) {
+    .main-header { padding: 0 14px; height: 64px; }
+    .nav-button { padding: 8px 14px; font-size: 13px; }
+    .icon-button { width: 40px; height: 40px; }
+    .header-center h1 { font-size: 18px; }
+    .search-container { padding: 40px 16px 20px; }
+    .search-input { font-size: 16px; }
+    .recomendacion { flex: 1 1 100%; }
 }
