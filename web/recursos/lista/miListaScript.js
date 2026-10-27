@@ -483,40 +483,7 @@ window.eliminarDeLista = function (idEntrada) {
         });
 };
 
-// Sistema Toast de Notificaciones
-function showToast(message, type = 'success') {
-    const toastContainer = document.getElementById('toast-container');
-    if (!toastContainer) return;
-
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-
-    const content = document.createElement('div');
-    content.className = 'toast-content';
-    content.textContent = message;
-
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'toast-close';
-    closeBtn.innerHTML = '&times;';
-    closeBtn.type = 'button';
-
-    closeBtn.addEventListener('click', () => {
-        toast.classList.add('toast-fade-out');
-        setTimeout(() => toast.remove(), 300);
-    });
-
-    toast.appendChild(content);
-    toast.appendChild(closeBtn);
-    toastContainer.appendChild(toast);
-
-    // Auto-remove despues de 4.5 segundos
-    setTimeout(() => {
-        if (toast.parentNode) {
-            toast.classList.add('toast-fade-out');
-            setTimeout(() => toast.remove(), 300);
-        }
-    }, 4500);
-}
+// Las notificaciones usan el showToast compartido importado de ../ui.js.
 
 // Abrir modal de edición con los datos precargados de la entrada
 window.abrirModalEdicion = function (miId) {
