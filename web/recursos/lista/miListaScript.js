@@ -73,7 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
 // Comprobar si hay sesión iniciada y mostrar la vista correspondiente
 function inicializarSesion() {
     // Obtenemos los elementos del dom
-    const authView = document.getElementById('auth-view');
     const listView = document.getElementById('list-view');
     const user = getCurrentUser();
     const token = getToken();
@@ -87,8 +86,7 @@ function inicializarSesion() {
         window.location.href = 'login.html';
         return;
     } else { // Si hay sesion iniciada
-        authView.classList.add('hidden'); // Ocultamos la vista de auth
-        listView.classList.remove('hidden'); // Mostramos la vista de lista
+        if (listView) listView.classList.remove('hidden'); // Mostramos la vista de lista
 
         try {
             // Configurar perfil en la cabecera

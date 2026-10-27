@@ -477,6 +477,23 @@ img {
     50%      { transform: translateX(8px); opacity: 1; }
 }
 
+/* Accesibilidad: si el sistema pide menos movimiento, se detienen las
+   animaciones ambientales (orbes y flecha del hero). El color y el brillo
+   se conservan; solo desaparece el movimiento continuo. */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    body::after {
+        animation: none;
+    }
+
+    .hero-arrows {
+        animation: none;
+    }
+}
+
 .hero-right {
     flex: 1;
     display: flex;
