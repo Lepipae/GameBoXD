@@ -50,6 +50,37 @@ function verificarSesionHeader() {
         if (linkInsertar) {
             linkInsertar.remove();
         }
+
+        // Mostrar un botón explícito de "Iniciar sesión" cuando no hay sesión.
+        // El icono de usuario ya enlaza a login, pero un botón de texto hace
+        // visible la acción de acceso para quien no está autenticado.
+        const headerLeftLogin = document.querySelector('.header-left');
+        if (headerLeftLogin && !document.getElementById('link-login')) {
+            const linkLogin = document.createElement('a');
+            linkLogin.href = 'login.html';
+            linkLogin.id = 'link-login';
+
+            const btnLogin = document.createElement('button');
+            btnLogin.id = 'btn-login';
+            btnLogin.className = 'nav-button';
+            btnLogin.type = 'button';
+            btnLogin.textContent = 'Iniciar sesión';
+
+            linkLogin.appendChild(btnLogin);
+            // Colocarlo justo después del icono de usuario.
+            const userIcon = document.getElementById('btn-user-icon');
+            if (userIcon && userIcon.parentElement === headerLeftLogin) {
+                headerLeftLogin.insertBefore(linkLogin, userIcon.nextSibling);
+            } else {
+                headerLeftLogin.appendChild(linkLogin);
+            }
+
+            linkLogin.addEventListener('click', () => {
+                if (window.GameBoXDRedirect) {
+                    window.GameBoXDRedirect.saveReturnUrl();
+                }
+            });
+        }
     } else {
         // Hay sesión activa: Mostramos botones correspondientes
         if (btnLista) btnLista.style.display = 'inline-block';
@@ -58,6 +89,12 @@ function verificarSesionHeader() {
         // El icono de usuario redirige directamente a la lista
         if (userIconLink) {
             userIconLink.href = 'miLista.html';
+        }
+
+        // Ocultar el botón explícito de "Iniciar sesión" si existía
+        const linkLogin = document.getElementById('link-login');
+        if (linkLogin) {
+            linkLogin.remove();
         }
 
         // Crear e inyectar el botón "Añadir juego" dinámicamente si no existe ya
