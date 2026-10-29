@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -115,7 +116,7 @@ public class VideojuegoController {
      * @return              Objeto guardado
      */
     @PostMapping
-    public Videojuego guardar(@RequestBody Videojuego videojuego) {
+    public Videojuego guardar(@Valid @RequestBody Videojuego videojuego) {
         return videojuegoService.guardar(videojuego);
     }
 

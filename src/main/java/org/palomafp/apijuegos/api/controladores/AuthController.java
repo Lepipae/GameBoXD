@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -55,7 +56,7 @@ public class AuthController {
      * @return 200 OK con el token JWT si acierta.
      */
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> createAuthenticationToken(@RequestBody AuthRequest authRequest) {
+    public ResponseEntity<AuthResponse> createAuthenticationToken(@Valid @RequestBody AuthRequest authRequest) {
         // Intentamos autenticar al usuario usando el gestor de autenticación de Spring Security.
         // Esto llamará internamente a CustomUserDetailsService -> loadUserByUsername para verificar.
         authenticationManager.authenticate(

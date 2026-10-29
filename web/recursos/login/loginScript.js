@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (response.ok) {
                     const data = await response.json();
-                    localStorage.setItem('jwt_token', data.jwt);
+                    sessionStorage.setItem('jwt_token', data.jwt);
 
                     try {
                         const profileResponse = await fetch(`${GameBoXDApi.BASE_URL}/usuarios/nombre/${nombre}`);
@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 nombre: userProfile.nombre,
                                 urlImagen: userProfile.urlImagen
                             };
-                            localStorage.setItem('currentUser', JSON.stringify(sessionObj));
+                            sessionStorage.setItem('currentUser', JSON.stringify(sessionObj));
                         }
                     } catch (profileError) {
                         console.error('Error fetching user profile during login:', profileError);
@@ -113,7 +113,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({
                     nombre: nombre,
                     contrasenia: contrasenia,
-                    rol: 'usuarioNormal',
                     miId: 0
                 })
             });

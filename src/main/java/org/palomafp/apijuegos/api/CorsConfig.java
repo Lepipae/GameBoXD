@@ -19,15 +19,21 @@ public class CorsConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         var configuration = new CorsConfiguration();
-        // List.of en vez de Arrays.asList: devuelve una lista inmutable, y así el
-        // bean no puede ser modificado por otra parte de la aplicación.
-        configuration.setAllowedOriginPatterns(List.of("*")); // Permite cualquier origen
+        // Orígenes explícitos y confiables (no usar "*" ni patrones).
+        configuration.setAllowedOrigins(List.of(
+                "https://lepipae.github.io",
+                "https://gameboxd-2nio.onrender.com",
+                "http://localhost:3000",
+                "http://localhost:5500",
+                "http://127.0.0.1:3000",
+                "http://127.0.0.1:5500"
+        ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(List.of("*")); // Permite todas las cabeceras
-        configuration.setAllowCredentials(false); // Seguridad relajada para el despliegue automático
+        configuration.setAllowedHeaders(List.of("Content-Type", "Authorization", "Accept"));
+        configuration.setAllowCredentials(false);
 
         var source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration); // Aplica a todas las rutas
+        source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 }

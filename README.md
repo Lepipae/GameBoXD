@@ -31,19 +31,38 @@ El sistema se compone de una **API REST** en el backend, un **frontend estático
 *   **Maven**: Opcional (se suministra el Maven Wrapper `./mvnw`).
 
 ### 1. Configuración de Variables de Entorno (`.env`)
-El backend utiliza archivos .env para mantener secretos coo contraseñas y conexiones, aqui esta un ejemplo de env para la configuracion:
+El backend utiliza archivos `.env` para mantener secretos como contraseñas y
+conexiones. Copia el archivo de ejemplo y rellena tus propios valores:
+
+```bash
+cp .env.example .env
+```
+
+> ⚠️ **Nunca commitees el archivo `.env`** (ya está en `.gitignore`). Contiene
+> secretos reales. Usa `.env.example` como plantilla con valores de ejemplo.
+
+Ejemplo de `.env` (valores de ejemplo, NO reales):
 
 ```env
 # Conexión de la base de datos MongoDB
-MONGO_USER=tu_usuario
-MONGO_PASS=tu_contraseña
+MONGO_USER=your_user
+MONGO_PASS=your_password
 MONGO_DB=Api
 
 # Clave secreta fuerte (mínimo de 256 bits) para la firma y verificación de tokens JWT
-CLAVE_CIFRADO=unaClaveMazoLargaAsinSinEspaciosPaQueEncripteBienBien!!
+CLAVE_CIFRADO=a_long_random_secret_at_least_32_chars
 
 # Host donde corre el servidor de producción (empleado por los scripts frontend)
 EC2_HOST=localhost
+
+# Render deploy webhook (despliegue automático en push a main)
+RENDER_DEPLOY_URL=https://api.render.com/deploy/srv-XXXX?key=YOUR_RENDER_DEPLOY_KEY
+
+# SteamGridDB
+STEAM_GRID_API_KEY=your_steam_grid_api_key
+
+# Steam Web API
+STEAM_API_KEY=your_steam_api_key
 ```
 
 ### 2. Ejecutar el Backend (Spring Boot API)

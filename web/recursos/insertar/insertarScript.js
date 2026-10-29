@@ -194,7 +194,7 @@ function inicializarFormularios() {
             const API_URL = `${GameBoXDApi.BASE_URL}/desarrolladoras`;
 
             // La API exige token para crear, asi que hay que enviarlo.
-            const token = (window.GameBoXDAuth ? window.GameBoXDAuth.getToken() : null) || localStorage.getItem('jwt_token');
+            const token = (window.GameBoXDAuth ? window.GameBoXDAuth.getToken() : null) || sessionStorage.getItem('jwt_token');
             const cabeceras = {
                 'Content-Type': 'application/json'
             };
@@ -270,7 +270,7 @@ function inicializarFormularios() {
             const API_URL = `${GameBoXDApi.BASE_URL}/videojuegos`;
 
             // La API exige token para crear, asi que hay que enviarlo.
-            const token = (window.GameBoXDAuth ? window.GameBoXDAuth.getToken() : null) || localStorage.getItem('jwt_token');
+            const token = (window.GameBoXDAuth ? window.GameBoXDAuth.getToken() : null) || sessionStorage.getItem('jwt_token');
             const cabeceras = {
                 'Content-Type': 'application/json'
             };

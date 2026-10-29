@@ -42,7 +42,7 @@ beforeEach(() => {
     ];
     cacheJuegos.clear();
     cacheDesarrolladoras.clear();
-    localStorage.clear();
+    sessionStorage.clear();
 
     fetchMock = vi.fn(async (url) => {
         llamadas.push(String(url));

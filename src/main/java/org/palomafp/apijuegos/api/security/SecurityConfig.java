@@ -67,6 +67,17 @@ public class SecurityConfig {
         // Habilitamos CORS y deshabilitamos CSRF porque nuestra API es Stateless usando JWT
         http.cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.deny())
+                        .contentTypeOptions(Customizer.withDefaults())
+                        .httpStrictTransportSecurity(hsts -> hsts
+                                .includeSubDomains(true)
+                                .maxAgeInSeconds(31536000))
+                        .contentSecurityPolicy(csp -> csp.policyDirectives(
+                                "default-src 'self'; img-src 'self' https:; script-src 'self'; style-src 'self'; frame-ancestors 'none';"))
+                        .referrerPolicy(ref -> ref.policy(
+                                org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                )
                 // Sin esto, Spring responde 403 a las peticiones sin token, cuando lo
                 // correcto es 401: el cliente debe distinguir entre "no has iniciado
                 // sesion" (401) y "has iniciado sesion pero no tienes permiso" (403).
@@ -99,12 +110,13 @@ public class SecurityConfig {
                         // GET /api/usuarios (listado completo), que exige administrador.
                         .requestMatchers(HttpMethod.GET, "/api/usuarios/*", "/api/usuarios/nombre/*").permitAll()
                         // Para acceder a Swagger/OpenAPI si es necesario que estén públicas
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").hasRole("administrador")
                         // Sonda de salud de Render. Sin esto devuelve 401, el servicio
                         // nunca llega a "healthy" y el despliegue se queda colgado.
                         // Es seguro: el actuator solo expone /actuator/health, y no dice
                         // nada del estado de la base de datos ni de ningún usuario.
                         .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
+                        .requestMatchers("/actuator/**").hasRole("administrador")
                         // ---------------------------------------------------------
                         // TODO LO DEMÁS REQUIERE TOKEN
                         // ---------------------------------------------------------

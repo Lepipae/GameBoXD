@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import java.util.UUID;
 import java.util.function.Function;
 
 /**
@@ -23,8 +24,8 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    /** Vigencia del token: 10 horas desde que se emite. */
-    private static final Duration VALIDEZ = Duration.ofHours(10);
+    /** Vigencia del token: 30 minutos desde que se emite. */
+    private static final Duration VALIDEZ = Duration.ofMinutes(30);
 
     // Clave secreta para firmar el token JWT. En un entorno de producción, esto debería estar en variables de entorno o application.properties.
     // Esta cadena debe tener al menos 256 bits (32 caracteres).
@@ -115,6 +116,7 @@ public class JwtUtil {
         Instant ahora = Instant.now();
         return Jwts.builder()
                 .subject(subject)
+                .id(UUID.randomUUID().toString())
                 .issuedAt(Date.from(ahora))
                 .expiration(Date.from(ahora.plus(VALIDEZ)))
                 .signWith(getSigningKey())

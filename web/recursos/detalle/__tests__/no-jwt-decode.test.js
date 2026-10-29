@@ -35,7 +35,7 @@ describe('verificarSesionYConfigurarBoton - no descodifica el JWT del cliente', 
             <div id="game-detail-wrapper"></div>
             <button id="add-to-list-btn"></button>
         `;
-        localStorage.clear();
+        sessionStorage.clear();
         fetchMock = vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve([]) });
         globalThis.fetch = fetchMock;
         atobSpy = vi.spyOn(window, 'atob');
@@ -43,13 +43,13 @@ describe('verificarSesionYConfigurarBoton - no descodifica el JWT del cliente', 
 
     afterEach(() => {
         vi.restoreAllMocks();
-        localStorage.clear();
+        sessionStorage.clear();
         document.body.innerHTML = '';
     });
 
     it('nunca llama a atob ni parte el token con split(".")', async () => {
-        localStorage.setItem('jwt_token', FAKE_TOKEN);
-        localStorage.setItem('currentUser', JSON.stringify({ token: FAKE_TOKEN, miId: 42, nombre: CURRENT_USER_NOMBRE }));
+        sessionStorage.setItem('jwt_token', FAKE_TOKEN);
+        sessionStorage.setItem('currentUser', JSON.stringify({ token: FAKE_TOKEN, miId: 42, nombre: CURRENT_USER_NOMBRE }));
 
         verificarSesionYConfigurarBoton('juego-1');
         await flushPromises();
@@ -58,8 +58,8 @@ describe('verificarSesionYConfigurarBoton - no descodifica el JWT del cliente', 
     });
 
     it('usa miId y nombre de currentUser en caché sin parsear el token', async () => {
-        localStorage.setItem('jwt_token', FAKE_TOKEN);
-        localStorage.setItem('currentUser', JSON.stringify({ token: FAKE_TOKEN, miId: 42, nombre: CURRENT_USER_NOMBRE }));
+        sessionStorage.setItem('jwt_token', FAKE_TOKEN);
+        sessionStorage.setItem('currentUser', JSON.stringify({ token: FAKE_TOKEN, miId: 42, nombre: CURRENT_USER_NOMBRE }));
 
         verificarSesionYConfigurarBoton('juego-1');
         await flushPromises();
@@ -74,9 +74,9 @@ describe('verificarSesionYConfigurarBoton - no descodifica el JWT del cliente', 
     });
 
     it('llama a la API con Authorization: Bearer <token> cuando miId no está en caché, usando currentUser.nombre', async () => {
-        localStorage.setItem('jwt_token', FAKE_TOKEN);
+        sessionStorage.setItem('jwt_token', FAKE_TOKEN);
         // currentUser tiene nombre pero no miId: el miId no está en caché
-        localStorage.setItem('currentUser', JSON.stringify({ token: FAKE_TOKEN, nombre: CURRENT_USER_NOMBRE }));
+        sessionStorage.setItem('currentUser', JSON.stringify({ token: FAKE_TOKEN, nombre: CURRENT_USER_NOMBRE }));
         fetchMock.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ miId: 7, nombre: CURRENT_USER_NOMBRE }) });
 
         verificarSesionYConfigurarBoton('juego-1');
@@ -91,7 +91,7 @@ describe('verificarSesionYConfigurarBoton - no descodifica el JWT del cliente', 
     });
 
     it('no descodifica el JWT durante el flujo de verificación de sesión', async () => {
-        localStorage.setItem('jwt_token', FAKE_TOKEN);
+        sessionStorage.setItem('jwt_token', FAKE_TOKEN);
         // Sin currentUser en caché: no hay nombre, no se consulta la API ni se toca el token
         verificarSesionYConfigurarBoton('juego-1');
         await flushPromises();

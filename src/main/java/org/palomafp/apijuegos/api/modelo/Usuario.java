@@ -1,6 +1,9 @@
 package org.palomafp.apijuegos.api.modelo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.palomafp.apijuegos.api.modelo.enums.Rol;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -15,7 +18,10 @@ public class Usuario {
     private String id;
 
     private int miId;
+    @NotBlank
+    @Size(max = 50)
     private String nombre;
+    @Size(max = 500)
     private String urlImagen;
 
     /**
@@ -30,8 +36,11 @@ public class Usuario {
      * {@code UsuarioService} y {@code CustomUserDetailsService} para autenticar.
      */
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @NotBlank
+    @Size(min = 8, max = 100)
     private String contrasenia;
 
+    @NotNull
     private Rol rol;
 
     /**

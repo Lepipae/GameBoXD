@@ -23,5 +23,14 @@ ENV JAVA_OPTS="-Xmx256m -XX:+UseSerialGC"
 # Exponemos el puerto estándar de Spring Boot
 EXPOSE 8080
 
+# Usuario no-root (uid/gid 1000) para no ejecutar el contenedor como root
+RUN addgroup -g 1000 appgroup \
+ && adduser -D -u 1000 -G appgroup appuser \
+ && chown -R 1000:1000 /app \
+ && chmod 755 /app \
+ && chmod 755 app.jar
+
+USER 1000:1000
+
 # Comando para arrancar la app con los límites de memoria
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

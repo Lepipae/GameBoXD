@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
  * Comprueba si el usuario tiene una sesión activa y adapta los botones del header.
  */
 function verificarSesionHeader() {
-    const token = (window.GameBoXDAuth ? window.GameBoXDAuth.getToken() : null) || localStorage.getItem('jwt_token');
+    const token = (window.GameBoXDAuth ? window.GameBoXDAuth.getToken() : null) || sessionStorage.getItem('jwt_token');
     const btnTodosJuegos = document.getElementById('btn-todos-juegos');
     const btnLista = document.getElementById('btn-mi-lista');
     const linkLista = document.getElementById('link-mi-lista');

@@ -20,6 +20,21 @@ const { aplicarImagen } = window.GameBoXDImagenes;
 export const cacheUsuarios = new Map();
 
 /**
+ * Escapa caracteres HTML para evitar ataques XSS al inyectar texto del usuario.
+ *
+ * @param {string} str - Cadena de texto a escapar.
+ * @returns {string} Cadena de texto sanitizada.
+ */
+export function escapeHTML(str) {
+    return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+/**
  * Event listener que se ejecuta cuando el DOM está completamente cargado.
  * Inicia la carga de los detalles del juego si se proporciona un ID en la URL.
  */
@@ -260,7 +275,10 @@ export function renderizarResenyas(resenyas) {
                 const card = document.createElement('div');
                 card.className = 'review-card';
                 
-                const userLabelId = `review-username-${r.miId}`;
+                const safeMiId = (typeof r.miId === 'number' && Number.isFinite(r.miId))
+                    ? r.miId
+                    : String(r.miId ?? '').replace(/[^0-9]/g, '');
+                const userLabelId = `review-username-${safeMiId}`;
                 
                 const rating = document.createElement('div');
                 rating.className = 'review-rating';
@@ -270,7 +288,7 @@ export function renderizarResenyas(resenyas) {
                 content.className = 'review-content';
                 content.innerHTML = `
                     <div class="review-user-name" id="${userLabelId}">Cargando usuario...</div>
-                    <div class="review-text-content">"${r.resenya}"</div>
+                    <div class="review-text-content">"${escapeHTML(String(r.resenya ?? ''))}"</div>
                 `;
                 
                 card.appendChild(rating);

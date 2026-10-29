@@ -1,5 +1,8 @@
 package org.palomafp.apijuegos.api.modelo.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 /**
  * Data Transfer Object (DTO) para manejar las peticiones de inicio de sesión (Login).
  * Contiene las credenciales enviadas por el usuario.
@@ -12,5 +15,7 @@ package org.palomafp.apijuegos.api.modelo.dto;
  * @param contrasenia Contraseña proporcionada para el inicio de sesión.
  * @author Andrés López
  */
-public record AuthRequest(String nombre, String contrasenia) {
+public record AuthRequest(
+        @NotBlank @Size(max = 50) String nombre,
+        @NotBlank @Size(min = 8, max = 100) String contrasenia) {
 }

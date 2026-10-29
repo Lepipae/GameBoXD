@@ -2,6 +2,7 @@ package org.palomafp.apijuegos.api.services;
 
 import org.palomafp.apijuegos.api.excepciones.RecursoDuplicadoException;
 import org.palomafp.apijuegos.api.modelo.Usuario;
+import org.palomafp.apijuegos.api.modelo.enums.Rol;
 import org.palomafp.apijuegos.api.repositories.UsuarioRepo;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -89,6 +90,9 @@ public class UsuarioService {
         if (usuario.getId() == null) {
             Usuario ultimo = usuarioRepo.encontrarUltimoId();
             usuario.setMiId(ultimo != null ? ultimo.getMiId() + 1 : 1);
+            // F-02: evita escalada de privilegios en el registro: los usuarios nuevos
+            // siempre son usuarioNormal, independientemente del rol enviado por el cliente.
+            usuario.setRol(Rol.usuarioNormal);
         }
 
         // Antes esto estaba repartido en dos ramas (nuevo / actualización) y repetía

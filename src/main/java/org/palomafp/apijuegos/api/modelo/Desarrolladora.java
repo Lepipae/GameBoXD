@@ -1,5 +1,7 @@
 package org.palomafp.apijuegos.api.modelo;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -14,8 +16,12 @@ public class Desarrolladora {
     private String id;
 
     private Integer miId;
+    @Size(max = 500)
     private String urlImagen;
+    @NotBlank
+    @Size(max = 100)
     private String nombre;
+    @Size(max = 100)
     private String pais;
 
     /**

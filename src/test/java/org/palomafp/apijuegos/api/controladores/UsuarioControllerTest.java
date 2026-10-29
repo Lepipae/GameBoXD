@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.palomafp.apijuegos.api.modelo.Usuario;
+import org.palomafp.apijuegos.api.modelo.dto.UsuarioPublicoDTO;
 import org.palomafp.apijuegos.api.services.UsuarioService;
 
 import java.util.Arrays;
@@ -43,7 +44,7 @@ class UsuarioControllerTest {
         Usuario u = new Usuario();
         when(usuarioService.obtenerPorMiId(1)).thenReturn(u);
 
-        Usuario result = usuarioController.obtenerUsuarioPorId(1);
+        UsuarioPublicoDTO result = usuarioController.obtenerUsuarioPorId(1);
         assertNotNull(result);
         verify(usuarioService, times(1)).obtenerPorMiId(1);
     }
@@ -53,7 +54,7 @@ class UsuarioControllerTest {
         Usuario u = new Usuario();
         when(usuarioService.obtenerPorNombre("Test")).thenReturn(u);
 
-        Usuario result = usuarioController.obtenerUsuarioPorNombre("Test");
+        UsuarioPublicoDTO result = usuarioController.obtenerUsuarioPorNombre("Test");
         assertNotNull(result);
         verify(usuarioService, times(1)).obtenerPorNombre("Test");
     }

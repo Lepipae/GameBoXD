@@ -25,6 +25,21 @@ export const cacheJuegos = new Map();
 export const cacheDesarrolladoras = new Map();
 
 /**
+ * Escapa caracteres HTML para evitar ataques XSS al inyectar texto del usuario.
+ *
+ * @param {string} str - Cadena de texto a escapar.
+ * @returns {string} Cadena de texto sanitizada.
+ */
+export function escapeHTML(str) {
+    return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+/**
  * Petición GET a la API que devuelve el cuerpo parseado como JSON.
  * Lanza si la respuesta no es OK.
  */
@@ -218,9 +233,6 @@ function inicializarFormularios() {
                 contrasenia: contrasenia,
                 // Sin avatar se envia null: el backend ya no guarda el texto "placeholder".
                 urlImagen: urlImagen || null,
-                // El enum Rol solo admite 'administrador' y 'usuarioNormal'.
-                // Antes se mandaba 'usuario', que la API rechazaba con un 400.
-                rol: 'usuarioNormal',
                 // Usuario.miId es un int primitivo: si no se envia, el backend no
                 // puede deserializar el cuerpo y responde 400.
                 miId: 0
@@ -392,15 +404,15 @@ export function renderizarEntradaJuego(entrada, juego, container) {
 
     card.innerHTML = `
         <div class="game-card-img-container">
-            <img alt="${juego.nombre}">
+            <img alt="${escapeHTML(juego.nombre)}">
         </div>
         <div class="game-card-content">
             <div class="game-card-header">
                 <div class="game-title-area">
-                    <h3>${juego.nombre}</h3>
+                    <h3>${escapeHTML(juego.nombre)}</h3>
                     <span class="game-developer" id="dev-name-${entrada.miId}">Cargando desarrolladora...</span>
                 </div>
-                <span class="status-badge status-${entrada.estado}">${formatEstado(entrada.estado)}</span>
+                <span class="status-badge status-${escapeHTML(entrada.estado)}">${escapeHTML(formatEstado(entrada.estado))}</span>
             </div>
             
             <div class="user-log-stats">
@@ -410,14 +422,14 @@ export function renderizarEntradaJuego(entrada, juego, container) {
               </div>
               <div class="stat-item">
                 <span class="stat-label">Horas de Juego</span>
-                <span class="stat-value">${entrada.horasJugadas} h</span>
+                <span class="stat-value">${escapeHTML(String(entrada.horasJugadas))} h</span>
               </div>
             </div>
             
             ${entrada.resenya ? `
             <div class="game-review-box">
               <span class="stat-label">Mi Reseña</span>
-              <p class="review-text">"${entrada.resenya}"</p>
+              <p class="review-text">"${escapeHTML(entrada.resenya)}"</p>
             </div>
             ` : ''}
             

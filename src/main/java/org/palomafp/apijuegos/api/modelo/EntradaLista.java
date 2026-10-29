@@ -1,5 +1,10 @@
 package org.palomafp.apijuegos.api.modelo;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.palomafp.apijuegos.api.modelo.enums.Estado;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -14,8 +19,12 @@ public class EntradaLista {
     private String id;
 
     private long miId;
+    @Min(0)
     private int horasJugadas;
+    @DecimalMin("0.0")
+    @DecimalMax("10.0")
     private double nota;
+    @Size(max = 2000)
     private String resenya;
     private Estado estado;
     private long idVideojuego;

@@ -33,6 +33,12 @@ build/
 ### VS Code ###
 .vscode/
 
+# Editor swap files
+*.swp
+*.swo
+*~
+.kate-swp*
+
 ### Node / Web ###
 node_modules/
 web/node_modules/

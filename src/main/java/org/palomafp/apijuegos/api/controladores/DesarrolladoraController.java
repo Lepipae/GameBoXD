@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -77,7 +78,7 @@ public class DesarrolladoraController {
      * @return                  Objeto guardado
      */
     @PostMapping
-    public Desarrolladora guardar(@RequestBody Desarrolladora desarrolladora) {
+    public Desarrolladora guardar(@Valid @RequestBody Desarrolladora desarrolladora) {
         return desarrolladoraService.guardar(desarrolladora);
     }
 

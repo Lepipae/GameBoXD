@@ -14,6 +14,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 /**
  * Manejador global de errores de la API.
@@ -142,6 +143,21 @@ public class ManejadorErrores {
     public ResponseEntity<RespuestaError> parametroAusente(MissingServletRequestParameterException ex) {
         return error(HttpStatus.BAD_REQUEST,
                 "Falta el parámetro obligatorio '" + ex.getParameterName() + "'");
+    }
+
+    /**
+     * 400: validación Bean Validation fallida (@Valid).
+     * @param ex Excepción de validación.
+     * @return Respuesta 400 con el primer error de campo.
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<RespuestaError> validacion(MethodArgumentNotValidException ex) {
+        String mensaje = "Los datos enviados no son válidos";
+        var fieldError = ex.getBindingResult().getFieldError();
+        if (fieldError != null && fieldError.getDefaultMessage() != null) {
+            mensaje = fieldError.getField() + ": " + fieldError.getDefaultMessage();
+        }
+        return error(HttpStatus.BAD_REQUEST, mensaje);
     }
 
     /**

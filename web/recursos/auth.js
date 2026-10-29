@@ -3,12 +3,12 @@
  *
  * Centraliza en un único módulo la lógica que antes estaba duplicada entre
  * loginScript.js, miListaScript.js, header.js y detalleScript.js:
- *   - inicio de sesión (fetch + guardado de JWT y perfil en localStorage),
+ *   - inicio de sesión (fetch + guardado de JWT y perfil en sessionStorage),
  *   - cierre de sesión,
  *   - lectura del token y del usuario en curso,
  *   - comprobación de si hay sesión activa.
  *
- * Las claves de localStorage son consistentes en toda la aplicación:
+ * Las claves de sessionStorage son consistentes en toda la aplicación:
  *   - `jwt_token`: el JWT recibido del servidor.
  *   - `currentUser`: objeto de sesión serializado (token, miId, nombre, urlImagen).
  *
@@ -21,29 +21,29 @@ const USER_KEY = 'currentUser';
 
 export function setSession(token, user) {
     if (token) {
-        localStorage.setItem(TOKEN_KEY, token);
+        sessionStorage.setItem(TOKEN_KEY, token);
     } else {
-        localStorage.removeItem(TOKEN_KEY);
+        sessionStorage.removeItem(TOKEN_KEY);
     }
 
     if (user) {
-        localStorage.setItem(USER_KEY, JSON.stringify(user));
+        sessionStorage.setItem(USER_KEY, JSON.stringify(user));
     } else {
-        localStorage.removeItem(USER_KEY);
+        sessionStorage.removeItem(USER_KEY);
     }
 }
 
 export function clearSession() {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
+    sessionStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(USER_KEY);
 }
 
 export function getToken() {
-    return localStorage.getItem(TOKEN_KEY);
+    return sessionStorage.getItem(TOKEN_KEY);
 }
 
 export function getCurrentUser() {
-    const raw = localStorage.getItem(USER_KEY);
+    const raw = sessionStorage.getItem(USER_KEY);
     if (!raw) {
         return null;
     }
@@ -55,7 +55,7 @@ export function getCurrentUser() {
 }
 
 export function isAuthenticated() {
-    return !!localStorage.getItem(TOKEN_KEY);
+    return !!sessionStorage.getItem(TOKEN_KEY);
 }
 
 export async function login(nombre, contrasenia) {

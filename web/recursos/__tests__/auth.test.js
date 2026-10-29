@@ -14,17 +14,17 @@ const BASE_URL = 'http://test-api.local/api';
 beforeEach(() => {
     window.GameBoXDApi = { BASE_URL };
     window.fetch = vi.fn();
-    localStorage.clear();
+    sessionStorage.clear();
 });
 
 afterEach(() => {
-    localStorage.clear();
+    sessionStorage.clear();
     delete window.GameBoXDApi;
     delete window.fetch;
 });
 
 describe('login()', () => {
-    it('stores jwt_token and currentUser in localStorage on success', async () => {
+    it('stores jwt_token and currentUser in sessionStorage on success', async () => {
         const token = 'jwt-test-token';
         const userProfile = { miId: 7, nombre: 'ana', urlImagen: 'http://img.png' };
 
@@ -34,8 +34,8 @@ describe('login()', () => {
 
         await login('ana', 'password123');
 
-        expect(localStorage.getItem('jwt_token')).toBe(token);
-        expect(localStorage.getItem('currentUser')).toBe(
+        expect(sessionStorage.getItem('jwt_token')).toBe(token);
+        expect(sessionStorage.getItem('currentUser')).toBe(
             JSON.stringify({ token, miId: 7, nombre: 'ana', urlImagen: 'http://img.png' })
         );
         expect(window.fetch).toHaveBeenCalledTimes(2);
@@ -46,8 +46,8 @@ describe('login()', () => {
 
         await login('ana', 'wrong-password');
 
-        expect(localStorage.getItem('jwt_token')).toBeNull();
-        expect(localStorage.getItem('currentUser')).toBeNull();
+        expect(sessionStorage.getItem('jwt_token')).toBeNull();
+        expect(sessionStorage.getItem('currentUser')).toBeNull();
     });
 });
 
@@ -55,15 +55,15 @@ describe('logout()', () => {
     it('removes both keys', () => {
         setSession('tok', { miId: 1, nombre: 'ana' });
         logout();
-        expect(localStorage.getItem('jwt_token')).toBeNull();
-        expect(localStorage.getItem('currentUser')).toBeNull();
+        expect(sessionStorage.getItem('jwt_token')).toBeNull();
+        expect(sessionStorage.getItem('currentUser')).toBeNull();
     });
 });
 
 describe('getToken()', () => {
     it('returns the stored token or null', () => {
         expect(getToken()).toBeNull();
-        localStorage.setItem('jwt_token', 'abc-123');
+        sessionStorage.setItem('jwt_token', 'abc-123');
         expect(getToken()).toBe('abc-123');
     });
 });
@@ -72,10 +72,10 @@ describe('getCurrentUser()', () => {
     it('returns the parsed user object or null', () => {
         expect(getCurrentUser()).toBeNull();
 
-        localStorage.setItem('currentUser', JSON.stringify({ miId: 1, nombre: 'ana' }));
+        sessionStorage.setItem('currentUser', JSON.stringify({ miId: 1, nombre: 'ana' }));
         expect(getCurrentUser()).toEqual({ miId: 1, nombre: 'ana' });
 
-        localStorage.setItem('currentUser', 'not-json-at-all');
+        sessionStorage.setItem('currentUser', 'not-json-at-all');
         expect(getCurrentUser()).toBeNull();
     });
 });
@@ -83,7 +83,7 @@ describe('getCurrentUser()', () => {
 describe('isAuthenticated()', () => {
     it('returns true when a token exists', () => {
         expect(isAuthenticated()).toBe(false);
-        localStorage.setItem('jwt_token', 'abc-123');
+        sessionStorage.setItem('jwt_token', 'abc-123');
         expect(isAuthenticated()).toBe(true);
     });
 });

@@ -2,6 +2,7 @@ package org.palomafp.apijuegos.api.controladores;
 
 import org.palomafp.apijuegos.api.excepciones.RecursoNoEncontradoException;
 import org.palomafp.apijuegos.api.modelo.Usuario;
+import org.palomafp.apijuegos.api.modelo.dto.UsuarioPublicoDTO;
 import org.palomafp.apijuegos.api.services.UsuarioService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -50,12 +52,12 @@ public class UsuarioController {
      * @return      Usuario asociado a ese id
      */
     @GetMapping("/{miId}")
-    public Usuario obtenerUsuarioPorId(@PathVariable int miId) {
+    public UsuarioPublicoDTO obtenerUsuarioPorId(@PathVariable int miId) {
         var usuario = usuarioService.obtenerPorMiId(miId);
         if (usuario == null) {
             throw new RecursoNoEncontradoException("No existe ningun usuario con el id " + miId);
         }
-        return usuario;
+        return new UsuarioPublicoDTO(usuario.getMiId(), usuario.getNombre(), usuario.getUrlImagen());
     }
 
     /**
@@ -64,12 +66,12 @@ public class UsuarioController {
      * @return          Usuario con el nombre asociado
      */
     @GetMapping("/nombre/{nombre}")
-    public Usuario obtenerUsuarioPorNombre(@PathVariable String nombre) {
+    public UsuarioPublicoDTO obtenerUsuarioPorNombre(@PathVariable String nombre) {
         var usuario = usuarioService.obtenerPorNombre(nombre);
         if (usuario == null) {
             throw new RecursoNoEncontradoException("No existe ningun usuario llamado " + nombre);
         }
-        return usuario;
+        return new UsuarioPublicoDTO(usuario.getMiId(), usuario.getNombre(), usuario.getUrlImagen());
     }
 
     /**
@@ -88,7 +90,7 @@ public class UsuarioController {
      * @return          Objeto guardado
      */
     @PostMapping
-    public Usuario guardar(@RequestBody Usuario usuario) {
+    public Usuario guardar(@Valid @RequestBody Usuario usuario) {
         return usuarioService.guardar(usuario);
     }
 
