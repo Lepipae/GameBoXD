@@ -77,13 +77,208 @@ export async function cargarLotePorId(ids, urlParaId, cache) {
     );
 }
 
+/* --- BÚSQUEDA Y ORDEN DENTRO DE LA COLECCIÓN --- */
+
+/**
+ * Registros de las entradas pintadas ahora mismo, en el orden en que llegó la
+ * colección. Cada registro une los datos que usan el filtro y el orden (nombre,
+ * desarrolladora, horas) con la tarjeta ya construida en el DOM, de modo que
+ * buscar u ordenar solo mueve nodos existentes: no vuelve a pedir nada a la API.
+ */
+let registrosColeccion = [];
+
+const ORDEN_POR_DEFECTO = 'recientes';
+
+/**
+ * Normaliza texto para comparar de forma natural: sin acentos, en minúsculas
+ * y sin espacios sobrantes. Así "pokemon" encuentra "Pokémon".
+ *
+ * @param {*} valor - Texto a normalizar.
+ * @returns {string} Texto normalizado.
+ */
+export function normalizarTexto(valor) {
+    return String(valor ?? '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim();
+}
+
+/** Compara dos nombres alfabéticamente en español, ignorando mayúsculas y acentos. */
+function compararNombres(a, b) {
+    return String(a ?? '').localeCompare(String(b ?? ''), 'es', { sensitivity: 'base' });
+}
+
+/** Horas jugadas como número seguro (0 si el dato falta o no es numérico). */
+function horasDe(registro) {
+    const horas = Number(registro.horasJugadas);
+    return Number.isFinite(horas) ? horas : 0;
+}
+
+/**
+ * Filtra y ordena una copia de `registros`. Función pura: no toca el DOM.
+ *
+ * - El filtro busca el texto en el título del juego y en su desarrolladora.
+ * - `recientes` conserva el orden original que devolvió la API.
+ * - Los empates se resuelven por nombre (horas) o por miId (nombre) para que
+ *   el resultado sea siempre determinista.
+ *
+ * @param {Array<{miId:number, nombre:string, desarrolladora?:string, horasJugadas:number}>} registros
+ * @param {{texto?: string, orden?: string}} [opciones]
+ * @returns {Array} Registros visibles y ordenados.
+ */
+export function filtrarYOrdenarRegistros(registros, { texto = '', orden = ORDEN_POR_DEFECTO } = {}) {
+    const consulta = normalizarTexto(texto);
+
+    const visibles = consulta
+        ? registros.filter((registro) =>
+              normalizarTexto(`${registro.nombre ?? ''} ${registro.desarrolladora ?? ''}`).includes(consulta)
+          )
+        : registros;
+
+    const ordenados = [...visibles];
+
+    switch (orden) {
+        case 'nombre-asc':
+            ordenados.sort((a, b) => compararNombres(a.nombre, b.nombre) || a.miId - b.miId);
+            break;
+        case 'nombre-desc':
+            ordenados.sort((a, b) => compararNombres(b.nombre, a.nombre) || a.miId - b.miId);
+            break;
+        case 'horas-desc':
+            ordenados.sort((a, b) => horasDe(b) - horasDe(a) || compararNombres(a.nombre, b.nombre));
+            break;
+        case 'horas-asc':
+            ordenados.sort((a, b) => horasDe(a) - horasDe(b) || compararNombres(a.nombre, b.nombre));
+            break;
+        default:
+            break; // 'recientes': se respeta el orden de llegada de la colección
+    }
+
+    return ordenados;
+}
+
+/** Lee el estado actual de los controles (texto y orden) desde el DOM. */
+function leerControlesColeccion() {
+    const input = document.getElementById('collection-search-input');
+    const select = document.getElementById('collection-sort-select');
+
+    return {
+        texto: input ? input.value : '',
+        orden: select && select.value ? select.value : ORDEN_POR_DEFECTO,
+    };
+}
+
+/**
+ * Aplica el filtro y el orden actuales sobre las tarjetas ya renderizadas:
+ * reinserta las visibles en el orden correcto, oculta el resto y actualiza el
+ * recuento y el mensaje de "sin resultados".
+ */
+export function aplicarFiltroYOrden() {
+    const grid = document.getElementById('game-grid');
+    if (!grid) return;
+
+    const { texto, orden } = leerControlesColeccion();
+    const visibles = filtrarYOrdenarRegistros(registrosColeccion, { texto, orden });
+    const visiblesSet = new Set(visibles);
+
+    // appendChild mueve el nodo existente (no lo recrea): el orden del grid
+    // pasa a ser el de `visibles` sin perder listeners ni estado.
+    for (const registro of visibles) {
+        grid.appendChild(registro.elemento);
+        registro.elemento.classList.remove('hidden');
+    }
+
+    for (const registro of registrosColeccion) {
+        if (!visiblesSet.has(registro)) {
+            registro.elemento.classList.add('hidden');
+        }
+    }
+
+    actualizarEstadoControles({ texto, visibles: visibles.length, total: registrosColeccion.length });
+}
+
+/**
+ * Pinta el recuento, el botón de limpiar y el mensaje de "sin resultados"
+ * según cuántas entradas hay y cuántas pasan el filtro. También es la que
+ * decide si los controles deben verse (solo con colección no vacía).
+ */
+function actualizarEstadoControles({ texto = '', visibles = registrosColeccion.length, total = registrosColeccion.length } = {}) {
+    const controles = document.getElementById('collection-controls');
+    const info = document.getElementById('collection-results-info');
+    const sinResultados = document.getElementById('no-results-message');
+    const grid = document.getElementById('game-grid');
+    const btnLimpiar = document.getElementById('btn-clear-collection-search');
+    const consulta = texto.trim();
+
+    if (controles) controles.classList.toggle('hidden', total === 0);
+    if (btnLimpiar) btnLimpiar.classList.toggle('hidden', consulta.length === 0);
+
+    if (info) {
+        if (total === 0) {
+            info.textContent = '';
+        } else if (consulta) {
+            info.textContent = `${visibles} de ${total} ${total === 1 ? 'juego' : 'juegos'}`;
+        } else {
+            info.textContent = `${total} ${total === 1 ? 'juego' : 'juegos'} en tu colección`;
+        }
+    }
+
+    const sinCoincidencias = total > 0 && visibles === 0;
+
+    if (sinResultados) {
+        sinResultados.classList.toggle('hidden', !sinCoincidencias);
+        const consultaSpan = document.getElementById('no-results-query');
+        if (consultaSpan) consultaSpan.textContent = `"${consulta}"`;
+    }
+
+    if (grid) grid.classList.toggle('hidden', sinCoincidencias);
+}
+
+/** Conecta los controles de búsqueda y orden con aplicarFiltroYOrden. */
+let controlesColeccionInicializados = false;
+
+function inicializarControlesColeccion() {
+    // El módulo puede inicializarse por dos caminos (DOMContentLoaded o
+    // importación con el documento ya cargado): los listeners se enganchan una vez.
+    if (controlesColeccionInicializados) return;
+
+    const input = document.getElementById('collection-search-input');
+    const select = document.getElementById('collection-sort-select');
+    const btnLimpiar = document.getElementById('btn-clear-collection-search');
+    const btnSinResultados = document.getElementById('btn-clear-filters');
+
+    if (input) input.addEventListener('input', aplicarFiltroYOrden);
+    if (select) select.addEventListener('change', aplicarFiltroYOrden);
+
+    const limpiarBusqueda = () => {
+        if (input) {
+            input.value = '';
+            input.focus();
+        }
+        aplicarFiltroYOrden();
+    };
+
+    if (btnLimpiar) btnLimpiar.addEventListener('click', limpiarBusqueda);
+    if (btnSinResultados) btnSinResultados.addEventListener('click', limpiarBusqueda);
+
+    controlesColeccionInicializados = true;
+}
+
 // Al cargar el dom se ejecutan los scripts
 document.addEventListener('DOMContentLoaded', () => {
     inicializarSesion();
     inicializarTabs();
     inicializarFormularios();
     inicializarModal();
+    inicializarControlesColeccion();
 });
+
+// Si el documento ya estaba cargado al evaluar el módulo (por ejemplo en las
+// pruebas, o al reimportar), el evento anterior no vuelve a dispararse.
+if (document.readyState !== 'loading') {
+    inicializarControlesColeccion();
+}
 
 // Comprobar si hay sesión iniciada y mostrar la vista correspondiente
 function inicializarSesion() {
@@ -295,11 +490,14 @@ export function cargarMiLista(idUsuario) {
             if (listaEntradas.length === 0) {
                 if (emptyListMessage) emptyListMessage.classList.remove('hidden');
                 gameGrid.innerHTML = '';
+                registrosColeccion = [];
+                aplicarFiltroYOrden();
                 return;
             }
 
             if (emptyListMessage) emptyListMessage.classList.add('hidden');
             gameGrid.innerHTML = ''; // Limpiar grid
+            registrosColeccion = [];
 
             // Inicializar el diccionario global de entradas para la edición
             window.miListaEntradas = {};
@@ -314,12 +512,28 @@ export function cargarMiLista(idUsuario) {
 
             // Renderizar cada entrada leyendo los datos del juego del caché.
             const idsDesarrolladora = [];
+            const registrosPorEntrada = new Map();
             for (const entrada of listaEntradas) {
                 try {
                     const juego = cacheJuegos.get(entrada.idVideojuego);
                     const idDesarrolladora = renderizarEntradaJuego(entrada, juego, gameGrid);
                     if (idDesarrolladora) {
                         idsDesarrolladora.push(idDesarrolladora);
+                    }
+
+                    // Registro para la búsqueda y el orden: la tarjeta recién
+                    // creada más los datos que necesitan los comparadores.
+                    const elemento = document.getElementById(`card-entry-${entrada.miId}`);
+                    if (elemento) {
+                        const registro = {
+                            miId: entrada.miId,
+                            nombre: juego ? juego.nombre : '',
+                            desarrolladora: '',
+                            horasJugadas: entrada.horasJugadas,
+                            elemento,
+                        };
+                        registrosColeccion.push(registro);
+                        registrosPorEntrada.set(entrada.miId, registro);
                     }
                 } catch (error) {
                     console.error(`Error renderizando la entrada ${entrada.miId}:`, error);
@@ -343,8 +557,17 @@ export function cargarMiLista(idUsuario) {
                     continue;
                 }
                 const desarrolladora = cacheDesarrolladoras.get(juego.idDesarrolladora);
-                label.textContent = desarrolladora ? desarrolladora.nombre : 'Estudio Desconocido';
+                const nombreDesarrolladora = desarrolladora ? desarrolladora.nombre : 'Estudio Desconocido';
+                label.textContent = nombreDesarrolladora;
+
+                // Mantener el registro en sincronía para poder buscar por estudio.
+                const registro = registrosPorEntrada.get(entrada.miId);
+                if (registro) registro.desarrolladora = nombreDesarrolladora;
             }
+
+            // Estado inicial: respeta lo que hubiera escrito/elegido el usuario
+            // (p. ej. al volver a cargar la lista tras editar una entrada).
+            aplicarFiltroYOrden();
         })
         .catch(error => {
             console.error('Error al cargar colección:', error);
@@ -482,10 +705,13 @@ window.eliminarDeLista = function (idEntrada) {
                 setTimeout(() => {
                     card.remove();
 
+                    // La entrada borrada también sale de la búsqueda/orden.
+                    registrosColeccion = registrosColeccion.filter((registro) => registro.miId !== idEntrada);
+                    aplicarFiltroYOrden();
+
                     // Si ya no quedan tarjetas en el grid, mostrar mensaje de lista vacía
-                    const gameGrid = document.getElementById('game-grid');
                     const emptyListMessage = document.getElementById('empty-list-message');
-                    if (gameGrid && gameGrid.children.length === 0 && emptyListMessage) {
+                    if (registrosColeccion.length === 0 && emptyListMessage) {
                         emptyListMessage.classList.remove('hidden');
                     }
                 }, 300);

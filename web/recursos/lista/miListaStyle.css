@@ -346,6 +346,200 @@ html, body {
     background: #FF6A26;
 }
 
+/* --- BUSCADOR Y ORDEN DE LA COLECCIÓN --- */
+.collection-controls {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+}
+
+.collection-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1 1 320px;
+    min-width: 0;
+}
+
+.collection-field-sort {
+    flex: 0 0 auto;
+}
+
+.collection-field label {
+    color: var(--text-dim);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.10em;
+}
+
+.collection-search-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    padding: 0 14px;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.collection-search-box:focus-within {
+    border-color: var(--accent);
+    background: var(--surface-2);
+}
+
+.collection-search-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    opacity: 0.85;
+}
+
+.collection-search-input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 600;
+    padding: 14px 0;
+    outline: none;
+}
+
+.collection-search-input::placeholder {
+    color: #6E747C;
+    font-weight: 500;
+}
+
+/* La "x" nativa de type="search" se oculta: hay un botón propio. */
+.collection-search-input::-webkit-search-cancel-button,
+.collection-search-input::-webkit-search-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.collection-clear-button {
+    flex-shrink: 0;
+    color: var(--text-dim);
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+    padding: 4px 6px;
+    background: none;
+    border: none;
+    transition: color 0.2s ease;
+}
+
+.collection-clear-button:hover {
+    color: var(--accent);
+}
+
+.collection-sort-select {
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: var(--surface);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M0 0h10L5 6z' fill='%23FF4B00'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 10px 6px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.10em;
+    padding: 16px 40px 16px 16px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.collection-sort-select:hover {
+    border-color: #4A4E55;
+    background-color: var(--surface-2);
+}
+
+.collection-sort-select:focus {
+    border-color: var(--accent);
+}
+
+.collection-sort-select option {
+    background: var(--surface);
+    color: var(--text);
+    font-size: 13px;
+    letter-spacing: normal;
+    text-transform: none;
+}
+
+.collection-results-info {
+    color: var(--text-dim);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.10em;
+    margin-top: 14px;
+    min-height: 14px;
+}
+
+.collection-results-info:empty {
+    margin-top: 0;
+}
+
+/* Mensaje cuando la búsqueda no devuelve nada */
+.no-results-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+    padding: 48px 24px;
+    background: var(--surface);
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius-md);
+    max-width: 600px;
+    margin: 30px auto;
+}
+
+.no-results-message h3 {
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.10em;
+}
+
+.no-results-message p {
+    color: var(--text-dim);
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.no-results-message strong {
+    color: var(--accent);
+    word-break: break-word;
+}
+
+.no-results-message .btn-secondary {
+    margin-top: 6px;
+}
+
+@media (max-width: 650px) {
+    .collection-controls {
+        gap: 16px;
+    }
+    .collection-field,
+    .collection-field-sort {
+        flex: 1 1 100%;
+    }
+    .collection-sort-select {
+        width: 100%;
+    }
+}
+
 /* Grid y tarjetas de la lista */
 .game-grid {
     display: grid;

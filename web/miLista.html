@@ -59,6 +59,34 @@
 
         <h1 class="section-title">Mi Colección</h1>
 
+        <!-- Buscador y orden dentro de la colección (se muestra al cargar la lista) -->
+        <div id="collection-controls" class="collection-controls hidden">
+          <div class="collection-field">
+            <label for="collection-search-input">Buscar en tu colección</label>
+            <div class="collection-search-box">
+              <img src="recursos/img/search.svg" alt="" class="collection-search-icon">
+              <input type="search" id="collection-search-input" class="collection-search-input"
+                placeholder="Título o estudio..." autocomplete="off" spellcheck="false">
+              <button type="button" id="btn-clear-collection-search" class="collection-clear-button hidden"
+                aria-label="Limpiar la búsqueda">&times;</button>
+            </div>
+          </div>
+
+          <div class="collection-field collection-field-sort">
+            <label for="collection-sort-select">Ordenar por</label>
+            <select id="collection-sort-select" class="collection-sort-select">
+              <option value="recientes">Predeterminado</option>
+              <option value="nombre-asc">Nombre (A-Z)</option>
+              <option value="nombre-desc">Nombre (Z-A)</option>
+              <option value="horas-desc">Más horas jugadas</option>
+              <option value="horas-asc">Menos horas jugadas</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Recuento de resultados (región en vivo para lectores de pantalla) -->
+        <p id="collection-results-info" class="collection-results-info" role="status" aria-live="polite"></p>
+
         <!-- Indicador de Carga -->
         <div id="list-loader" class="list-loader">
           <div class="spinner"></div>
@@ -70,6 +98,13 @@
           <h3>Tu colección está vacía</h3>
           <p>No has añadido videojuegos a tu lista personal todavía. ¡Regresa al inicio para descubrir y guardar nuevos títulos!</p>
           <a href="index.html" class="browse-link-button">Explorar Videojuegos</a>
+        </div>
+
+        <!-- Mensaje cuando la búsqueda no encuentra nada -->
+        <div id="no-results-message" class="no-results-message hidden">
+          <h3>Sin resultados</h3>
+          <p>Ningún juego de tu colección coincide con <strong id="no-results-query"></strong>.</p>
+          <button type="button" id="btn-clear-filters" class="btn-secondary">Limpiar búsqueda</button>
         </div>
 
         <!-- Grid de Juegos en la Lista -->

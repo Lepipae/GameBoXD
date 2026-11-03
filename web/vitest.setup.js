@@ -23,6 +23,22 @@ document.body.innerHTML = `
     <button id="btn-logout"></button>
     <div id="list-loader"></div>
     <div id="empty-list-message" class="hidden"></div>
+    <div id="collection-controls" class="hidden">
+        <input id="collection-search-input" type="search">
+        <select id="collection-sort-select">
+            <option value="recientes">Predeterminado</option>
+            <option value="nombre-asc">Nombre (A-Z)</option>
+            <option value="nombre-desc">Nombre (Z-A)</option>
+            <option value="horas-desc">Más horas jugadas</option>
+            <option value="horas-asc">Menos horas jugadas</option>
+        </select>
+        <button id="btn-clear-collection-search" type="button"></button>
+        <button id="btn-clear-filters" type="button"></button>
+    </div>
+    <p id="collection-results-info"></p>
+    <div id="no-results-message" class="hidden">
+        <p>Ningún juego coincide con <strong id="no-results-query"></strong>.</p>
+    </div>
     <div id="game-grid"></div>
     <div id="toast-container"></div>
 `;
