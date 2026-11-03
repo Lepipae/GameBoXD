@@ -148,7 +148,13 @@ function cambiarTitulo(nombreJuego) {
  * @param {string} juego.descripcion - El texto de descripción del juego.
  */
 function renderizarInformacionBasica(juego) {
-    aplicarImagen(document.getElementById('game-cover'), juego.urlImagen);
+    const portada = document.getElementById('game-cover');
+    aplicarImagen(portada, juego.urlImagen, null, 600);
+    if (portada) {
+        // La portada de la ficha sí es el LCP de esta página.
+        portada.setAttribute('fetchpriority', 'high');
+        portada.setAttribute('decoding', 'async');
+    }
     document.getElementById('game-desc').textContent = juego.descripcion;
 }
 
@@ -418,7 +424,7 @@ function renderizarDesarrolladora(desarrolladora) {
     // Sin logo real no mostramos nada: encoger la portada genérica aquí sería un engaño.
     aplicarImagen(logoImg, desarrolladora.urlImagen, function (el) {
         el.style.display = 'none';
-    });
+    }, 200);
     
     document.getElementById('dev-name').textContent = desarrolladora.nombre;
     document.getElementById('dev-country').textContent = desarrolladora.pais;

@@ -711,7 +711,7 @@ export function renderizarEntradaJuego(entrada, juego, container) {
 
     // La portada se asigna con el gestor centralizado, que valida la URL y
     // recurre a la imagen local si el enlace remoto ha muerto.
-    aplicarImagen(card.querySelector('.game-card-img-container img'), juego.urlImagen);
+    aplicarImagen(card.querySelector('.game-card-img-container img'), juego.urlImagen, null, 300);
 
     container.appendChild(card);
 

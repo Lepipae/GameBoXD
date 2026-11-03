@@ -53,7 +53,7 @@ class DesarrolladoraControllerTest {
         Desarrolladora d = new Desarrolladora();
         when(desarrolladoraService.obtenerPorId(1)).thenReturn(d);
 
-        Desarrolladora result = desarrolladoraController.obtenerPorId(1);
+        Desarrolladora result = desarrolladoraController.obtenerPorId(1).getBody();
         assertNotNull(result);
         verify(desarrolladoraService, times(1)).obtenerPorId(1);
     }

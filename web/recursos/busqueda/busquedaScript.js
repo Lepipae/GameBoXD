@@ -365,10 +365,12 @@ export function crearTarjetaJuego(juego) {
     imgContainer.className = 'card-img-container';
 
     const img = document.createElement('img');
-    aplicarImagen(img, juego.urlImagen);
+    aplicarImagen(img, juego.urlImagen, null, 300);
     img.alt = juego.nombre;
+    // Las tarjetas de la rejilla no son el LCP: se cargan por debajo del pliegue.
     img.setAttribute('loading', 'lazy');
     img.setAttribute('decoding', 'async');
+    img.setAttribute('fetchpriority', 'low');
 
     imgContainer.appendChild(img);
 

@@ -103,6 +103,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/desarrolladoras", "/api/desarrolladoras/**").permitAll()
                         // Ficha de un juego: necesita saber quantas listas lo incluyen
                         .requestMatchers(HttpMethod.GET, "/api/lista/juego/**").permitAll()
+                        // Portadas redimensionadas: las imágenes del catálogo son públicas.
+                        // El servicio limita las URLs al CDN de SteamGridDB (sin SSRF).
+                        .requestMatchers(HttpMethod.GET, "/api/imagenes").permitAll()
                         // Perfiles públicos de usuario por id o por nombre. Ya no exponen
                         // credenciales (contrasenia es WRITE_ONLY), asi que un visitante
                         // anonimo puede ver quien ha escrito una reseña.

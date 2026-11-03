@@ -114,12 +114,15 @@ public class DesarrolladoraController {
      * @return      Desarrolladora asociada a ese id
      */
     @GetMapping("/id/{id}")
-    public Desarrolladora obtenerPorId(@PathVariable int id) {
+    public ResponseEntity<Desarrolladora> obtenerPorId(@PathVariable int id) {
         var desarrolladora = desarrolladoraService.obtenerPorId(id);
         if (desarrolladora == null) {
             throw new RecursoNoEncontradoException("No existe ninguna desarrolladora con el id " + id);
         }
-        return desarrolladora;
+        // La ficha de un juego pide también su estudio: catálogo casi estático.
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(Duration.ofMinutes(5)).cachePublic())
+                .body(desarrolladora);
     }
 
     /**

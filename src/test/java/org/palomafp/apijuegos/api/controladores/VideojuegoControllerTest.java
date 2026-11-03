@@ -46,7 +46,7 @@ class VideojuegoControllerTest {
         Videojuego v = new Videojuego();
         when(videojuegoService.obtenerPorId(1L)).thenReturn(v);
 
-        Videojuego result = videojuegoController.obtenerPorId(1L);
+        Videojuego result = videojuegoController.obtenerPorId(1L).getBody();
         assertNotNull(result);
         verify(videojuegoService, times(1)).obtenerPorId(1L);
     }

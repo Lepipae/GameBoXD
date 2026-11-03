@@ -149,12 +149,16 @@ public class VideojuegoController {
      * @return      Videojuego asociado a ese id
      */
     @GetMapping("/{miId}")
-    public Videojuego obtenerPorId(@PathVariable long miId) {
+    public ResponseEntity<Videojuego> obtenerPorId(@PathVariable long miId) {
         var juego = videojuegoService.obtenerPorId(miId);
         if (juego == null) {
             throw new RecursoNoEncontradoException("No existe ningun videojuego con el id " + miId);
         }
-        return juego;
+        // Ficha de juego: misma respuesta para todos y cambia poco. La caché
+        // evita repetir la consulta al volver atrás o recargar.
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(Duration.ofMinutes(5)).cachePublic())
+                .body(juego);
     }
 
     /**

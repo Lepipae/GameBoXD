@@ -45,7 +45,11 @@ export async function cargarHeroMasResenyado() {
         }
         if (img) {
             // La carátula del propio juego: no hace falta ninguna imagen de hero fija.
-            aplicarImagen(img, juego.urlImagen);
+            aplicarImagen(img, juego.urlImagen, null, 600);
+            // El hero es el elemento LCP de la portada: prioridad máxima.
+            img.setAttribute('fetchpriority', 'high');
+            img.setAttribute('loading', 'eager');
+            img.setAttribute('decoding', 'async');
             img.alt = juego.nombre || '';
             img.title = juego.nombre || '';
         }
@@ -129,13 +133,16 @@ function renderizarRecomendaciones(recomendaciones) {
             enlace.href = `detalleJuego.html?id=${juego.miId}`;
 
             const img = document.createElement('img');
-            aplicarImagen(img, juego.urlImagen);
+            aplicarImagen(img, juego.urlImagen, null, 300);
             img.alt = juego.nombre;
             img.title = juego.nombre;
             // La primera tarjeta se pinta con el resto de la página; las demás
             // se cargan al acercarse al viewport.
             img.setAttribute('loading', index === 0 ? 'eager' : 'lazy');
             img.setAttribute('decoding', 'async');
+            // La portada compite con el hero por el ancho de banda: la primera
+            // se marca en baja prioridad y el hero (LCP) en alta.
+            img.setAttribute('fetchpriority', 'low');
 
             enlace.appendChild(img);
             contenedor.appendChild(enlace);

@@ -48,18 +48,55 @@
     }
 
     /**
+     * Host del CDN cuyas portadas sirve redimensionadas el backend.
+     * Todas las portadas del catálogo viven aquí; el endpoint /api/imagenes
+     * solo acepta este host (lista blanca contra SSRF).
+     */
+    const HOST_CDN_PORTADAS = 'cdn2.steamgriddb.com';
+
+    /**
+     * Construye la URL optimizada de una portada, si procede.
+     *
+     * <p>Los originales son PNG de ~730 KB. El backend los sirve a `ancho` px y
+     * en JPEG (~30 KB), así que una tarjeta deja de costar medio megabyte.</p>
+     *
+     * @param {string} url - URL original de la portada.
+     * @param {number} ancho - Ancho deseado en píxeles.
+     * @returns {string} URL optimizada, o la original si el host no aplica.
+     */
+    function optimizarUrlImagen(url, ancho) {
+        const original = String(url ?? '').trim();
+        if (original === '') return original;
+
+        let destino;
+        try {
+            destino = new URL(original);
+        } catch (e) {
+            return original;
+        }
+
+        if (destino.hostname !== HOST_CDN_PORTADAS) {
+            return original;
+        }
+
+        const base = (window.GameBoXDApi && window.GameBoXDApi.BASE_URL) || '';
+        return `${base}/imagenes?url=${encodeURIComponent(original)}&w=${ancho}`;
+    }
+
+    /**
      * Asigna la imagen a un elemento <img> con respaldo local.
      *
-     * El listener de "error" se desconecta a sí mismo antes de reintentar, de modo
-     * que si el placeholder local fallara alguna vez no entraría en un bucle
-     * infinito de peticiones.
+     * Cadena de respaldo: versión redimensionada en el backend → original
+     * remota → portada local. Cada eslabón solo se usa si el anterior falla,
+     * así que una caída del redimensionador nunca deja la tarjeta vacía.
      *
      * @param {HTMLImageElement} img - Elemento <img> destino.
      * @param {string} url - URL remota candidata; si no es válida se usa el placeholder.
      * @param {Function} [alFallar] - Callback opcional que sustituye al placeholder
      *        (por ejemplo, para ocultar el logo de una desarrolladora sin logo real).
+     * @param {number} [ancho] - Ancho al que conviene pedir la portada (por defecto 300).
      */
-    function aplicarImagen(img, url, alFallar) {
+    function aplicarImagen(img, url, alFallar, ancho) {
         if (!img) return;
 
         const recurrir = function () {
@@ -76,17 +113,35 @@
             return;
         }
 
+        const original = url.trim();
+        const optimizada = optimizarUrlImagen(original, ancho || 300);
+
+        // Si la optimizada falla, se intenta el original antes de rendirse.
+        if (optimizada !== original) {
+            img.addEventListener('error', function reintentarOriginal() {
+                img.removeEventListener('error', reintentarOriginal);
+                img.addEventListener('error', function manejarErrorImagen() {
+                    img.removeEventListener('error', manejarErrorImagen);
+                    recurrir();
+                });
+                img.src = original;
+            });
+            img.src = optimizada;
+            return;
+        }
+
         img.addEventListener('error', function manejarErrorImagen() {
             img.removeEventListener('error', manejarErrorImagen);
             recurrir();
         });
 
-        img.src = url.trim();
+        img.src = original;
     }
 
     window.GameBoXDImagenes = {
         IMAGEN_PLACEHOLDER: IMAGEN_PLACEHOLDER,
         tieneUrlImagen: tieneUrlImagen,
+        optimizarUrlImagen: optimizarUrlImagen,
         aplicarImagen: aplicarImagen
     };
 })();
