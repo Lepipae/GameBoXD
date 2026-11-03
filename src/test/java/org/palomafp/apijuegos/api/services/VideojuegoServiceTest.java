@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.palomafp.apijuegos.api.modelo.Videojuego;
 import org.palomafp.apijuegos.api.modelo.dto.PaginaVideojuegos;
 import org.palomafp.apijuegos.api.modelo.dto.ResumenVideojuego;
@@ -33,6 +34,10 @@ class VideojuegoServiceTest {
 
     @Mock
     private MongoTemplate mongoTemplate;
+
+    /** Caché real: así los tests cubren también la invalidación al escribir. */
+    @Spy
+    private CacheTemporal cacheTemporal = new CacheTemporal();
 
     @InjectMocks
     private VideojuegoService videojuegoService;

@@ -1,0 +1,42 @@
+name: Mantener despierta la API
+
+# Render (plan free) apaga el servicio tras 15 minutos sin tráfico. La primera
+# visita después de eso paga el arranque en frío: el contenedor de Java tiene
+# que levantarse y abrir el pool contra Atlas, lo que se nota como varios
+# segundos (a veces decenas) de pantalla en blanco en el frontend.
+#
+# Este workflow hace una petición cada 10 minutos a /actuator/health, que es
+# público y no toca la base de datos. Con eso la API casi siempre está
+# despierta cuando llega un usuario real.
+#
+# Nota: GitHub puede retrasar los cron en minutos de carga alta, y desactiva
+# los workflows programados en repositorios sin actividad durante 60 días.
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Ping a /actuator/health
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Despertar la API
+        run: |
+          # 3 intentos: si el servicio está arrancando, el primero puede tardar
+          # y devolver un error transitorio.
+          for intento in 1 2 3; do
+            codigo=$(curl --silent --output /dev/null --write-out '%{http_code}' \
+              --max-time 60 \
+              https://gameboxd-2nio.onrender.com/actuator/health || true)
+            echo "Intento $intento -> HTTP $codigo"
+            if [ "$codigo" = "200" ]; then
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "::warning::La API no respondió 200 tras 3 intentos."
+          # No se falla el workflow: es un ping de mantenimiento, no un test.
+          exit 0

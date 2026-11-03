@@ -14,6 +14,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -46,9 +47,28 @@ public class VideojuegoService {
     /** Tamaño de página por defecto cuando el cliente no pide uno. */
     private static final int TAMANO_PAGINA_POR_DEFECTO = 24;
 
+    /** Clave de caché del catálogo completo (endpoint de compatibilidad). */
+    private static final String CLAVE_CATALOGO = "videojuegos:catalogo";
+
+    /** Clave de caché del juego del hero. */
+    private static final String CLAVE_HERO = "videojuegos:hero";
+
+    /** Prefijo de las recomendaciones: hay una entrada por tamaño pedido. */
+    private static final String CLAVE_RECOMENDACIONES = "videojuegos:recomendaciones:";
+
+    /** El catálogo completo solo cambia al escribir: 2 minutos de caché. */
+    private static final Duration TTL_CATALOGO = Duration.ofMinutes(2);
+
+    /** El hero cambia al puntuar un juego: 1 minuto, igual que su Cache-Control. */
+    private static final Duration TTL_HERO = Duration.ofMinutes(1);
+
+    /** Las recomendaciones son aleatorias: 30 s, igual que su Cache-Control. */
+    private static final Duration TTL_RECOMENDACIONES = Duration.ofSeconds(30);
+
     private final VideojuegoRepo videojuegoRepo;
     private final EntradaListaService entradaListaService;
     private final MongoTemplate mongoTemplate;
+    private final CacheTemporal cacheTemporal;
 
     /**
      * Inyección por constructor: las dependencias quedan {@code final}.
@@ -58,10 +78,11 @@ public class VideojuegoService {
      * @param mongoTemplate     Plantilla de MongoDB para las consultas paginadas y proyecciones.
      */
     public VideojuegoService(VideojuegoRepo videojuegoRepo, EntradaListaService entradaListaService,
-                             MongoTemplate mongoTemplate) {
+                             MongoTemplate mongoTemplate, CacheTemporal cacheTemporal) {
         this.videojuegoRepo = videojuegoRepo;
         this.entradaListaService = entradaListaService;
         this.mongoTemplate = mongoTemplate;
+        this.cacheTemporal = cacheTemporal;
     }
 
     /**
@@ -69,7 +90,10 @@ public class VideojuegoService {
      * @return  Lista de todos los juegos
      */
     public List<Videojuego> obtenerTodos() {
-        return videojuegoRepo.findAll();
+        // Se mantiene por compatibilidad con clientes antiguos. Es la lectura
+        // más pesada (198 documentos, ~100 KB) y cambia solo al escribir, así
+        // que se cachea en memoria además de en el navegador.
+        return cacheTemporal.obtener(CLAVE_CATALOGO, TTL_CATALOGO, videojuegoRepo::findAll);
     }
 
     /**
@@ -115,7 +139,10 @@ public class VideojuegoService {
      * @return Juego más reseñado, o null si todavía no hay entradas.
      */
     public Videojuego obtenerMasResenyado() {
-        return entradaListaService.juegoConMasEntradas();
+        // Agregación sobre toda la colección de entradas (~250 ms medidos).
+        // Alimenta el hero, que es el LCP del index: cachearlo hace que la
+        // portada no espere a Atlas en cada visita.
+        return cacheTemporal.obtener(CLAVE_HERO, TTL_HERO, entradaListaService::juegoConMasEntradas);
     }
 
     /**
@@ -197,6 +224,21 @@ public class VideojuegoService {
     public List<ResumenVideojuego> recomendaciones(int limite) {
         int cantidad = Math.max(1, Math.min(limite, MAX_TAMANO_PAGINA));
 
+        // $sample es aleatorio: dentro de los 30 s de vida de la caché el index
+        // repite la misma selección, igual que ya hacía la caché HTTP.
+        return cacheTemporal.obtener(
+                CLAVE_RECOMENDACIONES + cantidad,
+                TTL_RECOMENDACIONES,
+                () -> muestrearJuegos(cantidad));
+    }
+
+    /**
+     * Ejecuta la agregación {@code $sample} que elige los juegos recomendados.
+     *
+     * @param cantidad Número de juegos a muestrear.
+     * @return Resúmenes aleatorios.
+     */
+    private List<ResumenVideojuego> muestrearJuegos(int cantidad) {
         Criteria criterios = new Criteria().andOperator(
                 Criteria.where("nombre").ne(null).ne(""),
                 Criteria.where("urlImagen").nin(null, "", ValidadorUrlImagen.VALOR_HEREDADO)
@@ -298,7 +340,10 @@ public class VideojuegoService {
             throw new RecursoDuplicadoException("Ya existe un videojuego con ese nombre");
         }
 
-        return videojuegoRepo.save(videojuego);
+        Videojuego guardado = videojuegoRepo.save(videojuego);
+        // El catálogo y las recomendaciones acaban de cambiar.
+        cacheTemporal.invalidar("videojuegos:");
+        return guardado;
     }
 
     /**
@@ -308,5 +353,6 @@ public class VideojuegoService {
     public void borrarVideojuego(long id) {
         entradaListaService.borrarPorVideojuego(id);
         videojuegoRepo.deleteByMiId(id);
+        cacheTemporal.invalidar("videojuegos:");
     }
 }

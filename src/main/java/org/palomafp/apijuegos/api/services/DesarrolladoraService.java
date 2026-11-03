@@ -1,6 +1,7 @@
 package org.palomafp.apijuegos.api.services;
 
 import org.palomafp.apijuegos.api.modelo.Desarrolladora;
+import org.palomafp.apijuegos.api.modelo.dto.ResumenDesarrolladora;
 import org.palomafp.apijuegos.api.repositories.DesarrolladoraRepo;
 import org.springframework.stereotype.Service;
 
@@ -14,14 +15,23 @@ import java.util.List;
 public class DesarrolladoraService {
 
     private final DesarrolladoraRepo desarrolladoraRepo;
+    private final CacheTemporal cacheTemporal;
+
+    /** Clave de caché del listado ligero de desplegables. */
+    private static final String CLAVE_OPCIONES = "desarrolladoras:opciones";
+
+    /** Las desarrolladoras cambian solo al escribir: 5 minutos. */
+    private static final java.time.Duration TTL_OPCIONES = java.time.Duration.ofMinutes(5);
 
     /**
      * Inyección por constructor: la dependencia queda {@code final}.
      *
      * @param desarrolladoraRepo Repositorio de desarrolladoras.
+     * @param cacheTemporal      Caché del listado de desplegables.
      */
-    public DesarrolladoraService(DesarrolladoraRepo desarrolladoraRepo) {
+    public DesarrolladoraService(DesarrolladoraRepo desarrolladoraRepo, CacheTemporal cacheTemporal) {
         this.desarrolladoraRepo = desarrolladoraRepo;
+        this.cacheTemporal = cacheTemporal;
     }
 
     /**
@@ -30,6 +40,21 @@ public class DesarrolladoraService {
      */
     public List<Desarrolladora> obtenerDesarrolladoras() {
         return desarrolladoraRepo.findAll();
+    }
+
+    /**
+     * Listado ligero de desarrolladoras para desplegables.
+     *
+     * <p>Devuelve solo id interno y nombre: el formulario de insertar no
+     * necesita país ni logo, y son dos tercios del peso de la respuesta.</p>
+     *
+     * @return Desarrolladoras con solo {@code miId} y {@code nombre}.
+     */
+    public List<ResumenDesarrolladora> obtenerOpciones() {
+        return cacheTemporal.obtener(CLAVE_OPCIONES, TTL_OPCIONES, () ->
+                desarrolladoraRepo.findSoloIdYNombre().stream()
+                        .map(dev -> new ResumenDesarrolladora(dev.getMiId(), dev.getNombre()))
+                        .toList());
     }
 
     /**
@@ -81,7 +106,10 @@ public class DesarrolladoraService {
             var ultimo = desarrolladoraRepo.encontrarUltimoId();
             desarrolladora.setMiId(ultimo != null ? ultimo.getMiId() + 1 : 1);
         }
-        return desarrolladoraRepo.save(desarrolladora);
+        Desarrolladora guardada = desarrolladoraRepo.save(desarrolladora);
+        // El desplegable de "insertar" acaba de cambiar.
+        cacheTemporal.invalidar("desarrolladoras:");
+        return guardada;
     }
 
     /**
@@ -90,5 +118,6 @@ public class DesarrolladoraService {
      */
     public void borrarDesarrolladora(int id) {
         desarrolladoraRepo.deleteByMiId(id);
+        cacheTemporal.invalidar("desarrolladoras:");
     }
 }

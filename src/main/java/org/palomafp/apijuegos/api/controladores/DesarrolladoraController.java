@@ -2,6 +2,7 @@ package org.palomafp.apijuegos.api.controladores;
 
 import org.palomafp.apijuegos.api.excepciones.RecursoNoEncontradoException;
 import org.palomafp.apijuegos.api.modelo.Desarrolladora;
+import org.palomafp.apijuegos.api.modelo.dto.ResumenDesarrolladora;
 import org.palomafp.apijuegos.api.services.DesarrolladoraService;
 import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
@@ -52,6 +53,22 @@ public class DesarrolladoraController {
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.maxAge(Duration.ofMinutes(10)).cachePublic())
                 .body(desarrolladoraService.obtenerDesarrolladoras());
+    }
+
+    /**
+     * Listado ligero para desplegables: solo id interno y nombre.
+     *
+     * <p>Es lo que pide el formulario de "insertar" para poblar el selector de
+     * desarrolladora. El listado completo incluye país, logo e id de Mongo y
+     * pesaba 16,8 KB; este se queda en ~3 KB.</p>
+     *
+     * @return Pares {@code miId}/{@code nombre} de todas las desarrolladoras.
+     */
+    @GetMapping("/opciones")
+    public ResponseEntity<List<ResumenDesarrolladora>> opciones() {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(Duration.ofMinutes(30)).cachePublic())
+                .body(desarrolladoraService.obtenerOpciones());
     }
 
     /**

@@ -2,6 +2,7 @@ package org.palomafp.apijuegos.api.repositories;
 
 import org.palomafp.apijuegos.api.modelo.Desarrolladora;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 
 import java.util.Collection;
 import java.util.List;
@@ -28,6 +29,17 @@ public interface DesarrolladoraRepo extends MongoRepository<Desarrolladora, Stri
      * @return Desarrolladoras encontradas (las que no existan no aparecen)
      */
     List<Desarrolladora> findByMiIdIn(Collection<Integer> ids);
+
+    /**
+     * Listado ligero para desplegables: solo el id interno y el nombre.
+     *
+     * <p>La proyección la aplica MongoDB, así que los documentos que viajan por
+     * la red llevan dos campos en lugar de seis.</p>
+     *
+     * @return Desarrolladoras con solo {@code miId} y {@code nombre}.
+     */
+    @Query(value = "{}", fields = "{ 'miId': 1, 'nombre': 1 }")
+    List<Desarrolladora> findSoloIdYNombre();
 
     /**
      * Busca una desarrolladora por su nombre

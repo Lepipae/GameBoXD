@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.palomafp.apijuegos.api.modelo.EntradaLista;
 import org.palomafp.apijuegos.api.modelo.Videojuego;
 import org.palomafp.apijuegos.api.modelo.dto.ConteoJuego;
@@ -25,6 +26,10 @@ class EntradaListaServiceTest {
 
     @Mock
     private VideojuegoRepo videojuegoRepo;
+
+    /** Caché real: es barata y así se prueba también la invalidación. */
+    @Spy
+    private CacheTemporal cacheTemporal = new CacheTemporal();
 
     @InjectMocks
     private EntradaListaService entradaListaService;

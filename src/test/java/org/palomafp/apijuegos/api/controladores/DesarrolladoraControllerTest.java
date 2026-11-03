@@ -58,6 +58,26 @@ class DesarrolladoraControllerTest {
         verify(desarrolladoraService, times(1)).obtenerPorId(1);
     }
 
+    /**
+     * El desplegable de "insertar" pide solo id y nombre: el listado completo
+     * incluía país, logo e id de Mongo y pesaba 16,8 KB.
+     */
+    @Test
+    void opcionesDevuelveSoloIdYNombre() {
+        when(desarrolladoraService.obtenerOpciones()).thenReturn(List.of(
+                new org.palomafp.apijuegos.api.modelo.dto.ResumenDesarrolladora(1, "FromSoftware"),
+                new org.palomafp.apijuegos.api.modelo.dto.ResumenDesarrolladora(2, "CD Projekt")
+        ));
+
+        var result = desarrolladoraController.opciones().getBody();
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("FromSoftware", result.get(0).nombre());
+        assertEquals(1, result.get(0).miId());
+        verify(desarrolladoraService, times(1)).obtenerOpciones();
+    }
+
     @Test
     void guardar() {
         Desarrolladora d = new Desarrolladora();

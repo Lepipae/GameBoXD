@@ -21,16 +21,20 @@ public class EntradaListaService {
 
     private final EntradaListaRepo entradaListaRepo; // Repo de EntradaLista
     private final VideojuegoRepo videojuegoRepo;       // Repo de Videojuego
+    private final CacheTemporal cacheTemporal;         // Caché de lecturas de catálogo
 
     /**
      * Inyección por constructor: ambas dependencias quedan {@code final}.
      *
      * @param entradaListaRepo Repositorio de entradas de lista.
      * @param videojuegoRepo    Repositorio de videojuegos, para recalcular la nota media.
+     * @param cacheTemporal     Caché de las lecturas de catálogo que dependen de las entradas.
      */
-    public EntradaListaService(EntradaListaRepo entradaListaRepo, VideojuegoRepo videojuegoRepo) {
+    public EntradaListaService(EntradaListaRepo entradaListaRepo, VideojuegoRepo videojuegoRepo,
+                               CacheTemporal cacheTemporal) {
         this.entradaListaRepo = entradaListaRepo;
         this.videojuegoRepo = videojuegoRepo;
+        this.cacheTemporal = cacheTemporal;
     }
 
     /**
@@ -61,6 +65,11 @@ public class EntradaListaService {
             videojuego.setNotaMedia(notaMedia);
             videojuegoRepo.save(videojuego);
         }
+
+        // La nota media sale en el catálogo y en las fichas; el hero depende de
+        // cuántas entradas tiene cada juego. Cualquier cambio en las entradas
+        // puede alterar ambas lecturas.
+        cacheTemporal.invalidar("videojuegos:");
     }
 
     /**

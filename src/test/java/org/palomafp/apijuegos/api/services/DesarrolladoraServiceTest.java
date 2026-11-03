@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.palomafp.apijuegos.api.modelo.Desarrolladora;
 import org.palomafp.apijuegos.api.repositories.DesarrolladoraRepo;
 
@@ -19,6 +20,10 @@ class DesarrolladoraServiceTest {
 
     @Mock
     private DesarrolladoraRepo desarrolladoraRepo;
+
+    /** Caché real: el listado de desplegables se cachea y se invalida al escribir. */
+    @Spy
+    private CacheTemporal cacheTemporal = new CacheTemporal();
 
     @InjectMocks
     private DesarrolladoraService desarrolladoraService;

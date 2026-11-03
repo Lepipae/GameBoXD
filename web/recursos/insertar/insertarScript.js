@@ -13,7 +13,9 @@ function cargarDesarrolladoras() {
     const selectDesarrolladora = document.getElementById('videojuego-desarrolladora');
     if (!selectDesarrolladora) return;
 
-    const API_URL = `${GameBoXDApi.BASE_URL}/desarrolladoras`;
+    // Solo id y nombre: el desplegable no necesita país ni logo, y el listado
+    // completo pesaba ~16,8 KB frente a ~3 KB de este.
+    const API_URL = `${GameBoXDApi.BASE_URL}/desarrolladoras/opciones`;
 
     // Fetch a la api
     fetch(API_URL)
