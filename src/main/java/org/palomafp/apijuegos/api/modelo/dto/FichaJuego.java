@@ -1,0 +1,23 @@
+package org.palomafp.apijuegos.api.modelo.dto;
+
+import org.palomafp.apijuegos.api.modelo.Desarrolladora;
+import org.palomafp.apijuegos.api.modelo.EntradaLista;
+import org.palomafp.apijuegos.api.modelo.Videojuego;
+
+import java.util.List;
+
+/**
+ * Respuesta completa de la ficha de un juego.
+ *
+ * <p>Antes la página hacía tres peticiones: el juego, sus reseñas y (solo
+ * cuando llegaba el juego) su desarrolladora. Las dos últimas dependían de la
+ * primera, así que la ficha encadenaba viajes a Atlas y tardaba el doble de lo
+ * necesario. Con este agregado la ficha se pinta con una sola petición.</p>
+ *
+ * @param juego          Datos del videojuego.
+ * @param desarrolladora Estudio que lo desarrolló (null si no tiene).
+ * @param resenyas       Entradas de lista del juego (puede ser una lista vacía).
+ * @author Andrés López
+ */
+public record FichaJuego(Videojuego juego, Desarrolladora desarrolladora, List<EntradaLista> resenyas) {
+}

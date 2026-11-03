@@ -43,8 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (idJuego) {
         console.log("ID del juego recibido:", idJuego);
-        cargarDetallesJuego(idJuego);
-        cargarResenyasJuego(idJuego);
+        cargarFicha(idJuego);
         verificarSesionYConfigurarBoton(idJuego);
     } else {
         mostrarError("No se ha especificado ningún juego.");
@@ -62,13 +61,18 @@ function obtenerIdDeUrl() {
 }
 
 /**
- * Realiza una petición a la API para obtener los datos completos del videojuego.
- * 
+ * Carga la ficha completa del juego en UNA sola petición.
+ *
+ * <p>Antes eran tres: el juego, sus reseñas y —solo cuando llegaba el juego—
+ * su desarrolladora. Las dos últimas dependían de la primera, así que la ficha
+ * encadenaba viajes a la API y tardaba el doble. `GET /api/ficha/{id}` devuelve
+ * el juego, el estudio y las reseñas juntos.</p>
+ *
  * @param {string} idJuego - El ID del videojuego a cargar.
  */
-function cargarDetallesJuego(idJuego) {
-    const API_URL = `${GameBoXDApi.BASE_URL}/videojuegos/${idJuego}`;
-    
+function cargarFicha(idJuego) {
+    const API_URL = `${GameBoXDApi.BASE_URL}/ficha/${idJuego}`;
+
     fetch(API_URL)
         .then(response => {
             if (!response.ok) {
@@ -76,9 +80,15 @@ function cargarDetallesJuego(idJuego) {
             }
             return response.json();
         })
-        .then(juego => {
-            console.log("Datos del juego obtenidos:", juego);
-            renderizarJuego(juego);
+        .then(ficha => {
+            if (!ficha || !ficha.juego) {
+                throw new Error('La ficha no contiene ningun juego');
+            }
+            renderizarJuego(ficha.juego);
+            if (ficha.desarrolladora) {
+                renderizarDesarrolladora(ficha.desarrolladora);
+            }
+            renderizarResenyas(Array.isArray(ficha.resenyas) ? ficha.resenyas : []);
         })
         .catch(error => {
             console.error(error);
@@ -98,9 +108,6 @@ function renderizarJuego(juego) {
     renderizarInformacionBasica(juego);
     renderizarTags(juego.tags);
     renderizarValoracion(juego.notaMedia);
-    if (juego.idDesarrolladora) {
-        cargarDesarrolladora(juego.idDesarrolladora);
-    }
 }
 
 /**
@@ -208,32 +215,6 @@ function renderizarValoracion(notaMedia) {
     
     ratingContainer.appendChild(ratingNumber);
     ratingContainer.appendChild(starsContainer);
-}
-
-/**
- * Realiza una petición a la API para obtener las reseñas del videojuego.
- * 
- * @param {string} idJuego - El ID del videojuego.
- */
-function cargarResenyasJuego(idJuego) {
-    const API_URL = `${GameBoXDApi.BASE_URL}/lista/juego/${idJuego}`;
-    
-    fetch(API_URL)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Error de red al intentar obtener las reseñas del juego');
-            }
-            return response.json();
-        })
-        .then(resenyas => {
-            console.log("Reseñas obtenidas:", resenyas);
-            renderizarResenyas(resenyas);
-        })
-        .catch(error => {
-            console.error(error);
-            // Si falla, mostramos el contenedor indicando que no hay reseñas
-            renderizarResenyas([]);
-        });
 }
 
 /**
@@ -381,30 +362,6 @@ export async function cargarUsuariosEnLote(idsUsuarios) {
             cacheUsuarios.set(id, 'Usuario Anónimo');
         }
     }
-}
-
-/**
- * Petición a la API para obtener los datos de la desarrolladora.
- * 
- * @param {number} idDesarrolladora - El ID de la desarrolladora.
- */
-function cargarDesarrolladora(idDesarrolladora) {
-    const API_URL = `${GameBoXDApi.BASE_URL}/desarrolladoras/id/${idDesarrolladora}`;
-    
-    fetch(API_URL)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Error al obtener la desarrolladora');
-            }
-            return response.json();
-        })
-        .then(desarrolladora => {
-            renderizarDesarrolladora(desarrolladora);
-        })
-        .catch(error => {
-            console.error("Error cargando desarrolladora:", error);
-            // Si falla, la caja game-dev-box permanecerá oculta por defecto
-        });
 }
 
 /**
