@@ -9,12 +9,13 @@
     max-width: 1000px;
     width: 90%;
     margin: 80px auto;
-    background-color: #1A202C;
-    border-radius: 20px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 219, 255, 0.15);
+    background-color: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
     padding: 40px;
-    color: #F8FAFC;
-    border: 1px solid rgba(0, 219, 255, 0.1);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--accent);
     position: relative;
     z-index: 10;
 }
@@ -27,16 +28,18 @@
 }
 
 .auth-column h2 {
-    font-size: 28px;
+    font-size: 24px;
+    font-weight: 900;
     margin-bottom: 30px;
-    color: #00DBFF;
+    color: #FFFFFF;
     text-align: center;
-    text-shadow: 0 0 10px rgba(0, 219, 255, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
 }
 
 .divider {
     width: 2px;
-    background: linear-gradient(to bottom, transparent, rgba(0, 219, 255, 0.4), transparent);
+    background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.18), transparent);
     margin: 0 30px;
 }
 
@@ -48,49 +51,50 @@
 
 .input-group label {
     margin-bottom: 8px;
-    font-size: 15px;
-    color: #A0AEC0;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.10em;
+    color: var(--text-dim);
 }
 
 .input-group input {
-    background-color: #2D3748;
-    border: 1px solid #4A5568;
-    border-radius: 12px;
+    background-color: var(--surface-2);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
     padding: 14px;
-    color: #F8FAFC;
+    color: var(--text);
     font-size: 16px;
-    transition: border-color 0.3s, box-shadow 0.3s;
+    transition: border-color 0.3s, background-color 0.3s;
 }
 
 .input-group input:focus {
-    border-color: #00DBFF;
-    box-shadow: 0 0 10px rgba(0, 219, 255, 0.5);
+    border-color: var(--accent);
+    background-color: #1C1D20;
     outline: none;
 }
 
 .auth-button {
-    background-color: #00DBFF;
-    color: #0B0E14;
+    background-color: var(--accent);
+    color: var(--ink);
     font-weight: 800;
-    font-size: 16px;
-    padding: 14px;
-    border-radius: 12px;
+    font-size: 13px;
+    padding: 15px;
+    border-radius: var(--radius-sm);
     width: 100%;
     margin-top: 10px;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.10em;
 }
 
 .auth-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0, 219, 255, 0.5);
-    filter: brightness(1.1);
+    background-color: #FF6A26;
 }
 
 .auth-button:active {
-    transform: translateY(0);
-    box-shadow: 0 4px 10px rgba(0, 219, 255, 0.4);
+    background-color: var(--accent-deep);
+    color: #FFFFFF;
 }
 
 .error-msg {
@@ -121,7 +125,7 @@
     .divider {
         width: 100%;
         height: 2px;
-        background: linear-gradient(to right, transparent, rgba(0, 219, 255, 0.4), transparent);
+        background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.18), transparent);
         margin: 30px 0;
     }
 }

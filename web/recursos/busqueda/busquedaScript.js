@@ -486,12 +486,15 @@ export function mostrarErrorConPistachos(error, reintentar) {
     const botonReintentar = document.createElement('button');
     botonReintentar.type = 'button';
     botonReintentar.textContent = 'Reintentar';
-    botonReintentar.style.background = '#00D1FF';
-    botonReintentar.style.color = '#0B0E14';
+    botonReintentar.style.background = '#FF4B00';
+    botonReintentar.style.color = '#0B0B0C';
     botonReintentar.style.border = 'none';
-    botonReintentar.style.padding = '10px 24px';
-    botonReintentar.style.borderRadius = '8px';
-    botonReintentar.style.fontWeight = '700';
+    botonReintentar.style.padding = '12px 24px';
+    botonReintentar.style.borderRadius = '2px';
+    botonReintentar.style.fontWeight = '800';
+    botonReintentar.style.textTransform = 'uppercase';
+    botonReintentar.style.letterSpacing = '0.1em';
+    botonReintentar.style.fontSize = '12px';
     botonReintentar.style.cursor = 'pointer';
     botonReintentar.addEventListener('click', () => {
         if (typeof reintentar === 'function') {

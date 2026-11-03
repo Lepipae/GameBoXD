@@ -2,11 +2,10 @@
 
 .loading-state {
     text-align: center;
-    color: #00DBFF;
+    color: #FF4B00;
     font-size: 24px;
     font-weight: 600;
     margin: 100px auto;
-    text-shadow: 0 0 10px rgba(0, 219, 255, 0.6);
 }
 
 .game-detail-wrapper {
@@ -30,9 +29,9 @@
 
 .game-cover {
     width: 100%;
-    border-radius: 16px;
-    box-shadow: 0 0 25px rgba(0, 219, 255, 0.3);
-    border: 1px solid rgba(0, 219, 255, 0.2);
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.09);
     object-fit: cover;
     aspect-ratio: 2/3;
 }
@@ -46,26 +45,23 @@
 }
 
 .game-tag {
-    background-color: #1A202C;
-    color: #00DBFF;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 600;
-    border: 1px solid #00DBFF;
-    box-shadow: 0 0 10px rgba(0, 219, 255, 0.2);
-    backdrop-filter: blur(4px);
+    background-color: #121315;
+    color: #C2C6CC;
+    padding: 6px 12px;
+    border-radius: var(--radius-xs);
+    font-size: 12px;
+    font-weight: 800;
+    border: 1px solid var(--line-strong);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.10em;
     cursor: pointer;
-    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .game-tag:hover {
-    background-color: #00DBFF;
-    color: #1A202C;
-    box-shadow: 0 0 15px rgba(0, 219, 255, 0.6);
-    transform: translateY(-2px);
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: var(--ink);
 }
 
 .game-col-right {
@@ -76,10 +72,10 @@
 }
 
 .game-description-box {
-    background: #1A202C;
-    border-radius: 16px;
+    background: var(--surface-2);
+    border-radius: var(--radius-md);
     padding: 32px;
-    border: 1px solid rgba(0, 219, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5), 0 8px 32px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(10px);
 }
@@ -92,10 +88,10 @@
 }
 
 .game-rating-box {
-    background: #1A202C;
-    border-radius: 16px;
+    background: var(--surface-2);
+    border-radius: var(--radius-md);
     padding: 24px 32px;
-    border: 1px solid rgba(0, 219, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(10px);
 }
@@ -116,8 +112,7 @@
 .rating-number {
     font-size: 48px;
     font-weight: 800;
-    color: #00DBFF;
-    text-shadow: 0 0 20px rgba(0, 219, 255, 0.6);
+    color: #FF4B00;
 }
 
 .rating-stars {
@@ -128,45 +123,46 @@
 .star {
     width: 24px;
     height: 24px;
-    background-color: #1A202C;
+    background-color: var(--line);
     clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
     position: relative;
 }
 
 .star.filled {
-    background-color: #00DBFF;
-    filter: drop-shadow(0 0 8px rgba(0, 219, 255, 0.8));
+    background-color: #FF4B00;
 }
 
 .star.half-filled {
-    background: linear-gradient(to right, #00DBFF 50%, #334155 50%);
-    filter: drop-shadow(0 0 5px rgba(0, 219, 255, 0.5));
+    background: linear-gradient(to right, #FF4B00 50%, #334155 50%);
 }
 
 .add-to-list-btn {
     width: 100%;
-    background-color: #00D1FF;
-    color: #1a1a1a;
-    font-size: 16px;
-    font-weight: 700;
-    padding: 12px 24px;
-    border-radius: 8px;
+    background-color: var(--accent);
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.10em;
+    padding: 14px 24px;
+    border-radius: var(--radius-sm);
     border: none;
     cursor: pointer;
-    transition: transform 0.1s ease, filter 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .add-to-list-btn:hover {
-    filter: brightness(1.1);
+    background-color: #FF6A26;
 }
 
 .add-to-list-btn:active {
-    transform: scale(0.96);
+    background-color: var(--accent-deep);
+    color: #FFFFFF;
 }
 
 .add-to-list-btn:disabled {
     background-color: #4A5568;
-    color: #A0AEC0;
+    color: var(--text-dim);
     cursor: not-allowed;
     filter: none;
     transform: none;
@@ -174,18 +170,18 @@
 
 .add-to-list-btn.already-in-list {
     background-color: #2D3748;
-    color: #00DBFF;
-    border: 1.5px solid #00DBFF;
+    color: #FF4B00;
+    border: 1.5px solid #FF4B00;
     cursor: default;
     filter: none;
     transform: none;
 }
 
 .game-dev-box {
-    background: #1A202C;
-    border-radius: 16px;
+    background: var(--surface-2);
+    border-radius: var(--radius-md);
     padding: 24px 32px;
-    border: 1px solid rgba(0, 219, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(10px);
 }
@@ -203,7 +199,7 @@
     color: inherit;
     transition: transform 0.2s ease, filter 0.2s ease;
     cursor: pointer;
-    border-radius: 12px;
+    border-radius: var(--radius-sm);
 }
 
 .dev-link-wrapper:hover {
@@ -221,10 +217,10 @@
     width: 60px;
     height: 60px;
     object-fit: contain;
-    border-radius: 8px;
-    background-color: #E2E8F0;
+    border-radius: var(--radius-sm);
+    background-color: var(--text);
     padding: 5px;
-    box-shadow: 0 0 10px rgba(0, 219, 255, 0.2);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
 .dev-details {
@@ -234,13 +230,13 @@
 }
 
 .dev-name {
-    color: #00DBFF;
+    color: #FF4B00;
     font-size: 18px;
     font-weight: 700;
 }
 
 .dev-country {
-    color: #8892A0;
+    color: var(--text-dim);
     font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -258,10 +254,10 @@
 }
 
 .review-card {
-    background: #1A202C;
-    border-radius: 12px;
+    background: var(--surface-2);
+    border-radius: var(--radius-md);
     padding: 24px;
-    border: 1px solid rgba(0, 219, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3), 0 4px 15px rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(10px);
     display: flex;
@@ -270,15 +266,15 @@
 }
 
 .review-rating {
-    background-color: #00DBFF;
+    background-color: #FF4B00;
     color: #0B0E14;
     font-size: 24px;
     font-weight: 800;
     padding: 10px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     min-width: 60px;
     text-align: center;
-    box-shadow: 0 0 15px rgba(0, 219, 255, 0.4);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
 .review-content {
@@ -289,14 +285,14 @@
 }
 
 .no-reviews-msg {
-    color: #8892A0;
+    color: var(--text-dim);
     font-size: 18px;
     font-style: italic;
     text-align: center;
     padding: 40px;
     background: rgba(26, 32, 44, 0.5);
-    border-radius: 12px;
-    border: 1px dashed rgba(0, 219, 255, 0.2);
+    border-radius: var(--radius-md);
+    border: 1px dashed rgba(255, 255, 255, 0.09);
 }
 
 /* Responsividad */
@@ -318,17 +314,16 @@
 }
 
 .review-user-name {
-    color: #00DBFF;
+    color: #FF4B00;
     font-size: 14px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 6px;
-    text-shadow: 0 0 5px rgba(0, 219, 255, 0.3);
 }
 
 .review-text-content {
-    color: #E2E8F0;
+    color: var(--text);
     font-size: 16px;
     line-height: 1.6;
     font-style: italic;

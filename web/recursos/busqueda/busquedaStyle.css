@@ -20,7 +20,7 @@
 }
 
 .results-info {
-    color: #A0AEC0;
+    color: var(--text-dim);
     font-size: 16px;
     font-weight: 500;
     margin-bottom: 30px;
@@ -28,7 +28,7 @@
 }
 
 .results-info span {
-    color: #00D1FF;
+    color: #FF4B00;
     font-weight: 700;
 }
 
@@ -42,17 +42,14 @@
 
 /* Tarjeta del videojuego */
 .game-search-card {
-    background: #161D2B;
-    border: 1px solid rgba(226, 232, 240, 0.05);
-    border-radius: 16px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
     padding: 16px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
-                box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
-                border-color 0.3s ease;
+    transition: transform 0.3s ease, border-color 0.3s ease;
     cursor: pointer;
     text-decoration: none;
 }
@@ -61,7 +58,7 @@
 .game-search-card .card-img-container {
     width: 100%;
     aspect-ratio: 2 / 3;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     overflow: hidden;
     background-color: #0B0E14;
     margin-bottom: 16px;
@@ -98,11 +95,10 @@
     justify-content: center;
 }
 
-/* Efectos hover premium */
+/* Efectos hover */
 .game-search-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 15px 30px rgba(0, 209, 255, 0.25);
-    border-color: rgba(0, 209, 255, 0.35);
+    transform: translateY(-4px);
+    border-color: var(--accent);
 }
 
 .game-search-card:hover .card-img-container img {
@@ -110,8 +106,7 @@
 }
 
 .game-search-card:active {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 15px rgba(0, 209, 255, 0.15);
+    transform: translateY(-1px);
 }
 
 /* Botón de paginación "Cargar más" */
@@ -125,26 +120,27 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 12px 28px;
+    padding: 14px 28px;
     font-family: inherit;
-    font-size: 15px;
-    font-weight: 700;
-    color: #0B0E14;
-    background: #00D1FF;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.10em;
+    color: var(--ink);
+    background: var(--accent);
     border: none;
-    border-radius: 10px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .btn-cargar-mas:hover:not(:disabled) {
-    filter: brightness(1.1);
-    box-shadow: 0 0 20px rgba(0, 209, 255, 0.4);
-    transform: translateY(-2px);
+    background: #FF6A26;
 }
 
 .btn-cargar-mas:active:not(:disabled) {
-    transform: translateY(0);
+    background: var(--accent-deep);
+    color: #FFFFFF;
 }
 
 .btn-cargar-mas:disabled {
@@ -165,7 +161,7 @@
     gap: 20px;
     padding: 80px 24px;
     background: rgba(26, 32, 44, 0.3);
-    border-radius: 24px;
+    border-radius: var(--radius-md);
     border: 1px dashed rgba(226, 232, 240, 0.1);
     max-width: 600px;
     margin: 40px auto;
@@ -177,7 +173,7 @@
     width: 64px;
     height: 64px;
     opacity: 0.6;
-    filter: drop-shadow(0 0 8px rgba(0, 209, 255, 0.3));
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
 }
 
 .no-results-container h3 {
@@ -187,31 +183,27 @@
 }
 
 .no-results-container p {
-    color: #A0AEC0;
+    color: var(--text-dim);
     font-size: 15px;
     line-height: 1.6;
     max-width: 450px;
 }
 
 .clear-search-btn {
-    background: #00D1FF;
-    color: #0B0E14;
-    font-size: 15px;
-    font-weight: 700;
-    padding: 12px 24px;
-    border-radius: 8px;
-    transition: all 0.3s ease;
+    background: var(--accent);
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.10em;
+    padding: 14px 24px;
+    border-radius: var(--radius-sm);
+    transition: background-color 0.2s ease;
     margin-top: 10px;
 }
 
 .clear-search-btn:hover {
-    filter: brightness(1.1);
-    box-shadow: 0 0 20px rgba(0, 209, 255, 0.4);
-    transform: translateY(-2px);
-}
-
-.clear-search-btn:active {
-    transform: translateY(0);
+    background: #FF6A26;
 }
 
 /* Responsividad extra */
@@ -227,7 +219,7 @@
     
     .game-search-card {
         padding: 12px;
-        border-radius: 12px;
+        border-radius: var(--radius-md);
     }
     
     .game-search-card .game-card-title {

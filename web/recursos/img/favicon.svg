@@ -2,8 +2,8 @@
   <title>GameBoXD</title>
   <defs>
     <linearGradient id="favBg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#00DBFF"/>
-      <stop offset="100%" stop-color="#00A6C4"/>
+      <stop offset="0%" stop-color="#FF4B00"/>
+      <stop offset="100%" stop-color="#C43A00"/>
     </linearGradient>
   </defs>
   <rect width="64" height="64" rx="14" fill="#0B0E14"/>

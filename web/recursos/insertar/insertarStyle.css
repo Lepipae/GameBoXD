@@ -36,32 +36,30 @@
 }
 
 .insertar-card {
-    background: rgba(26, 32, 44, 0.6);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(0, 219, 255, 0.15);
-    border-radius: 20px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
     padding: 30px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
     display: flex;
     flex-direction: column;
     gap: 20px;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    transition: border-color 0.3s ease;
 }
 
 .insertar-card:hover {
-    border-color: rgba(0, 219, 255, 0.4);
-    box-shadow: 0 15px 40px rgba(0, 219, 255, 0.08);
+    border-color: var(--line-strong);
 }
 
 .insertar-card h2 {
-    color: #F8FAFC;
-    font-size: 26px;
-    font-weight: 700;
+    color: #FFFFFF;
+    font-size: 20px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
 }
 
 .card-subtitle {
-    color: #A0AEC0;
+    color: var(--text-dim);
     font-size: 14px;
     margin-top: -10px;
     line-height: 1.4;
@@ -85,35 +83,37 @@
 }
 
 .form-group label {
-    color: #E2E8F0;
-    font-size: 14px;
-    font-weight: 600;
+    color: var(--text-dim);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.10em;
 }
 
 .form-group input,
 .form-group textarea,
 .form-group select {
-    background: rgba(11, 14, 20, 0.8);
-    border: 1px solid rgba(226, 232, 240, 0.2);
-    border-radius: 10px;
-    color: #F8FAFC;
+    background: var(--surface-2);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    color: var(--text);
     padding: 12px 16px;
     font-size: 15px;
-    transition: all 0.3s ease;
+    transition: border-color 0.3s ease, background-color 0.3s ease;
     width: 100%;
 }
 
 .form-group input::placeholder,
 .form-group textarea::placeholder {
-    color: #718096;
+    color: #6E747C;
 }
 
 .form-group input:focus,
 .form-group textarea:focus,
 .form-group select:focus {
-    border-color: #00D1FF;
-    box-shadow: 0 0 10px rgba(0, 209, 255, 0.3);
-    background: rgba(11, 14, 20, 0.95);
+    border-color: var(--accent);
+    background: #1C1D20;
+    outline: none;
 }
 
 .form-group textarea {
@@ -123,7 +123,7 @@
 
 .form-group select {
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2300D1FF'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23FF4B00'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 16px center;
     background-size: 16px;
@@ -132,31 +132,31 @@
 }
 
 .form-group select option {
-    background-color: #1A202C;
-    color: #F8FAFC;
+    background-color: var(--surface-2);
+    color: var(--text);
 }
 
 .submit-button {
-    background: #00D1FF;
-    color: #0B0E14;
-    font-size: 16px;
-    font-weight: 700;
-    padding: 14px;
-    border-radius: 10px;
+    background: var(--accent);
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.10em;
+    padding: 16px;
+    border-radius: var(--radius-sm);
     text-align: center;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 209, 255, 0.2);
+    transition: background-color 0.2s ease, color 0.2s ease;
     width: 100%;
 }
 
 .submit-button:hover {
-    filter: brightness(1.1);
-    box-shadow: 0 6px 20px rgba(0, 209, 255, 0.4);
-    transform: translateY(-2px);
+    background: #FF6A26;
 }
 
 .submit-button:active {
-    transform: translateY(0);
+    background: var(--accent-deep);
+    color: #FFFFFF;
 }
 
 /* Vista Previa */
@@ -167,7 +167,7 @@
 }
 
 .live-preview-container h3 {
-    color: #00D1FF;
+    color: #FF4B00;
     font-size: 15px;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -179,20 +179,19 @@
     display: flex;
     align-items: center;
     gap: 20px;
-    background: rgba(11, 14, 20, 0.5);
-    border: 1px dashed rgba(0, 209, 255, 0.3);
-    border-radius: 14px;
+    background: var(--surface-2);
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius-md);
     padding: 20px;
-    transition: all 0.3s ease;
 }
 
 .dev-logo-container {
     width: 64px;
     height: 64px;
-    border-radius: 12px;
+    border-radius: var(--radius-sm);
     overflow: hidden;
-    background: #1A202C;
-    border: 1px solid rgba(226, 232, 240, 0.15);
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -206,7 +205,7 @@
 }
 
 .dev-logo-placeholder {
-    color: #00D1FF;
+    color: #FF4B00;
     font-size: 28px;
     font-weight: 800;
 }
@@ -219,25 +218,23 @@
 }
 
 .dev-info p {
-    color: #A0AEC0;
+    color: var(--text-dim);
     font-size: 14px;
 }
 
 /* Videojuego Preview Card (Premium) */
 .game-preview-card {
     display: flex;
-    background: #1A202C;
-    border: 1px solid rgba(0, 219, 255, 0.2);
-    border-radius: 16px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
     overflow: hidden;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
     min-height: 180px;
-    transition: all 0.3s ease;
+    transition: border-color 0.3s ease;
 }
 
 .game-preview-card:hover {
-    box-shadow: 0 12px 30px rgba(0, 219, 255, 0.25);
-    border-color: rgba(0, 219, 255, 0.5);
+    border-color: var(--line-strong);
 }
 
 .game-preview-img-container {
@@ -283,7 +280,7 @@
 }
 
 .preview-game-desc {
-    color: #A0AEC0;
+    color: var(--text-dim);
     font-size: 13px;
     line-height: 1.4;
     display: -webkit-box;
@@ -306,7 +303,7 @@
 }
 
 .preview-game-dev {
-    color: #00D1FF;
+    color: #FF4B00;
     font-weight: 600;
 }
 
@@ -317,13 +314,15 @@
 }
 
 .preview-tag-badge {
-    background: rgba(0, 209, 255, 0.1);
-    border: 1px solid rgba(0, 209, 255, 0.3);
-    color: #00D1FF;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 3px 8px;
-    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--line-strong);
+    color: #C2C6CC;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.10em;
+    padding: 4px 8px;
+    border-radius: var(--radius-xs);
 }
 
 /* Toast Notifications */
@@ -338,14 +337,12 @@
 }
 
 .toast {
-    background: rgba(26, 32, 44, 0.95);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-left: 5px solid #00D1FF;
-    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.5);
-    color: #F8FAFC;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    color: var(--text);
     padding: 16px 24px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     min-width: 320px;
     max-width: 450px;
     display: flex;
@@ -372,7 +369,7 @@
 }
 
 .toast-close {
-    color: #A0AEC0;
+    color: var(--text-dim);
     cursor: pointer;
     font-size: 18px;
     font-weight: 700;
