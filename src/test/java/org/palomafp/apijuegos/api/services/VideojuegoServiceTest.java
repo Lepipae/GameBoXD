@@ -6,7 +6,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.palomafp.apijuegos.api.modelo.Videojuego;
+import org.palomafp.apijuegos.api.modelo.dto.PaginaVideojuegos;
+import org.palomafp.apijuegos.api.modelo.dto.ResumenVideojuego;
 import org.palomafp.apijuegos.api.repositories.VideojuegoRepo;
+import org.mockito.ArgumentCaptor;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.query.Query;
+import org.bson.Document;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,6 +30,9 @@ class VideojuegoServiceTest {
 
     @Mock
     private EntradaListaService entradaListaService;
+
+    @Mock
+    private MongoTemplate mongoTemplate;
 
     @InjectMocks
     private VideojuegoService videojuegoService;
@@ -164,5 +175,101 @@ class VideojuegoServiceTest {
         when(videojuegoRepo.findByNombre("Ocupado")).thenReturn(otro);
 
         assertThrows(IllegalArgumentException.class, () -> videojuegoService.guardar(aActualizar));
+    }
+
+    // ------------------------------------------------------------------
+    // Búsqueda paginada, recomendaciones y resolución por lote
+    // ------------------------------------------------------------------
+
+    @Test
+    void buscarDevuelveSoloLaPaginaYElTotal() {
+        Videojuego v = new Videojuego();
+        v.setMiId(3L);
+        v.setNombre("Hades");
+        v.setUrlImagen("https://img/hades.jpg");
+        v.setTags(List.of("roguelike"));
+
+        when(mongoTemplate.count(any(Query.class), eq(Videojuego.class), eq("Videojuegos"))).thenReturn(1L);
+        when(mongoTemplate.find(any(Query.class), eq(Videojuego.class), eq("Videojuegos")))
+                .thenReturn(List.of(v));
+
+        PaginaVideojuegos pagina = videojuegoService.buscar("hades", null, null, 0, 24);
+
+        assertEquals(1, pagina.content().size());
+        assertEquals(1L, pagina.totalElements());
+        assertEquals(1, pagina.totalPages());
+        assertEquals("Hades", pagina.content().get(0).nombre());
+        // La proyección debe excluir la descripción: es el campo que inflaba el JSON.
+        ArgumentCaptor<Query> captor = ArgumentCaptor.forClass(Query.class);
+        verify(mongoTemplate).find(captor.capture(), eq(Videojuego.class), eq("Videojuegos"));
+        assertNotNull(captor.getValue().getFieldsObject());
+        assertEquals(0, captor.getValue().getFieldsObject().get("descripcion", 0));
+    }
+
+    @Test
+    void buscarAcotaElTamanoDePaginaYNormalizaLaPaginaNegativa() {
+        when(mongoTemplate.count(any(Query.class), eq(Videojuego.class), eq("Videojuegos"))).thenReturn(0L);
+        when(mongoTemplate.find(any(Query.class), eq(Videojuego.class), eq("Videojuegos"))).thenReturn(List.of());
+
+        PaginaVideojuegos pagina = videojuegoService.buscar(null, null, null, -5, 9999);
+
+        assertEquals(0, pagina.page());
+        assertEquals(VideojuegoService.MAX_TAMANO_PAGINA, pagina.size());
+        assertEquals(0, pagina.totalPages());
+    }
+
+    @Test
+    void recomendacionesUsaAggregationYSample() {
+        Document doc = new Document("_id", "abc")
+                .append("miId", 7L)
+                .append("nombre", "Celeste")
+                .append("urlImagen", "https://img/celeste.jpg")
+                .append("notaMedia", 9.1)
+                .append("idDesarrolladora", 12)
+                .append("tags", List.of("plataformas"));
+
+        AggregationResults<Document> resultados = new AggregationResults<>(List.of(doc), new Document());
+        when(mongoTemplate.aggregate(any(Aggregation.class), eq("Videojuegos"), eq(Document.class)))
+                .thenReturn(resultados);
+
+        List<ResumenVideojuego> recomendaciones = videojuegoService.recomendaciones(4);
+
+        assertEquals(1, recomendaciones.size());
+        assertEquals("Celeste", recomendaciones.get(0).nombre());
+        assertEquals(7L, recomendaciones.get(0).miId());
+        assertEquals("abc", recomendaciones.get(0).id());
+        assertEquals(9.1, recomendaciones.get(0).notaMedia());
+
+        ArgumentCaptor<Aggregation> captor = ArgumentCaptor.forClass(Aggregation.class);
+        verify(mongoTemplate).aggregate(captor.capture(), eq("Videojuegos"), eq(Document.class));
+        String pipeline = captor.getValue().toString();
+        assertTrue(pipeline.contains("$sample"), "El pipeline debe usar $sample: " + pipeline);
+    }
+
+    @Test
+    void resumenPorIdsDeduplicaYConsultaUnaSolaVez() {
+        Videojuego v = new Videojuego();
+        v.setMiId(2L);
+        v.setNombre("Hollow Knight");
+
+        when(mongoTemplate.find(any(Query.class), eq(Videojuego.class), eq("Videojuegos")))
+                .thenReturn(List.of(v));
+
+        List<ResumenVideojuego> resumenes = videojuegoService.resumenPorIds(List.of(2L, 2L, 5L));
+
+        assertEquals(1, resumenes.size());
+        assertEquals(2L, resumenes.get(0).miId());
+
+        ArgumentCaptor<Query> captor = ArgumentCaptor.forClass(Query.class);
+        verify(mongoTemplate, times(1)).find(captor.capture(), eq(Videojuego.class), eq("Videojuegos"));
+        String consulta = captor.getValue().getQueryObject().toJson();
+        assertTrue(consulta.contains("$in"), "Debe resolverse con un único $in: " + consulta);
+    }
+
+    @Test
+    void resumenPorIdsVacioNoConsultaMongo() {
+        assertTrue(videojuegoService.resumenPorIds(List.of()).isEmpty());
+        assertTrue(videojuegoService.resumenPorIds(null).isEmpty());
+        verifyNoInteractions(mongoTemplate);
     }
 }

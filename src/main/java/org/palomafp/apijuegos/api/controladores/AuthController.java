@@ -2,7 +2,6 @@ package org.palomafp.apijuegos.api.controladores;
 
 import org.palomafp.apijuegos.api.modelo.dto.AuthRequest;
 import org.palomafp.apijuegos.api.modelo.dto.AuthResponse;
-import org.palomafp.apijuegos.api.security.CustomUserDetailsService;
 import org.palomafp.apijuegos.api.security.JwtUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,21 +24,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
-    private final CustomUserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
 
     /**
-     * Inyección por constructor: las tres dependencias quedan {@code final}.
+     * Inyección por constructor: ambas dependencias quedan {@code final}.
      *
      * @param authenticationManager Gestor de autenticación de Spring Security.
-     * @param userDetailsService    Servicio que carga el usuario desde MongoDB.
      * @param jwtUtil               Utilidad que emite el token.
      */
-    public AuthController(AuthenticationManager authenticationManager,
-                          CustomUserDetailsService userDetailsService,
-                          JwtUtil jwtUtil) {
+    public AuthController(AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
         this.authenticationManager = authenticationManager;
-        this.userDetailsService = userDetailsService;
         this.jwtUtil = jwtUtil;
     }
 
@@ -59,13 +53,13 @@ public class AuthController {
     public ResponseEntity<AuthResponse> createAuthenticationToken(@Valid @RequestBody AuthRequest authRequest) {
         // Intentamos autenticar al usuario usando el gestor de autenticación de Spring Security.
         // Esto llamará internamente a CustomUserDetailsService -> loadUserByUsername para verificar.
-        authenticationManager.authenticate(
+        var autenticacion = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(authRequest.nombre(), authRequest.contrasenia())
         );
 
-        // Si la autenticación es exitosa, procedemos a generar el Token JWT.
-        // Cargamos los datos del usuario (roles, permisos, etc si tuviéramos)
-        UserDetails userDetails = userDetailsService.loadUserByUsername(authRequest.nombre());
+        // La autenticación ya trae el UserDetails cargado: reutilizarlo evita una
+        // segunda consulta a MongoDB por login.
+        UserDetails userDetails = (UserDetails) autenticacion.getPrincipal();
 
         // Generamos la cadena del Token con nuestro JwtUtil y la devolvemos envuelta en un
         // objeto JSON. El cliente deberá guardarse este token y enviarlo en la cabecera

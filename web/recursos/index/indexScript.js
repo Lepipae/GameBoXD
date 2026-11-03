@@ -1,5 +1,5 @@
 // Acceso al gestor centralizado de imágenes definido en api.js
-const { tieneUrlImagen, aplicarImagen } = window.GameBoXDImagenes;
+const { aplicarImagen } = window.GameBoXDImagenes;
 
 /**
  * Event listener que se ejecuta cuando el DOM está completamente cargado.
@@ -89,64 +89,27 @@ function configurarBuscador() {
 
 
 /**
- * Realiza la petición principal a la API para obtener la lista completa de videojuegos.
- * Luego filtra los válidos, escoge recomendaciones al azar y las renderiza.
- * En caso de error, muestra una pantalla de fallo.
+ * Pide al backend una muestra aleatoria de juegos y pinta hasta cuatro.
+ *
+ * <p>Antes se descargaba el catálogo completo (198 juegos, ~101 KB) y se
+ * elegían cuatro al azar en el navegador. Ahora el `$sample` lo hace MongoDB y
+ * solo viajan cuatro resúmenes (~2 KB): la portada carga una décima parte de
+ * datos para el mismo resultado visual.</p>
+ *
+ * @returns {Promise<void>}
  */
-function obtenerRecomendaciones() {
-    const API_URL = `${GameBoXDApi.BASE_URL}/videojuegos`;
-
-    fetch(API_URL)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Error de red al intentar obtener los videojuegos');
-            }
-            return response.json();
-        })
-        .then(juegos => {
-            const juegosConImagen = filtrarJuegosValidos(juegos);
-            const recomendaciones = seleccionarRecomendacionesAleatorias(juegosConImagen, 4);
-            renderizarRecomendaciones(recomendaciones);
-        })
-        .catch(error => {
-            mostrarErrorConPistachos(error);
-        });
-}
-
-/**
- * Filtra el array de juegos para descartar aquellos que no posean una URL de imagen válida.
- * 
- * @param {Object[]} juegos - Array completo de videojuegos devueltos por la API.
- * @returns {Object[]} Array de videojuegos con nombre y con imagen.
- */
-function filtrarJuegosValidos(juegos) {
-    return juegos.filter(juego =>
-        juego.nombre && juego.nombre.trim() !== '' &&
-        tieneUrlImagen(juego.urlImagen)
-    );
-}
-
-/**
- * Selecciona aleatoriamente un número específico de juegos sin que se repitan.
- * 
- * @param {Object[]} juegos - Array de videojuegos elegibles.
- * @param {number} cantidad - Número de recomendaciones que se desean obtener.
- * @returns {Object[]} Array con los videojuegos seleccionados aleatoriamente.
- */
-function seleccionarRecomendacionesAleatorias(juegos, cantidad) {
-    const cantidadNecesaria = Math.min(cantidad, juegos.length);
-    const recomendaciones = [];
-
-    // Seleccionamos al azar sin repetir
-    while (recomendaciones.length < cantidadNecesaria) {
-        const indiceAleatorio = Math.floor(Math.random() * juegos.length);
-        const juegoCandidato = juegos[indiceAleatorio];
-
-        if (!recomendaciones.includes(juegoCandidato)) {
-            recomendaciones.push(juegoCandidato);
+export async function obtenerRecomendaciones() {
+    try {
+        const response = await fetch(`${GameBoXDApi.BASE_URL}/videojuegos/recomendaciones?limit=4`);
+        if (!response.ok) {
+            throw new Error('Error de red al intentar obtener las recomendaciones');
         }
+
+        const recomendaciones = await response.json();
+        renderizarRecomendaciones(Array.isArray(recomendaciones) ? recomendaciones : []);
+    } catch (error) {
+        mostrarErrorConPistachos(error);
     }
-    return recomendaciones;
 }
 
 /**
@@ -169,6 +132,10 @@ function renderizarRecomendaciones(recomendaciones) {
             aplicarImagen(img, juego.urlImagen);
             img.alt = juego.nombre;
             img.title = juego.nombre;
+            // La primera tarjeta se pinta con el resto de la página; las demás
+            // se cargan al acercarse al viewport.
+            img.setAttribute('loading', index === 0 ? 'eager' : 'lazy');
+            img.setAttribute('decoding', 'async');
 
             enlace.appendChild(img);
             contenedor.appendChild(enlace);

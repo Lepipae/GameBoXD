@@ -4,6 +4,8 @@ import org.palomafp.apijuegos.api.excepciones.RecursoNoEncontradoException;
 import org.palomafp.apijuegos.api.modelo.Usuario;
 import org.palomafp.apijuegos.api.modelo.dto.UsuarioPublicoDTO;
 import org.palomafp.apijuegos.api.services.UsuarioService;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,10 +13,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Controlador de la clase usuario que interactua con la clase
@@ -72,6 +78,49 @@ public class UsuarioController {
             throw new RecursoNoEncontradoException("No existe ningun usuario llamado " + nombre);
         }
         return new UsuarioPublicoDTO(usuario.getMiId(), usuario.getNombre(), usuario.getUrlImagen());
+    }
+
+    /**
+     * Resuelve varios usuarios en una sola llamada ({@code ?ids=1,2,3}).
+     *
+     * <p>Lo usa la ficha de un juego para pintar el autor de cada reseña sin
+     * lanzar una petición por usuario distinto.</p>
+     *
+     * @param ids Ids internos separados por comas.
+     * @return Datos públicos de los usuarios encontrados.
+     */
+    @GetMapping("/lote")
+    public ResponseEntity<List<UsuarioPublicoDTO>> lote(
+            @RequestParam(name = "ids", required = false) String ids) {
+
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(Duration.ofMinutes(5)).cachePublic())
+                .body(usuarioService.obtenerPublicosPorIds(parsearIds(ids)));
+    }
+
+    /**
+     * Convierte la lista de ids de la query string en enteros, ignorando los
+     * valores no numéricos en lugar de devolver un 400.
+     *
+     * @param ids Texto {@code "1,2,3"} (puede ser {@code null}).
+     * @return Lista de ids válidos.
+     */
+    private static List<Integer> parsearIds(String ids) {
+        if (ids == null || ids.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(ids.split(","))
+                .map(String::trim)
+                .filter(valor -> !valor.isEmpty())
+                .map(valor -> {
+                    try {
+                        return Integer.parseInt(valor);
+                    } catch (NumberFormatException ex) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .toList();
     }
 
     /**

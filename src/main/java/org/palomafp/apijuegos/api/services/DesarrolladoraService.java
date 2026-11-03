@@ -51,6 +51,27 @@ public class DesarrolladoraService {
     }
 
     /**
+     * Resuelve varias desarrolladoras de una sola vez.
+     *
+     * @param ids Ids internos pedidos (se ignoran los {@code null}).
+     * @return Desarrolladoras encontradas.
+     */
+    public List<Desarrolladora> obtenerPorIds(List<Integer> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        List<Integer> unicos = ids.stream()
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .limit(200)
+                .toList();
+        if (unicos.isEmpty()) {
+            return List.of();
+        }
+        return desarrolladoraRepo.findByMiIdIn(unicos);
+    }
+
+    /**
      * Guarda una desarrolladora en la base de datos
      * @param desarrolladora Objeto a guardar
      * @return Desarrolladora guardada

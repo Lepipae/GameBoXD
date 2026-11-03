@@ -3,6 +3,9 @@ package org.palomafp.apijuegos.api.repositories;
 import org.palomafp.apijuegos.api.modelo.Desarrolladora;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+import java.util.Collection;
+import java.util.List;
+
 /**
  * Repositorio para la clase Desarrolladora
  * @author Andrés López
@@ -14,6 +17,17 @@ public interface DesarrolladoraRepo extends MongoRepository<Desarrolladora, Stri
      * @return Desarrolladora encontrada o null
      */
     Desarrolladora findByMiId(int miId);
+
+    /**
+     * Resuelve varias desarrolladoras en una sola consulta.
+     *
+     * <p>Lo usa "Mi lista" para pintar el estudio de cada tarjeta sin una
+     * petición por entrada.</p>
+     *
+     * @param ids Ids internos a buscar
+     * @return Desarrolladoras encontradas (las que no existan no aparecen)
+     */
+    List<Desarrolladora> findByMiIdIn(Collection<Integer> ids);
 
     /**
      * Busca una desarrolladora por su nombre

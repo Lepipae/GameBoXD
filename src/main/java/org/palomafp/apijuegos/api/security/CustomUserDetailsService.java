@@ -5,7 +5,6 @@ import org.palomafp.apijuegos.api.modelo.Usuario;
 import org.palomafp.apijuegos.api.modelo.enums.Rol;
 import org.palomafp.apijuegos.api.repositories.UsuarioRepo;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -63,7 +62,9 @@ public class CustomUserDetailsService implements UserDetailsService {
         Rol rol = Objects.requireNonNullElse(usuario.getRol(), Rol.usuarioNormal);
         var autoridad = new SimpleGrantedAuthority(PREFIJO_ROL + rol.name());
 
-        // Devolvemos una instancia de "User" de Spring Security con nombre, contraseña y su rol.
-        return new User(usuario.getNombre(), usuario.getContrasenia(), List.of(autoridad));
+        // El principal lleva el miId para que la autorización no tenga que volver
+        // a consultar el usuario en cada petición autenticada.
+        return new UsuarioAutenticado(usuario.getNombre(), usuario.getContrasenia(),
+                List.of(autoridad), usuario.getMiId());
     }
 }

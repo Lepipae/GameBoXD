@@ -248,27 +248,17 @@ export function renderizarResenyas(resenyas) {
         msg.textContent = 'Aún no hay reseñas para este juego.';
         container.appendChild(msg);
     } else {
-        // Batch: traer cada usuario único una sola vez y rellenar el caché.
-        // Renderizar N reseñas de M usuarios cuesta M peticiones (y no N),
-        // incluso cuando algún usuario repite reseña.
-        const idsUnicos = [...new Set(resenyasConTexto.map(r => r.idUsuario))];
-        const peticiones = idsUnicos.map(idUsuario => {
-            if (cacheUsuarios.has(idUsuario)) {
-                return Promise.resolve(cacheUsuarios.get(idUsuario));
-            }
-            return fetchNombreUsuario(idUsuario)
-                .then(nombre => {
-                    cacheUsuarios.set(idUsuario, nombre);
-                    return nombre;
-                })
-                .catch(error => {
-                    console.error("Error cargando usuario de reseña:", error);
-                    cacheUsuarios.set(idUsuario, 'Usuario Anónimo');
-                    return 'Usuario Anónimo';
-                });
-        });
+        // Lote: una única petición con todos los autores de las reseñas.
+        // Antes era una petición por usuario distinto (N+1); ahora la ficha
+        // pinta todas las reseñas en cuanto vuelve una sola respuesta.
+        const idsUnicos = [...new Set(resenyasConTexto.map(r => r.idUsuario))]
+            .filter(id => !cacheUsuarios.has(id));
 
-        Promise.all(peticiones).then(() => {
+        const cargarNombres = idsUnicos.length === 0
+            ? Promise.resolve()
+            : cargarUsuariosEnLote(idsUnicos);
+
+        cargarNombres.then(() => {
             // Tarjetas: los nombres ya están en el caché, así que
             // cargarNombreUsuarioReview no dispara peticiones repetidas.
             resenyasConTexto.forEach(r => {
@@ -339,6 +329,52 @@ function fetchNombreUsuario(idUsuario) {
             return response.json();
         })
         .then(usuario => usuario.nombre);
+}
+
+/**
+ * Resuelve varios autores de reseña en una sola petición y rellena el caché.
+ *
+ * <p>Antes cada usuario distinto costaba un `GET /usuarios/{id}`. Con
+ * `GET /usuarios/lote?ids=...` la ficha hace una sola petición, y los ids que
+ * no vuelvan se marcan como anónimos para no reintentarlos.</p>
+ *
+ * @param {Array<number|string>} idsUsuarios - Ids de usuario únicos.
+ * @returns {Promise<void>}
+ */
+export async function cargarUsuariosEnLote(idsUsuarios) {
+    const pendientes = idsUsuarios.filter(id => !cacheUsuarios.has(id));
+    if (pendientes.length === 0) {
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `${GameBoXDApi.BASE_URL}/usuarios/lote?ids=${pendientes.join(',')}`
+        );
+        if (!response.ok) {
+            throw new Error(`Error ${response.status} al cargar los autores`);
+        }
+
+        const usuarios = await response.json();
+        const encontrados = new Set();
+
+        for (const usuario of Array.isArray(usuarios) ? usuarios : []) {
+            if (!usuario) continue;
+            cacheUsuarios.set(usuario.miId, usuario.nombre);
+            encontrados.add(usuario.miId);
+        }
+
+        for (const id of pendientes) {
+            if (!encontrados.has(id)) {
+                cacheUsuarios.set(id, 'Usuario Anónimo');
+            }
+        }
+    } catch (error) {
+        console.error('Error cargando autores de reseñas:', error);
+        for (const id of pendientes) {
+            cacheUsuarios.set(id, 'Usuario Anónimo');
+        }
+    }
 }
 
 /**

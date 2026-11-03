@@ -70,6 +70,11 @@ public class Autorizacion {
         if (auth == null || !auth.isAuthenticated()) {
             return false;
         }
+        // Camino rápido: el principal ya trae el id (token con claim `miId`),
+        // así que no hace falta ir a MongoDB para autorizar.
+        if (auth.getPrincipal() instanceof UsuarioAutenticado autenticado) {
+            return autenticado.getMiId() == miId;
+        }
         Usuario autenticado = usuarioService.obtenerPorNombre(auth.getName());
         return autenticado != null && autenticado.getMiId() == miId;
     }

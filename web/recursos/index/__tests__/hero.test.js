@@ -126,4 +126,39 @@ describe('Hero dinámico: juego con más reseñas', () => {
         expect(html).toContain('id="hero-enlace"');
         expect(html).toContain('id="hero-imagen"');
     });
+
+    it('las recomendaciones vienen de /recomendaciones y NO se descarga el catálogo completo', async () => {
+        const recomendados = [
+            { miId: 1, nombre: 'Uno', urlImagen: 'https://covers.example/1.jpg' },
+            { miId: 2, nombre: 'Dos', urlImagen: 'https://covers.example/2.jpg' },
+        ];
+        window.fetch = crearFetchMock({
+            hero: { ok: false, status: 404, json: async () => ({}) },
+            juegos: recomendados,
+        });
+
+        await import('../indexScript.js');
+        document.dispatchEvent(new Event('DOMContentLoaded'));
+        await flushPromises();
+        await flushPromises();
+
+        const urls = window.fetch.mock.calls.map(([url]) => String(url));
+
+        // Se pide el endpoint de recomendaciones con límite 4...
+        expect(urls.some((u) => u.includes('/api/videojuegos/recomendaciones?limit=4'))).toBe(true);
+        // ...y nunca el catálogo entero (la causa de los 101 KB en la portada).
+        expect(urls.some((u) => u.replace(/\/$/, '').endsWith('/api/videojuegos'))).toBe(false);
+
+        // Las tarjetas se pintan con la respuesta del endpoint. (Cada test
+        // reimporta el módulo y deja su listener en `document`, así que se
+        // cuentan contenedores con imagen, no imágenes totales.)
+        const contenedoresConImagen = [...document.querySelectorAll('.recomendacion')]
+            .filter((contenedor) => contenedor.querySelector('img'));
+        expect(contenedoresConImagen.length).toBe(2);
+
+        const imagenes = document.querySelectorAll('.recomendacion img');
+        expect(imagenes[0].getAttribute('src')).toBe('https://covers.example/1.jpg');
+        expect(document.querySelector('#r1 img').getAttribute('loading')).toBe('eager');
+        expect(document.querySelector('#r2 img').getAttribute('loading')).toBe('lazy');
+    });
 });

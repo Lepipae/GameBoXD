@@ -33,7 +33,7 @@ class DesarrolladoraControllerTest {
         Desarrolladora d = new Desarrolladora();
         when(desarrolladoraService.obtenerDesarrolladoras()).thenReturn(Arrays.asList(d));
 
-        List<Desarrolladora> result = desarrolladoraController.obtenerDesarrolladoras();
+        List<Desarrolladora> result = desarrolladoraController.obtenerDesarrolladoras().getBody();
         assertEquals(1, result.size());
         verify(desarrolladoraService, times(1)).obtenerDesarrolladoras();
     }

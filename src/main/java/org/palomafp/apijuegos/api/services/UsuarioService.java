@@ -2,6 +2,7 @@ package org.palomafp.apijuegos.api.services;
 
 import org.palomafp.apijuegos.api.excepciones.RecursoDuplicadoException;
 import org.palomafp.apijuegos.api.modelo.Usuario;
+import org.palomafp.apijuegos.api.modelo.dto.UsuarioPublicoDTO;
 import org.palomafp.apijuegos.api.modelo.enums.Rol;
 import org.palomafp.apijuegos.api.repositories.UsuarioRepo;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -72,6 +73,36 @@ public class UsuarioService {
      */
     public Usuario obtenerPorNombre(String nombre) {
         return usuarioRepo.findByNombre(nombre);
+    }
+
+    /**
+     * Devuelve los datos públicos de varios usuarios en una sola consulta.
+     *
+     * <p>La ficha de un juego pinta el autor de cada reseña; con este lote la
+     * página hace una petición en lugar de una por autor distinto.</p>
+     *
+     * @param ids Ids internos pedidos (se ignoran los {@code null} y los repetidos).
+     * @return Usuarios encontrados; los ids inexistentes no aparecen.
+     */
+    public List<UsuarioPublicoDTO> obtenerPublicosPorIds(List<Integer> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+
+        List<Integer> unicos = ids.stream()
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .limit(200)
+                .toList();
+
+        if (unicos.isEmpty()) {
+            return List.of();
+        }
+
+        return usuarioRepo.findByMiIdIn(unicos).stream()
+                .map(usuario -> new UsuarioPublicoDTO(
+                        usuario.getMiId(), usuario.getNombre(), usuario.getUrlImagen()))
+                .toList();
     }
 
     /**

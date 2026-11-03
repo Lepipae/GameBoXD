@@ -8,6 +8,7 @@ import org.mockito.MockitoAnnotations;
 import org.palomafp.apijuegos.api.excepciones.RecursoNoEncontradoException;
 import org.palomafp.apijuegos.api.modelo.Videojuego;
 import org.palomafp.apijuegos.api.services.VideojuegoService;
+import org.springframework.http.ResponseEntity;
 
 import java.util.Arrays;
 import java.util.List;
@@ -35,7 +36,7 @@ class VideojuegoControllerTest {
         Videojuego v = new Videojuego();
         when(videojuegoService.obtenerTodos()).thenReturn(Arrays.asList(v));
 
-        List<Videojuego> result = videojuegoController.obtenerTodos();
+        List<Videojuego> result = videojuegoController.obtenerTodos().getBody();
         assertEquals(1, result.size());
         verify(videojuegoService, times(1)).obtenerTodos();
     }
@@ -106,7 +107,7 @@ class VideojuegoControllerTest {
         v.setMiId(9L);
         when(videojuegoService.obtenerMasResenyado()).thenReturn(v);
 
-        Videojuego result = videojuegoController.obtenerMasResenyado();
+        Videojuego result = videojuegoController.obtenerMasResenyado().getBody();
 
         assertNotNull(result);
         assertEquals(9L, result.getMiId());

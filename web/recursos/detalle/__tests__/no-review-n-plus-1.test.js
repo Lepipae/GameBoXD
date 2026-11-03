@@ -32,11 +32,17 @@ describe('renderizarResenyas — sin peticiones N+1 a /api/usuarios', () => {
 
         fetchMock = vi.fn().mockImplementation(url => {
             const u = String(url);
-            if (u.endsWith('/usuarios/10')) {
-                return Promise.resolve({ ok: true, json: async () => ({ nombre: 'Ana Martínez' }) });
-            }
-            if (u.endsWith('/usuarios/20')) {
-                return Promise.resolve({ ok: true, json: async () => ({ nombre: 'Luis Ruiz' }) });
+            // Una sola llamada de lote para todos los autores.
+            if (u.startsWith('https://api.test.local/api/usuarios/lote?ids=')) {
+                const ids = new URL(u).searchParams.get('ids').split(',').map(Number);
+                const usuarios = {
+                    10: { miId: 10, nombre: 'Ana Martínez' },
+                    20: { miId: 20, nombre: 'Luis Ruiz' },
+                };
+                return Promise.resolve({
+                    ok: true,
+                    json: async () => ids.map(id => usuarios[id]).filter(Boolean),
+                });
             }
             // Cualquier otro usuario: fallo de la API
             return Promise.resolve({ ok: false, status: 404, json: async () => ({ error: 'no existe' }) });
@@ -50,14 +56,15 @@ describe('renderizarResenyas — sin peticiones N+1 a /api/usuarios', () => {
         vi.restoreAllMocks();
     });
 
-    it('fetch deduplicado por usuario: 3 reseñas de 2 usuarios únicos => 2 llamadas, no 3', async () => {
+    it('pide todos los autores en UNA sola petición de lote', async () => {
         renderizarResenyas(RESENYAS);
         await flushPromises();
 
-        // Una llamada por ID de usuario único (10 y 20), aunque el usuario 10 repita reseña.
-        expect(fetchMock).toHaveBeenCalledTimes(2);
-        expect(fetchMock).toHaveBeenCalledWith('https://api.test.local/api/usuarios/10');
-        expect(fetchMock).toHaveBeenCalledWith('https://api.test.local/api/usuarios/20');
+        // 3 reseñas de 2 usuarios únicos => una única petición.
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        const url = String(fetchMock.mock.calls[0][0]);
+        expect(url.startsWith('https://api.test.local/api/usuarios/lote?ids=')).toBe(true);
+        expect(new URL(url).searchParams.get('ids').split(',').sort()).toEqual(['10', '20']);
 
         // Los nombres se renderizan en cada tarjeta, incluida la reseña repetida del usuario 10.
         expect(document.getElementById('review-username-1').textContent).toBe('Ana Martínez');
@@ -65,14 +72,14 @@ describe('renderizarResenyas — sin peticiones N+1 a /api/usuarios', () => {
         expect(document.getElementById('review-username-3').textContent).toBe('Ana Martínez');
     });
 
-    it('caché persistente: al volver a renderizar no se vuelve a fetchar (cache hit)', async () => {
+    it('caché persistente: al volver a renderizar no se vuelve a pedir el lote (cache hit)', async () => {
         renderizarResenyas(RESENYAS);
         await flushPromises();
-        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(fetchMock).toHaveBeenCalledTimes(1);
 
         renderizarResenyas(RESENYAS);
         await flushPromises();
-        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(fetchMock).toHaveBeenCalledTimes(1);
 
         expect(document.getElementById('review-username-1').textContent).toBe('Ana Martínez');
         expect(document.getElementById('review-username-2').textContent).toBe('Luis Ruiz');
@@ -91,7 +98,7 @@ describe('renderizarResenyas — sin peticiones N+1 a /api/usuarios', () => {
         expect(label.textContent).toBe('Usuario Caché');
     });
 
-    it('fallback "Usuario Anónimo" cuando falla la petición del usuario', async () => {
+    it('fallback "Usuario Anónimo" cuando el id no vuelve en el lote', async () => {
         renderizarResenyas([{ miId: 1, idUsuario: 55, resenya: 'Texto de reseña', nota: 3.0 }]);
         await flushPromises();
 

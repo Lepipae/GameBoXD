@@ -3,13 +3,12 @@ package org.palomafp.apijuegos.api.services;
 import org.palomafp.apijuegos.api.excepciones.RecursoDuplicadoException;
 import org.palomafp.apijuegos.api.modelo.EntradaLista;
 import org.palomafp.apijuegos.api.modelo.Videojuego;
+import org.palomafp.apijuegos.api.modelo.dto.ConteoJuego;
 import org.palomafp.apijuegos.api.repositories.EntradaListaRepo;
 import org.palomafp.apijuegos.api.repositories.VideojuegoRepo;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -95,23 +94,14 @@ public class EntradaListaService {
      * @return El juego con más entradas, o null si todavía no hay ninguna.
      */
     public Videojuego juegoConMasEntradas() {
-        List<EntradaLista> entradas = entradaListaRepo.findAll();
-        if (entradas == null || entradas.isEmpty()) {
+        List<ConteoJuego> conteos = entradaListaRepo.juegoConMasEntradas();
+        if (conteos == null || conteos.isEmpty()) {
             return null;
         }
 
-        Map<Long, Long> entradasPorJuego = new HashMap<>();
-        for (EntradaLista entrada : entradas) {
-            entradasPorJuego.merge(entrada.getIdVideojuego(), 1L, Long::sum);
-        }
-
-        long idLider = -1;
-        long maximo = -1;
-        for (Map.Entry<Long, Long> cuenta : entradasPorJuego.entrySet()) {
-            if (cuenta.getValue() > maximo || (cuenta.getValue() == maximo && cuenta.getKey() < idLider)) {
-                maximo = cuenta.getValue();
-                idLider = cuenta.getKey();
-            }
+        Long idLider = conteos.get(0).idVideojuego();
+        if (idLider == null) {
+            return null;
         }
 
         return videojuegoRepo.findByMiId(idLider);
@@ -184,12 +174,14 @@ public class EntradaListaService {
             entradaLista.setId(null);
         }
 
-        // Comprobación de duplicados robusta en memoria
-        boolean duplicada = Optional.ofNullable(entradaListaRepo.findByIdUsuario(entradaLista.getIdUsuario()))
-                .orElseGet(List::of)
-                .stream()
-                .anyMatch(existente -> existente.getIdVideojuego() == entradaLista.getIdVideojuego()
-                        && (entradaLista.getId() == null || !existente.getId().equals(entradaLista.getId())));
+        // Comprobación de duplicados puntual: antes se traían TODAS las entradas
+        // del usuario y se filtraban en memoria; ahora Mongo resuelve el par
+        // (usuario, juego) con el índice compuesto.
+        EntradaLista existente = entradaListaRepo.findByIdUsuarioAndIdVideojuego(
+                entradaLista.getIdUsuario(), entradaLista.getIdVideojuego());
+
+        boolean duplicada = existente != null
+                && (entradaLista.getId() == null || !existente.getId().equals(entradaLista.getId()));
 
         if (duplicada) {
             throw new RecursoDuplicadoException("El usuario ya tiene este juego en su lista");

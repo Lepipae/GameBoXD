@@ -1,6 +1,8 @@
 package org.palomafp.apijuegos.api.repositories;
 
 import org.palomafp.apijuegos.api.modelo.EntradaLista;
+import org.palomafp.apijuegos.api.modelo.dto.ConteoJuego;
+import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
@@ -63,6 +65,25 @@ public interface EntradaListaRepo extends MongoRepository<EntradaLista, String> 
      * @return EntradaLista con el id mas alto
      */
     EntradaLista findTopByOrderByMiIdDesc();
+
+    /**
+     * Devuelve el videojuego con más entradas de lista, contando en MongoDB.
+     *
+     * <p>Antes el servicio traía todas las entradas ({@code findAll()}) y las
+     * agrupaba en memoria; con la colección creciendo eso era O(n) documentos
+     * por cada visita a la portada. La agregación hace el trabajo en el
+     * servidor, ordena también por id ascendente para que el empate sea
+     * estable y devuelve como mucho una fila.</p>
+     *
+     * @return Lista con un único conteo (vacía si no hay entradas).
+     */
+    @Aggregation(pipeline = {
+            "{ $group: { _id: '$idVideojuego', total: { $sum: 1 } } }",
+            "{ $sort: { total: -1, _id: 1 } }",
+            "{ $limit: 1 }",
+            "{ $project: { _id: 0, idVideojuego: '$_id', total: 1 } }"
+    })
+    List<ConteoJuego> juegoConMasEntradas();
     
     /**
      * Devuelve la ultima entrada insertada

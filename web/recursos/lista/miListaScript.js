@@ -77,6 +77,52 @@ export async function cargarLotePorId(ids, urlParaId, cache) {
     );
 }
 
+/**
+ * Carga varios recursos en UNA sola petición y los reparte en la caché.
+ *
+ * <p>Es la variante que usa "Mi lista": con `GET /videojuegos/lote?ids=...`
+ * (o `/desarrolladoras/lote`) la página pasa de N peticiones a una, y las que
+ * falten se marcan como no disponibles sin romper el renderizado.</p>
+ *
+ * @param {Array<number|string>} ids - Ids pedidos.
+ * @param {function(Array<number|string>): string} urlParaIds - Construye la URL del lote.
+ * @param {Map} cache - Caché id → recurso.
+ * @returns {Promise<void>}
+ */
+export async function cargarLoteUnico(ids, urlParaIds, cache) {
+    const idsUnicos = [...new Set(ids.filter((id) => id != null))];
+    const pendientes = idsUnicos.filter((id) => !cache.has(id));
+
+    if (pendientes.length === 0) {
+        return;
+    }
+
+    // Si el lote falla, se reintenta recurso a recurso para que un id
+    // conflictivo no deje la lista entera sin datos.
+    try {
+        const recursos = await fetchJson(urlParaIds(pendientes));
+        const encontrados = new Set();
+
+        for (const recurso of Array.isArray(recursos) ? recursos : []) {
+            if (recurso == null) continue;
+            const id = recurso.miId ?? recurso.id;
+            cache.set(id, recurso);
+            encontrados.add(id);
+        }
+
+        for (const id of pendientes) {
+            if (!encontrados.has(id)) {
+                cache.set(id, null);
+            }
+        }
+    } catch (error) {
+        console.error(`Error al cargar el lote ${urlParaIds(pendientes)}:`, error);
+        for (const id of pendientes) {
+            cache.set(id, null);
+        }
+    }
+}
+
 /* --- BÚSQUEDA Y ORDEN DENTRO DE LA COLECCIÓN --- */
 
 /**
@@ -502,11 +548,11 @@ export function cargarMiLista(idUsuario) {
             // Inicializar el diccionario global de entradas para la edición
             window.miListaEntradas = {};
 
-            // --- Lote 1: cada juego ÚNICO se fetch una sola vez, en paralelo (no una petición por entrada) ---
+            // --- Lote 1: todos los juegos únicos en UNA sola petición ---
             const idsJuego = listaEntradas.map((entrada) => entrada.idVideojuego);
-            await cargarLotePorId(
+            await cargarLoteUnico(
                 idsJuego,
-                (id) => `${GameBoXDApi.BASE_URL}/videojuegos/${id}`,
+                (ids) => `${GameBoXDApi.BASE_URL}/videojuegos/lote?ids=${ids.join(',')}`,
                 cacheJuegos
             );
 
@@ -540,10 +586,10 @@ export function cargarMiLista(idUsuario) {
                 }
             }
 
-            // --- Lote 2: cada desarrolladora ÚNICA se fetch una sola vez, en paralelo (dedup por caché) ---
-            await cargarLotePorId(
+            // --- Lote 2: todas las desarrolladoras únicas en UNA sola petición ---
+            await cargarLoteUnico(
                 idsDesarrolladora,
-                (id) => `${GameBoXDApi.BASE_URL}/desarrolladoras/id/${id}`,
+                (ids) => `${GameBoXDApi.BASE_URL}/desarrolladoras/lote?ids=${ids.join(',')}`,
                 cacheDesarrolladoras
             );
 
@@ -627,7 +673,7 @@ export function renderizarEntradaJuego(entrada, juego, container) {
 
     card.innerHTML = `
         <div class="game-card-img-container">
-            <img alt="${escapeHTML(juego.nombre)}">
+            <img alt="${escapeHTML(juego.nombre)}" loading="lazy" decoding="async">
         </div>
         <div class="game-card-content">
             <div class="game-card-header">

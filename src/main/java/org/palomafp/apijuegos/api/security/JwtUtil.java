@@ -27,6 +27,15 @@ public class JwtUtil {
     /** Vigencia del token: 30 minutos desde que se emite. */
     private static final Duration VALIDEZ = Duration.ofMinutes(30);
 
+    /** Claim con el id interno del usuario (evita consultar la BD en cada petición). */
+    public static final String CLAIM_MI_ID = "miId";
+
+    /** Claim con el rol del usuario (permite reconstruir las autoridades sin BD). */
+    public static final String CLAIM_ROL = "rol";
+
+    /** Prefijo que Spring Security espera en las autoridades de tipo {@code ROLE_*}. */
+    private static final String PREFIJO_ROL = "ROLE_";
+
     // Clave secreta para firmar el token JWT. En un entorno de producción, esto debería estar en variables de entorno o application.properties.
     // Esta cadena debe tener al menos 256 bits (32 caracteres).
     @Value("${CLAVE_CIFRADO}")
@@ -97,30 +106,96 @@ public class JwtUtil {
 
     /**
      * Genera un nuevo token JWT a partir de los detalles de un usuario.
+     *
+     * <p>Si el principal conoce el {@code miId} (caso normal), el token lleva
+     * además el id y el rol. Con esos dos datos el filtro puede autenticar la
+     * petición sin consultar MongoDB.</p>
+     *
      * @param userDetails Objeto con la información del usuario autenticado.
      * @return Una cadena de texto que representa el token firmado.
      */
     public String generateToken(UserDetails userDetails) {
-        return createToken(userDetails.getUsername());
+        if (userDetails instanceof UsuarioAutenticado autenticado) {
+            return createToken(autenticado.getUsername(), autenticado.getMiId(), rolDe(autenticado));
+        }
+        // Token sin claims extra: se sigue emitiendo para no romper a quien
+        // construya un UserDetails plano; el filtro caerá a la base de datos.
+        return createToken(userDetails.getUsername(), null, null);
+    }
+
+    /**
+     * Extrae el id interno del usuario del token, si lo lleva.
+     *
+     * @param token Token JWT.
+     * @return Id interno, o {@code null} en tokens antiguos sin claim.
+     */
+    public Integer extractMiId(String token) {
+        Object valor = extractClaim(token, claims -> claims.get(CLAIM_MI_ID));
+        return valor instanceof Number numero ? numero.intValue() : null;
+    }
+
+    /**
+     * Extrae el rol del usuario del token, si lo lleva.
+     *
+     * @param token Token JWT.
+     * @return Nombre del rol (sin prefijo {@code ROLE_}), o {@code null}.
+     */
+    public String extractRol(String token) {
+        Object valor = extractClaim(token, claims -> claims.get(CLAIM_ROL));
+        return valor instanceof String texto ? texto : null;
+    }
+
+    /**
+     * Nombre del rol del usuario a partir de sus autoridades.
+     *
+     * @param userDetails Principal autenticado.
+     * @return Rol sin prefijo, o {@code null} si no tiene ninguno.
+     */
+    private static String rolDe(UserDetails userDetails) {
+        return userDetails.getAuthorities().stream()
+                .map(authority -> authority.getAuthority())
+                .filter(autoridad -> autoridad.startsWith(PREFIJO_ROL))
+                .map(autoridad -> autoridad.substring(PREFIJO_ROL.length()))
+                .findFirst()
+                .orElse(null);
     }
 
     /**
      * Método auxiliar encargado de la construcción interna del token con la librería JJWT.
+     *
      * @param subject El nombre de usuario que será el sujeto del token.
+     * @param miId    Id interno del usuario (puede ser {@code null}).
+     * @param rol     Rol del usuario (puede ser {@code null}).
      * @return El token JWT en formato String.
      */
-    private String createToken(String subject) {
-        // El código anterior pasaba un Map de claims vacío. No aportaba nada
-        // propio al token, asi que se ha quitado: JJWT genera la cabecera y la
-        // firma por su cuenta.
+    private String createToken(String subject, Integer miId, String rol) {
         Instant ahora = Instant.now();
-        return Jwts.builder()
+        var builder = Jwts.builder()
                 .subject(subject)
                 .id(UUID.randomUUID().toString())
                 .issuedAt(Date.from(ahora))
-                .expiration(Date.from(ahora.plus(VALIDEZ)))
-                .signWith(getSigningKey())
-                .compact();
+                .expiration(Date.from(ahora.plus(VALIDEZ)));
+        if (miId != null) {
+            builder.claim(CLAIM_MI_ID, miId);
+        }
+        if (rol != null) {
+            builder.claim(CLAIM_ROL, rol);
+        }
+        return builder.signWith(getSigningKey()).compact();
+    }
+
+    /**
+     * Verifica que el token pertenece al usuario indicado y que no ha expirado.
+     *
+     * <p>Variante sin {@link UserDetails}: cuando el token ya trae los claims
+     * suficientes no hace falta cargar el usuario de la base de datos.</p>
+     *
+     * @param token    Token de la petición.
+     * @param username Nombre de usuario esperado.
+     * @return true si el token es válido para ese usuario.
+     */
+    public boolean validateToken(String token, String username) {
+        return extractUsername(token).equals(username) && !isTokenExpired(token);
     }
 
     /**

@@ -3,6 +3,8 @@ package org.palomafp.apijuegos.api.controladores;
 import org.palomafp.apijuegos.api.modelo.EntradaLista;
 import org.palomafp.apijuegos.api.security.Autorizacion;
 import org.palomafp.apijuegos.api.services.EntradaListaService;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Duration;
 import java.util.List;
 
 /**
@@ -62,8 +65,13 @@ public class EntradaListaController {
      * @return      Lista que contiene todas las entradas de ese videojuego
      */
     @GetMapping("/juego/{idJuego}")
-    public List<EntradaLista> findByIdVideojuego(@PathVariable("idJuego") long idJuego) {
-        return entradaListaService.findByIdVideojuego(idJuego);
+    public ResponseEntity<List<EntradaLista>> findByIdVideojuego(@PathVariable("idJuego") long idJuego) {
+        // Reseñas de un juego: la misma respuesta para todos los visitantes de
+        // la ficha. Caché corta para absorber recargas sin servir datos viejos
+        // durante mucho tiempo.
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(Duration.ofMinutes(1)).cachePublic())
+                .body(entradaListaService.findByIdVideojuego(idJuego));
     }
 
     /**

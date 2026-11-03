@@ -1,15 +1,14 @@
 /**
  * Script para controlar la lógica de búsqueda y renderizado de resultados en busqueda.html.
- * Obtiene los juegos de la API por páginas (page/size) y los filtra localmente,
- * evitando cargar el catálogo completo de golpe.
  *
- * NOTA (TODO backend): el endpoint /api/videojuegos todavía no soporta paginación
- * (VideojuegoController.obtenerTodos() devuelve List<Videojuego> ignorando
- * page/size). Mientras tanto el frontend simula la paginación por cliente:
- * solicita ?page=&size=, corta el array recibido y acumula páginas en
- * cacheJuegos. Cuando el backend devuelva { content, totalElements, totalPages }
- * (o una cabecera X-Total-Count) este script usará esa respuesta directamente
- * sin cambios en la interfaz.
+ * La búsqueda y la paginación las resuelve el backend:
+ * `GET /api/videojuegos/pagina?q=&tag=&dev=&page=&size=` devuelve solo los
+ * juegos de la página pedida, ya filtrados y con los campos de tarjeta. El
+ * navegador deja de descargar el catálogo completo para filtrarlo en cliente.
+ *
+ * Se mantiene compatibilidad con respuestas antiguas (array completo +
+ * cabecera `X-Total-Count` o array sin paginar) para no romper si el frontend
+ * se sirve antes de que el backend esté desplegado.
  */
 
 /** Número de juegos que se solicitan y muestran por página. */
@@ -26,6 +25,9 @@ let cacheJuegos = [];
 
 // Parámetros de la última búsqueda (para reintentos y búsquedas posteriores).
 let ultimaBusqueda = { query: '', tag: '', dev: '', devName: '' };
+
+// Total de coincidencias según el backend (null mientras no lo diga).
+let totalResultados = null;
 
 let cargando = false;
 
@@ -149,6 +151,7 @@ export async function cargarYFiltrarJuegos(query, tag, dev, devName, pagina = pa
         page = 0;
         cacheJuegos = [];
         totalPages = 1;
+        totalResultados = null;
     }
 
     if (cargando) {
@@ -171,8 +174,18 @@ export async function cargarYFiltrarJuegos(query, tag, dev, devName, pagina = pa
     }
     if (btnMas) btnMas.disabled = true;
 
-    const API_URL = `${GameBoXDApi.BASE_URL}/videojuegos`;
-    const url = `${API_URL}?page=${page}&size=${size}`;
+    const API_URL = `${GameBoXDApi.BASE_URL}/videojuegos/pagina`;
+    const parametros = new URLSearchParams({ page: String(page), size: String(size) });
+    if (query && query.trim()) {
+        parametros.set('q', query.trim());
+    }
+    if (tag) {
+        parametros.set('tag', tag);
+    }
+    if (dev && !Number.isNaN(parseInt(dev, 10))) {
+        parametros.set('dev', String(parseInt(dev, 10)));
+    }
+    const url = `${API_URL}?${parametros.toString()}`;
 
     try {
         const response = await fetch(url);
@@ -204,6 +217,9 @@ export async function cargarYFiltrarJuegos(query, tag, dev, devName, pagina = pa
             // Respuesta paginada del backend: { content, totalElements, totalPages }.
             juegosPagina = datos.content || [];
             totalPages = datos.totalPages ?? 1;
+            if (typeof datos.totalElements === 'number') {
+                totalResultados = datos.totalElements;
+            }
         }
 
         // Filtrar juegos inválidos (sin nombre o imagen) antes de acumularlos.
@@ -294,14 +310,17 @@ export function filtrarYRenderizar(query, tag, dev, devName) {
 
     // Actualizar texto informativo de resultados
     if (infoText) {
+        // Con paginación real en el servidor, la caché local solo contiene las
+        // páginas ya pedidas: el total de coincidencias lo da el backend.
+        const encontrados = totalResultados ?? juegosFiltrados.length;
         if (dev) {
-            infoText.innerHTML = `Juegos desarrollados por "<span>${escapeHTML(devName || 'Desarrolladora')}</span>" (${juegosFiltrados.length} encontrados)`;
+            infoText.innerHTML = `Juegos desarrollados por "<span>${escapeHTML(devName || 'Desarrolladora')}</span>" (${encontrados} encontrados)`;
         } else if (tag) {
-            infoText.innerHTML = `Juegos con la etiqueta "<span>${escapeHTML(tag)}</span>" (${juegosFiltrados.length} encontrados)`;
+            infoText.innerHTML = `Juegos con la etiqueta "<span>${escapeHTML(tag)}</span>" (${encontrados} encontrados)`;
         } else if (query.trim()) {
-            infoText.innerHTML = `Resultados para "<span>${escapeHTML(query)}</span>" (${juegosFiltrados.length} encontrados)`;
+            infoText.innerHTML = `Resultados para "<span>${escapeHTML(query)}</span>" (${encontrados} encontrados)`;
         } else {
-            infoText.innerHTML = `Todos los videojuegos (${juegosFiltrados.length})`;
+            infoText.innerHTML = `Todos los videojuegos (${encontrados})`;
         }
     }
 
@@ -348,7 +367,8 @@ export function crearTarjetaJuego(juego) {
     const img = document.createElement('img');
     aplicarImagen(img, juego.urlImagen);
     img.alt = juego.nombre;
-    img.loading = 'lazy'; // Carga diferida de imágenes para optimizar rendimiento
+    img.setAttribute('loading', 'lazy');
+    img.setAttribute('decoding', 'async');
 
     imgContainer.appendChild(img);
 

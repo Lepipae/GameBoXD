@@ -52,22 +52,15 @@ beforeEach(() => {
             return jsonRespuesta(listaEntradas);
         }
 
-        const mJuego = u.match(/\/videojuegos\/(\d+)$/);
-        if (mJuego) {
-            const juego = juegos[Number(mJuego[1])];
-            if (!juego) {
-                return jsonRespuesta({ error: 'Juego no encontrado' }, 404);
-            }
-            return jsonRespuesta(juego);
+        // Endpoint de lote: devuelve solo los juegos que existen.
+        if (u.startsWith(`${BASE_URL}/videojuegos/lote?ids=`)) {
+            const ids = new URL(u).searchParams.get('ids').split(',').map(Number);
+            return jsonRespuesta(ids.map((id) => juegos[id]).filter(Boolean));
         }
 
-        const mDesarrolladora = u.match(/\/desarrolladoras\/id\/(\d+)$/);
-        if (mDesarrolladora) {
-            const desarrolladora = desarrolladoras[Number(mDesarrolladora[1])];
-            if (!desarrolladora) {
-                return jsonRespuesta({ error: 'Desarrolladora no encontrada' }, 404);
-            }
-            return jsonRespuesta(desarrolladora);
+        if (u.startsWith(`${BASE_URL}/desarrolladoras/lote?ids=`)) {
+            const ids = new URL(u).searchParams.get('ids').split(',').map(Number);
+            return jsonRespuesta(ids.map((id) => desarrolladoras[id]).filter(Boolean));
         }
 
         return jsonRespuesta({ error: 'Ruta no encontrada' }, 404);
@@ -83,28 +76,29 @@ afterEach(() => {
 });
 
 describe('cargarMiLista — fin del problema N+1', () => {
-    it('hace como máximo 4 peticiones en total (1 lista + juegos únicos + desarrolladoras únicas), nunca 1 + N + N', async () => {
+    it('hace exactamente 3 peticiones (lista + lote de juegos + lote de desarrolladoras)', async () => {
         await cargarMiLista(ID_USUARIO);
 
         const listaCalls = llamadas.filter(u => u.endsWith(`/lista/${ID_USUARIO}`));
-        const juegoCalls = llamadas.filter(u => u.includes('/videojuegos/'));
-        const devCalls = llamadas.filter(u => u.includes('/desarrolladoras/id/'));
+        const juegoCalls = llamadas.filter(u => u.includes('/videojuegos/lote'));
+        const devCalls = llamadas.filter(u => u.includes('/desarrolladoras/lote'));
 
         expect(listaCalls).toHaveLength(1);
-        expect(juegoCalls).toHaveLength(2);
-        expect(new Set(juegoCalls.map(u => Number(u.split('/').pop()))).size).toBe(juegoCalls.length);
+        expect(juegoCalls).toHaveLength(1);
         expect(devCalls).toHaveLength(1);
-        expect(llamadas).toHaveLength(4);
+        expect(llamadas).toHaveLength(3);
+        // Todos los ids de juegos viajan en la misma URL: 10 y 20.
+        expect(juegoCalls[0]).toBe(`${BASE_URL}/videojuegos/lote?ids=10,20`);
+        expect(devCalls[0]).toBe(`${BASE_URL}/desarrolladoras/lote?ids=100`);
     });
 
-    it('dedupe: /api/videojuegos/{id} se fetch una sola vez aunque dos entradas compartan el id', async () => {
+    it('dedupe: un juego compartido por dos entradas solo aparece una vez en el lote', async () => {
         await cargarMiLista(ID_USUARIO);
 
-        const juegoCalls = llamadas.filter(u => u.includes('/videojuegos/'));
-        const ids = juegoCalls.map(u => Number(u.split('/').pop()));
-        expect(ids).toEqual(expect.arrayContaining([10, 20]));
-        expect(ids.filter(id => id === 10)).toHaveLength(1);
-        expect(ids.filter(id => id === 20)).toHaveLength(1);
+        const lote = llamadas.find(u => u.includes('/videojuegos/lote'));
+        const ids = new URL(lote).searchParams.get('ids').split(',');
+        expect(ids).toEqual(['10', '20']);
+        expect(ids.filter(id => id === '10')).toHaveLength(1);
     });
 
     it('renderiza los nombres de desarrolladora desde el caché (sin fetch repetido)', async () => {
@@ -137,6 +131,8 @@ describe('cargarMiLista — fin del problema N+1', () => {
         expect(fallback).not.toBeNull();
         expect(fallback.textContent).toContain('Videojuego No Disponible');
 
-        expect(llamadas.filter(u => u.includes('/videojuegos/99'))).toHaveLength(1);
+        // El id inexistente viaja en el lote y simplemente no vuelve en la respuesta.
+        const lote = llamadas.find(u => u.includes('/videojuegos/lote'));
+        expect(new URL(lote).searchParams.get('ids').split(',')).toContain('99');
     });
 });

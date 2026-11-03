@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.palomafp.apijuegos.api.modelo.EntradaLista;
 import org.palomafp.apijuegos.api.modelo.Videojuego;
+import org.palomafp.apijuegos.api.modelo.dto.ConteoJuego;
 import org.palomafp.apijuegos.api.repositories.EntradaListaRepo;
 import org.palomafp.apijuegos.api.repositories.VideojuegoRepo;
 
@@ -111,18 +112,13 @@ class EntradaListaServiceTest {
     }
 
     /**
-     * El hero del index debe mostrar el juego al que más listas pertenecen.
-     * Todas las entradas cuentan, aunque no lleven texto de reseña.
+     * El hero del index debe mostrar el juego lider que devuelve la agregación,
+     * sin traer todas las entradas a memoria.
      */
     @Test
     void juegoConMasEntradasDevuelveElJuegoLider() {
-        when(entradaListaRepo.findAll()).thenReturn(List.of(
-                entrada(1L, 1),
-                entrada(1L, 2),
-                entrada(1L, 3),
-                entrada(2L, 1),
-                entrada(5L, 4)
-        ));
+        when(entradaListaRepo.juegoConMasEntradas())
+                .thenReturn(List.of(new ConteoJuego(1L, 3L)));
 
         Videojuego lider = new Videojuego();
         lider.setMiId(1L);
@@ -132,6 +128,8 @@ class EntradaListaServiceTest {
 
         assertSame(lider, result);
         verify(videojuegoRepo, times(1)).findByMiId(1L);
+        // La optimización clave: ya no se descarga la colección de entradas.
+        verify(entradaListaRepo, never()).findAll();
     }
 
     /**
@@ -140,22 +138,20 @@ class EntradaListaServiceTest {
      */
     @Test
     void juegoConMasEntradasSinEntradasDevuelveNull() {
-        when(entradaListaRepo.findAll()).thenReturn(List.of());
+        when(entradaListaRepo.juegoConMasEntradas()).thenReturn(List.of());
 
         assertNull(entradaListaService.juegoConMasEntradas());
         verify(videojuegoRepo, never()).findByMiId(anyLong());
     }
 
     /**
-     * En empate se queda con el menor id de juego para que el hero sea
-     * estable entre consultas (mismos datos, mismo resultado).
+     * El desempate lo resuelve MongoDB (orden por total y luego por id); el
+     * servicio se limita a usar la primera fila.
      */
     @Test
-    void juegoConMasEntradasConEmpateSeQuedaConElMenorId() {
-        when(entradaListaRepo.findAll()).thenReturn(List.of(
-                entrada(7L, 1),
-                entrada(3L, 2)
-        ));
+    void juegoConMasEntradasUsaLaPrimeraFilaDeLaAgregacion() {
+        when(entradaListaRepo.juegoConMasEntradas())
+                .thenReturn(List.of(new ConteoJuego(3L, 1L)));
 
         Videojuego lider = new Videojuego();
         lider.setMiId(3L);

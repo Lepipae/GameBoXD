@@ -51,16 +51,14 @@ beforeEach(() => {
         const u = String(url);
         if (u === `${BASE_URL}/lista/${ID_USUARIO}`) return jsonRespuesta(listaEntradas);
 
-        const mJuego = u.match(/\/videojuegos\/(\d+)$/);
-        if (mJuego) {
-            const juego = juegos[Number(mJuego[1])];
-            return juego ? jsonRespuesta(juego) : jsonRespuesta({ error: 'no encontrado' }, 404);
+        if (u.startsWith(`${BASE_URL}/videojuegos/lote?ids=`)) {
+            const ids = new URL(u).searchParams.get('ids').split(',').map(Number);
+            return jsonRespuesta(ids.map((id) => juegos[id]).filter(Boolean));
         }
 
-        const mDev = u.match(/\/desarrolladoras\/id\/(\d+)$/);
-        if (mDev) {
-            const dev = desarrolladoras[Number(mDev[1])];
-            return dev ? jsonRespuesta(dev) : jsonRespuesta({ error: 'no encontrada' }, 404);
+        if (u.startsWith(`${BASE_URL}/desarrolladoras/lote?ids=`)) {
+            const ids = new URL(u).searchParams.get('ids').split(',').map(Number);
+            return jsonRespuesta(ids.map((id) => desarrolladoras[id]).filter(Boolean));
         }
 
         return jsonRespuesta({ error: 'Ruta no encontrada' }, 404);

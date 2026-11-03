@@ -8,13 +8,16 @@ import org.jspecify.annotations.NullMarked;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Filtro que se ejecuta una vez por cada petición HTTP que entra a nuestra API.
@@ -29,6 +32,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
     /** Prefijo estándar de la cabecera Authorization para los tokens JWT. */
     private static final String PREFIJO_BEARER = "Bearer ";
+
+    /** Prefijo que Spring Security espera en las autoridades de tipo {@code ROLE_*}. */
+    private static final String PREFIJO_ROL = "ROLE_";
 
     private final CustomUserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
@@ -54,6 +60,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         String username = null;
         String jwt = null;
+        Integer miId = null;
+        String rol = null;
 
         // Comprobamos que la cabecera existe y que su contenido empiece por "Bearer " (estándar de JWT)
         if (authorizationHeader != null && authorizationHeader.startsWith(PREFIJO_BEARER)) {
@@ -61,6 +69,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             try {
                 // Sacamos el nombre de usuario de dentro del token
                 username = jwtUtil.extractUsername(jwt);
+                // Los tokens nuevos llevan id y rol: con ellos no hace falta
+                // consultar la base de datos para autenticar la petición.
+                miId = jwtUtil.extractMiId(jwt);
+                rol = jwtUtil.extractRol(jwt);
             } catch (Exception e) {
                 // Se captura de forma deliberadamente amplia: un token corrupto,
                 // caducado o manipulado no debe tumbar la petición, simplemente
@@ -73,11 +85,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         // Si tenemos un usuario pero todavía no está validado en el contexto de seguridad...
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            // Cargamos los datos del usuario usando su nombre
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+            UserDetails userDetails = resolverUsuario(username, miId, rol);
 
             // Verificamos matemáticamente que el token concuerda con este usuario y que no haya caducado
-            if (jwtUtil.validateToken(jwt, userDetails)) {
+            if (userDetails != null && jwtUtil.validateToken(jwt, userDetails.getUsername())) {
 
                 // Si es válido, creamos un token interno de Spring Security para autorizar al usuario en este momento
                 var autenticacion = new UsernamePasswordAuthenticationToken(
@@ -94,5 +105,32 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         // Continuamos con la cadena de filtros permitiendo que la petición siga su curso (hacia el controlador)
         chain.doFilter(request, response);
+    }
+
+    /**
+     * Reconstruye el usuario autenticado a partir del token.
+     *
+     * <p>Camino rápido: si el token trae {@code miId} y {@code rol}, se construye
+     * el principal directamente. La firma ya se ha verificado al parsear el
+     * token, así que los claims son de fiar. Si faltan (tokens emitidos antes de
+     * este cambio), se carga el usuario de MongoDB como siempre.</p>
+     *
+     * @param username Nombre de usuario del token.
+     * @param miId     Id interno incluido en el token, o {@code null}.
+     * @param rol      Rol incluido en el token, o {@code null}.
+     * @return Principal autenticado, o {@code null} si no se pudo resolver.
+     */
+    private UserDetails resolverUsuario(String username, Integer miId, String rol) {
+        if (miId != null && rol != null) {
+            return new UsuarioAutenticado(username, "", List.of(new SimpleGrantedAuthority(PREFIJO_ROL + rol)), miId);
+        }
+
+        try {
+            return userDetailsService.loadUserByUsername(username);
+        } catch (UsernameNotFoundException ex) {
+            // Token válido para un usuario que ya no existe: no se autentica.
+            logger.debug("Usuario del token inexistente: {}", username);
+            return null;
+        }
     }
 }
