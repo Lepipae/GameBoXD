@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import javax.imageio.ImageIO;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -29,6 +30,7 @@ class ImagenServiceTest {
 
     private HttpServer servidor;
     private String urlPortada;
+    private String urlRayas;
     private final AtomicInteger peticiones = new AtomicInteger();
     private ImagenService imagenService;
 
@@ -62,9 +64,32 @@ class ImagenServiceTest {
                 cuerpo.write(png);
             }
         });
+        // Patrón de alta frecuencia (rayas de 1 px) para comprobar el escalado.
+        byte[] rayas = rayasSinteticas();
+        servidor.createContext("/rayas.png", intercambio -> {
+            intercambio.sendResponseHeaders(200, rayas.length);
+            try (OutputStream cuerpo = intercambio.getResponseBody()) {
+                cuerpo.write(rayas);
+            }
+        });
         servidor.start();
         urlPortada = "http://127.0.0.1:" + servidor.getAddress().getPort() + "/portada.png";
+        urlRayas = "http://127.0.0.1:" + servidor.getAddress().getPort() + "/rayas.png";
         imagenService = new ImagenService();
+    }
+
+    /** PNG de 600x900 con rayas verticales alternas de 1 px. */
+    private static byte[] rayasSinteticas() throws IOException {
+        BufferedImage imagen = new BufferedImage(600, 900, BufferedImage.TYPE_INT_RGB);
+        for (int x = 0; x < 600; x++) {
+            int tono = (x % 2 == 0) ? 0 : 255;
+            for (int y = 0; y < 900; y++) {
+                imagen.setRGB(x, y, (tono << 16) | (tono << 8) | tono);
+            }
+        }
+        ByteArrayOutputStream salida = new ByteArrayOutputStream();
+        ImageIO.write(imagen, "png", salida);
+        return salida.toByteArray();
     }
 
     @AfterEach
@@ -78,6 +103,38 @@ class ImagenServiceTest {
         BufferedImage imagen = ImageIO.read(new java.io.ByteArrayInputStream(jpeg));
         assertNotNull(imagen, "el resultado debe ser una imagen legible");
         return imagen;
+    }
+
+    /**
+     * Desviación típica de la luminosidad media de cada columna.
+     *
+     * <p>Sirve para detectar banding: una imagen uniforme da ~0 y una con rayas
+     * alternas da un valor alto.</p>
+     *
+     * @param imagen Imagen a medir.
+     * @return Desviación típica de las medias por columna.
+     */
+    private static double desviacionColumnas(BufferedImage imagen) {
+        double[] medias = new double[imagen.getWidth()];
+        for (int x = 0; x < imagen.getWidth(); x++) {
+            double suma = 0;
+            for (int y = 0; y < imagen.getHeight(); y++) {
+                int rgb = imagen.getRGB(x, y);
+                suma += ((rgb >> 16 & 0xFF) + (rgb >> 8 & 0xFF) + (rgb & 0xFF)) / 3.0;
+            }
+            medias[x] = suma / imagen.getHeight();
+        }
+        double media = 0;
+        for (double valor : medias) {
+            media += valor;
+        }
+        media /= medias.length;
+
+        double varianza = 0;
+        for (double valor : medias) {
+            varianza += (valor - media) * (valor - media);
+        }
+        return Math.sqrt(varianza / medias.length);
     }
 
     @Test
@@ -118,6 +175,35 @@ class ImagenServiceTest {
         assertEquals(300, resultado.getWidth());
         // 600x900 escalado a 300 de ancho -> 450 de alto.
         assertEquals(450, resultado.getHeight());
+    }
+
+    @Test
+    void reducirEnVariosPasosEvitaElBandingDeUnaSolaPasada() throws IOException {
+        // 600 -> 180 en un único `drawImage` bilineal solo promedia 2x2 píxeles
+        // de origen, así que las rayas de 1 px reaparecen como bandas (moiré).
+        // Escalando por mitades se promedian todos los píxeles y el resultado
+        // es casi uniforme: mismo peso, más nitidez.
+        BufferedImage origen = ImageIO.read(new java.io.ByteArrayInputStream(rayasSinteticas()));
+
+        BufferedImage unaPasada = new BufferedImage(180, 270, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = unaPasada.createGraphics();
+        try {
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g.drawImage(origen, 0, 0, 180, 270, null);
+        } finally {
+            g.dispose();
+        }
+
+        BufferedImage progresivo = decodificar(imagenService.obtener(urlRayas, 180));
+        assertEquals(180, progresivo.getWidth());
+        assertEquals(270, progresivo.getHeight());
+
+        double bandingUnaPasada = desviacionColumnas(unaPasada);
+        double bandingProgresivo = desviacionColumnas(progresivo);
+        assertTrue(bandingProgresivo < bandingUnaPasada / 2,
+                "el escalado por mitades debe dejar menos banding que una sola pasada: "
+                        + bandingUnaPasada + " -> " + bandingProgresivo);
     }
 
     @Test

@@ -245,19 +245,58 @@ public class ImagenService {
         int altoFinal = Math.max(1,
                 (int) Math.round(original.getHeight() * (anchoFinal / (double) original.getWidth())));
 
-        BufferedImage destino = new BufferedImage(anchoFinal, altoFinal, BufferedImage.TYPE_INT_RGB);
+        return comprimirJpeg(escalarProgresivo(original, anchoFinal, altoFinal));
+    }
+
+    /**
+     * Reduce la imagen en varias pasadas de como mucho la mitad de tamaño.
+     *
+     * <p>Las portadas miden 600 px de ancho y una tarjeta pide 180-300. Escalar
+     * 600 -> 180 en un solo `drawImage` bilineal solo mira 2x2 píxeles de origen
+     * por píxel de destino, así que se salta la mayor parte de la imagen y
+     * aparecen dientes de sierra. Promediando por mitades primero se conserva la
+     * información de todos los píxeles y el resultado final es más nítido, sin
+     * coste en bytes.</p>
+     *
+     * @param original Imagen de partida.
+     * @param ancho    Ancho final.
+     * @param alto     Alto final.
+     * @return Imagen escalada.
+     */
+    private static BufferedImage escalarProgresivo(BufferedImage original, int ancho, int alto) {
+        BufferedImage actual = original;
+        while (actual.getWidth() / 2 >= ancho && actual.getHeight() / 2 >= alto) {
+            actual = dibujar(actual, Math.max(ancho, actual.getWidth() / 2),
+                    Math.max(alto, actual.getHeight() / 2));
+        }
+        return dibujar(actual, ancho, alto);
+    }
+
+    /**
+     * Copia la imagen al tamaño indicado sobre fondo blanco.
+     *
+     * @param origen Imagen de partida.
+     * @param ancho  Ancho de destino.
+     * @param alto   Alto de destino.
+     * @return Nueva imagen RGB.
+     */
+    private static BufferedImage dibujar(BufferedImage origen, int ancho, int alto) {
+        if (origen.getWidth() == ancho && origen.getHeight() == alto) {
+            return origen;
+        }
+
+        BufferedImage destino = new BufferedImage(ancho, alto, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = destino.createGraphics();
         try {
             g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
             g.setColor(Color.WHITE);
-            g.fillRect(0, 0, anchoFinal, altoFinal);
-            g.drawImage(original, 0, 0, anchoFinal, altoFinal, null);
+            g.fillRect(0, 0, ancho, alto);
+            g.drawImage(origen, 0, 0, ancho, alto, null);
         } finally {
             g.dispose();
         }
-
-        return comprimirJpeg(destino);
+        return destino;
     }
 
     /**
