@@ -127,6 +127,24 @@ describe('Hero dinámico: juego con más reseñas', () => {
         expect(html).toContain('id="hero-imagen"');
     });
 
+    it('el preload del hero apunta exactamente a la URL que pide el script', () => {
+        // Sin este preload la cadena era HTML -> JS -> API -> portada: tres
+        // viajes en serie. El navegador solo reutiliza la respuesta si la URL
+        // coincide carácter a carácter con la del `fetch`, así que la prueba
+        // ata el `href` del <link> al BASE_URL real de api.js.
+        const html = fs.readFileSync(path.join(WEB_ROOT, 'index.html'), 'utf8');
+        const api = fs.readFileSync(path.join(WEB_ROOT, 'recursos/api.js'), 'utf8');
+        const script = fs.readFileSync(
+            path.join(WEB_ROOT, 'recursos/index/indexScript.js'), 'utf8');
+
+        const base = api.match(/const BASE_URL = '([^']+)'/)[1];
+        const preload = html.match(/<link rel="preload" as="fetch" href="([^"]+)"\s+crossorigin>/);
+
+        expect(preload, 'index.html debe declarar el preload del JSON del hero').not.toBeNull();
+        expect(preload[1]).toBe(`${base}/videojuegos/mas-resenyas`);
+        expect(script).toContain('/videojuegos/mas-resenyas');
+    });
+
     it('las recomendaciones vienen de /recomendaciones y NO se descarga el catálogo completo', async () => {
         const recomendados = [
             { miId: 1, nombre: 'Uno', urlImagen: 'https://covers.example/1.jpg' },

@@ -33,6 +33,14 @@
   <!-- Fuente -->
   <!-- Fuente Inter servida localmente + preconnect a la API -->
   <link rel="preconnect" href="https://gameboxd-2nio.onrender.com" crossorigin>
+  <!-- El hero se pinta con un juego que llega de la API, así que su portada solo
+       puede pedirse después de: HTML -> JS -> API -> imagen (tres viajes en
+       serie). Adelantar aquí la petición del JSON elimina el viaje que hacía
+       el JS: la respuesta queda en la caché del navegador y el `fetch` de
+       indexScript.js la reutiliza. La URL debe coincidir exactamente con
+       `${GameBoXDApi.BASE_URL}/videojuegos/mas-resenyas`. -->
+  <link rel="preload" as="fetch" href="https://gameboxd-2nio.onrender.com/api/videojuegos/mas-resenyas"
+    crossorigin>
   <link rel="preload" href="recursos/fuentes/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="recursos/style.css">
 </head>

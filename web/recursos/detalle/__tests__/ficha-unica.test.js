@@ -1,8 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import fs from 'fs';
+import path from 'path';
 import { cargarFicha, cacheUsuarios } from '../detalleScript.js';
 
 const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0));
 const BASE_URL = 'https://api.test.local/api';
+const WEB_ROOT = path.resolve(__dirname, '..', '..', '..');
 
 const JUEGO = {
     miId: 42,
@@ -108,5 +111,22 @@ describe('cargarFicha — la ficha del detalle cuesta UNA petición', () => {
         expect(fetchMock).toHaveBeenCalledTimes(2);
         expect(String(fetchMock.mock.calls[1][0])).toContain('/usuarios/lote?ids=');
         expect(document.getElementById('review-username-1').textContent).toBe('Ana Martínez');
+    });
+});
+
+describe('detalleJuego.html — adelanta la ficha con un preload', () => {
+    it('pide en el <head> la misma URL que luego usa cargarFicha', () => {
+        // La ficha se pide en DOMContentLoaded, así que sin el preload la
+        // portada encadenaba HTML -> JS -> ficha -> imagen. El navegador solo
+        // reutiliza la respuesta si la URL coincide con la del `fetch`.
+        const html = fs.readFileSync(path.join(WEB_ROOT, 'detalleJuego.html'), 'utf8');
+        const api = fs.readFileSync(path.join(WEB_ROOT, 'recursos/api.js'), 'utf8');
+        const base = api.match(/const BASE_URL = '([^']+)'/)[1];
+
+        expect(html).toContain("enlace.as = 'fetch'");
+        expect(html).toContain("enlace.crossOrigin = 'anonymous'");
+        expect(html).toContain(`enlace.href = '${base}/ficha/'`);
+        // El id viaja en la URL: el preload no puede ser un <link> estático.
+        expect(html).toContain("new URLSearchParams(window.location.search).get('id')");
     });
 });

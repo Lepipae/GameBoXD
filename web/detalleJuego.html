@@ -8,6 +8,22 @@
   <link rel="icon" href="recursos/img/favicon.svg" type="image/x-icon">
   <!-- Fuente Inter servida localmente + preconnect a la API -->
   <link rel="preconnect" href="https://gameboxd-2nio.onrender.com" crossorigin>
+  <!-- La ficha se pide en DOMContentLoaded, así que hasta ese momento nadie
+       sabe qué juego hay que pintar. Como el id viaja en la URL, aquí se
+       adelanta la petición: el navegador reutiliza la respuesta en el `fetch`
+       de detalleScript.js y la portada arranca un viaje antes. -->
+  <script>
+    (function () {
+      var id = new URLSearchParams(window.location.search).get('id');
+      if (!id) return;
+      var enlace = document.createElement('link');
+      enlace.rel = 'preload';
+      enlace.as = 'fetch';
+      enlace.crossOrigin = 'anonymous';
+      enlace.href = 'https://gameboxd-2nio.onrender.com/api/ficha/' + encodeURIComponent(id);
+      document.head.appendChild(enlace);
+    })();
+  </script>
   <link rel="preload" href="recursos/fuentes/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="recursos/style.css">
   <link rel="stylesheet" href="recursos/detalle/styleDetalle.css">
