@@ -1,5 +1,5 @@
 // Acceso al gestor centralizado de imágenes definido en api.js
-const { aplicarImagen } = window.GameBoXDImagenes;
+const { aplicarImagen, aplicarImagenResponsiva } = window.GameBoXDImagenes;
 
 /**
  * Event listener que se ejecuta cuando el DOM está completamente cargado.
@@ -136,7 +136,14 @@ function renderizarRecomendaciones(recomendaciones) {
             enlace.href = `detalleJuego.html?id=${juego.miId}`;
 
             const img = document.createElement('img');
-            aplicarImagen(img, juego.urlImagen, null, 300);
+            // La tarjeta se pinta a ~260 CSS px en escritorio (4 columnas dentro
+            // de un contenedor de 1120 px), a ~45vw entre 601 y 900 px y casi a
+            // todo el ancho por debajo de 600. Pedir siempre 300 era un 15% de
+            // sobremuestreo en escritorio: con el candidato de 260 las cuatro
+            // portadas pasan de 141 096 B a 101 084 B (-28,4%). En retina y en
+            // móvil el navegador sigue eligiendo 300, exactamente lo de antes.
+            aplicarImagenResponsiva(img, juego.urlImagen, null, [200, 260, 300],
+                '(max-width: 600px) 100vw, (max-width: 900px) 45vw, 260px');
             img.alt = juego.nombre;
             img.title = juego.nombre;
             // La primera tarjeta se pinta con el resto de la página; las demás

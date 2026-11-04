@@ -40,6 +40,11 @@ describe('Hero dinámico: juego con más reseñas', () => {
             aplicarImagen: (img, url) => {
                 if (typeof url === 'string' && url.trim() !== '') img.src = url.trim();
             },
+            aplicarImagenResponsiva: (img, url, alFallar, anchos, sizes) => {
+                if (typeof url === 'string' && url.trim() !== '') img.src = url.trim();
+                img.setAttribute('sizes', sizes);
+                img.setAttribute('srcset', anchos.map((a) => `${url} ${a}w`).join(', '));
+            },
         };
 
         document.body.innerHTML = `
@@ -178,5 +183,29 @@ describe('Hero dinámico: juego con más reseñas', () => {
         expect(imagenes[0].getAttribute('src')).toBe('https://covers.example/1.jpg');
         expect(document.querySelector('#r1 img').getAttribute('loading')).toBe('eager');
         expect(document.querySelector('#r2 img').getAttribute('loading')).toBe('lazy');
+    });
+
+    it('las tarjetas de recomendación ofrecen un candidato del tamaño real de la caja', async () => {
+        // La tarjeta mide ~260 CSS px en escritorio y antes se pedían siempre
+        // 300 px. El candidato de 260 debe existir para que un monitor normal
+        // no descargue un 15% de píxeles de más.
+        window.fetch = crearFetchMock({
+            hero: { ok: false, status: 404, json: async () => ({}) },
+            juegos: [{ miId: 1, nombre: 'Uno', urlImagen: 'https://covers.example/1.jpg' }],
+        });
+
+        await import('../indexScript.js');
+        document.dispatchEvent(new Event('DOMContentLoaded'));
+        await flushPromises();
+        await flushPromises();
+
+        const img = document.querySelector('#r1 img');
+        expect(img).not.toBeNull();
+
+        const candidatos = (img.getAttribute('srcset') || '')
+            .split(', ')
+            .map((c) => c.split(' ')[1]);
+        expect(candidatos).toEqual(['200w', '260w', '300w']);
+        expect(img.getAttribute('sizes')).toContain('260px');
     });
 });
