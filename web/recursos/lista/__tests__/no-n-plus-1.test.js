@@ -22,12 +22,12 @@ let listaEntradas = [
 ];
 
 const juegos = {
-    10: { id: 10, nombre: 'Hollow Knight', idDesarrolladora: 100, urlImagen: 'https://ejemplo.imagen/hollow-knight.jpg' },
-    20: { id: 20, nombre: 'Celeste', idDesarrolladora: null, urlImagen: null },
+    10: { miId: 10, nombre: 'Hollow Knight', idDesarrolladora: 100, urlImagen: 'https://ejemplo.imagen/hollow-knight.jpg' },
+    20: { miId: 20, nombre: 'Celeste', idDesarrolladora: 0, urlImagen: null },
 };
 
 const desarrolladoras = {
-    100: { id: 100, nombre: 'Team Cherry' },
+    100: { miId: 100, nombre: 'Team Cherry' },
 };
 
 const llamadas = [];
@@ -48,19 +48,18 @@ beforeEach(() => {
         llamadas.push(String(url));
         const u = String(url);
 
-        if (u === `${BASE_URL}/lista/${ID_USUARIO}`) {
-            return jsonRespuesta(listaEntradas);
-        }
-
-        // Endpoint de lote: devuelve solo los juegos que existen.
-        if (u.startsWith(`${BASE_URL}/videojuegos/lote?ids=`)) {
-            const ids = new URL(u).searchParams.get('ids').split(',').map(Number);
-            return jsonRespuesta(ids.map((id) => juegos[id]).filter(Boolean));
-        }
-
-        if (u.startsWith(`${BASE_URL}/desarrolladoras/lote?ids=`)) {
-            const ids = new URL(u).searchParams.get('ids').split(',').map(Number);
-            return jsonRespuesta(ids.map((id) => desarrolladoras[id]).filter(Boolean));
+        // Una sola llamada devuelve entradas, juegos y desarrolladoras.
+        if (u === `${BASE_URL}/lista/${ID_USUARIO}/ficha`) {
+            const idsJuegos = [...new Set(listaEntradas.map(e => e.idVideojuego))];
+            const juegosDeLista = idsJuegos.map(id => juegos[id]).filter(Boolean);
+            const devs = juegosDeLista
+                .map(j => desarrolladoras[j.idDesarrolladora])
+                .filter(Boolean);
+            return jsonRespuesta({
+                entradas: listaEntradas,
+                juegos: juegosDeLista,
+                desarrolladoras: devs,
+            });
         }
 
         return jsonRespuesta({ error: 'Ruta no encontrada' }, 404);
@@ -76,29 +75,20 @@ afterEach(() => {
 });
 
 describe('cargarMiLista — fin del problema N+1', () => {
-    it('hace exactamente 3 peticiones (lista + lote de juegos + lote de desarrolladoras)', async () => {
+    it('hace exactamente 1 petición (entradas + juegos + desarrolladoras juntos)', async () => {
         await cargarMiLista(ID_USUARIO);
 
-        const listaCalls = llamadas.filter(u => u.endsWith(`/lista/${ID_USUARIO}`));
-        const juegoCalls = llamadas.filter(u => u.includes('/videojuegos/lote'));
-        const devCalls = llamadas.filter(u => u.includes('/desarrolladoras/lote'));
-
-        expect(listaCalls).toHaveLength(1);
-        expect(juegoCalls).toHaveLength(1);
-        expect(devCalls).toHaveLength(1);
-        expect(llamadas).toHaveLength(3);
-        // Todos los ids de juegos viajan en la misma URL: 10 y 20.
-        expect(juegoCalls[0]).toBe(`${BASE_URL}/videojuegos/lote?ids=10,20`);
-        expect(devCalls[0]).toBe(`${BASE_URL}/desarrolladoras/lote?ids=100`);
+        expect(llamadas).toHaveLength(1);
+        expect(llamadas[0]).toBe(`${BASE_URL}/lista/${ID_USUARIO}/ficha`);
     });
 
-    it('dedupe: un juego compartido por dos entradas solo aparece una vez en el lote', async () => {
+    it('dedupe: un juego compartido por dos entradas aparece una sola vez en el caché', async () => {
         await cargarMiLista(ID_USUARIO);
 
-        const lote = llamadas.find(u => u.includes('/videojuegos/lote'));
-        const ids = new URL(lote).searchParams.get('ids').split(',');
-        expect(ids).toEqual(['10', '20']);
-        expect(ids.filter(id => id === '10')).toHaveLength(1);
+        // El juego 10 lo comparten dos entradas: el caché guarda una entrada por juego.
+        expect(cacheJuegos.size).toBe(2);
+        expect(cacheJuegos.get(10).nombre).toBe('Hollow Knight');
+        expect(cacheJuegos.get(20).nombre).toBe('Celeste');
     });
 
     it('renderiza los nombres de desarrolladora desde el caché (sin fetch repetido)', async () => {
@@ -130,9 +120,5 @@ describe('cargarMiLista — fin del problema N+1', () => {
         const fallback = grid.querySelector('#card-entry-4');
         expect(fallback).not.toBeNull();
         expect(fallback.textContent).toContain('Videojuego No Disponible');
-
-        // El id inexistente viaja en el lote y simplemente no vuelve en la respuesta.
-        const lote = llamadas.find(u => u.includes('/videojuegos/lote'));
-        expect(new URL(lote).searchParams.get('ids').split(',')).toContain('99');
     });
 });

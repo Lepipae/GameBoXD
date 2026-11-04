@@ -28,6 +28,9 @@ class EntradaListaControllerTest {
     private Autorizacion autorizacion;
 
     @Mock
+    private org.palomafp.apijuegos.api.services.ListaService listaService;
+
+    @Mock
     private Authentication authentication;
 
     @InjectMocks
@@ -42,7 +45,6 @@ class EntradaListaControllerTest {
     void findByIdUsuario() {
         EntradaLista e = new EntradaLista();
         when(entradaListaService.findByIdUsuario(1)).thenReturn(Arrays.asList(e));
-
         List<EntradaLista> result = entradaListaController.findByIdUsuario(1);
         assertEquals(1, result.size());
         verify(entradaListaService, times(1)).findByIdUsuario(1);
@@ -105,5 +107,29 @@ class EntradaListaControllerTest {
         EntradaLista result = entradaListaController.guardar(e);
         assertNotNull(result);
         verify(entradaListaService, times(1)).guardar(e);
+    }
+
+    /**
+     * "Mi lista" se pinta con una sola petición: entradas, juegos y estudios.
+     */
+    @Test
+    void fichaDevuelveEntradasJuegosYDesarrolladoras() {
+        EntradaLista entrada = new EntradaLista();
+        var juego = new org.palomafp.apijuegos.api.modelo.dto.ResumenVideojuego(
+                "abc", 10L, "Hollow Knight", null, 8.5, 100, List.of());
+        var dev = new org.palomafp.apijuegos.api.modelo.dto.ResumenDesarrolladora(
+                100, "Team Cherry");
+
+        when(listaService.obtener(7)).thenReturn(
+                new org.palomafp.apijuegos.api.modelo.dto.ListaCompleta(
+                        List.of(entrada), List.of(juego), List.of(dev)));
+
+        var ficha = entradaListaController.ficha(7);
+
+        assertNotNull(ficha);
+        assertEquals(1, ficha.entradas().size());
+        assertEquals("Hollow Knight", ficha.juegos().get(0).nombre());
+        assertEquals("Team Cherry", ficha.desarrolladoras().get(0).nombre());
+        verify(listaService, times(1)).obtener(7);
     }
 }

@@ -39,89 +39,11 @@ export function escapeHTML(str) {
         .replace(/'/g, '&#039;');
 }
 
-/**
- * Petición GET a la API que devuelve el cuerpo parseado como JSON.
- * Lanza si la respuesta no es OK.
+/*
+ * Nota: aquí vivían `fetchJson`, `cargarLotePorId` y `cargarLoteUnico`, que
+ * pedían los juegos y las desarrolladoras en dos lotes encadenados. Desde que
+ * `GET /lista/{id}/ficha` devuelve todo junto, no los usa nadie.
  */
-async function fetchJson(url) {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`Error ${response.status} al obtener ${url}`);
-    return response.json();
-}
-
-/**
- * Carga en lote los recursos identificados por `ids`, guardando cada uno en
- * `cache` bajo su id.
- *
- * - Los ids repetidos se piden una sola vez (dedup mediante Set).
- * - Las peticiones se disparan en paralelo con Promise.all, no de forma
- *   secuencial una por entrada.
- * - Los ids ya presentes en caché no se vuelven a pedir.
- * - Un fallo individual no cancela el resto: se registra el error, se guarda
- *   `null` para ese id y el lote sigue adelante (una entrada fallida no
- *   rompe la lista completa).
- */
-export async function cargarLotePorId(ids, urlParaId, cache) {
-    const idsUnicos = [...new Set(ids.filter((id) => id != null))];
-    const pendientes = idsUnicos.filter((id) => !cache.has(id));
-
-    await Promise.all(
-        pendientes.map(async (id) => {
-            try {
-                cache.set(id, await fetchJson(urlParaId(id)));
-            } catch (error) {
-                console.error(`Error al cargar ${urlParaId(id)}:`, error);
-                cache.set(id, null);
-            }
-        })
-    );
-}
-
-/**
- * Carga varios recursos en UNA sola petición y los reparte en la caché.
- *
- * <p>Es la variante que usa "Mi lista": con `GET /videojuegos/lote?ids=...`
- * (o `/desarrolladoras/lote`) la página pasa de N peticiones a una, y las que
- * falten se marcan como no disponibles sin romper el renderizado.</p>
- *
- * @param {Array<number|string>} ids - Ids pedidos.
- * @param {function(Array<number|string>): string} urlParaIds - Construye la URL del lote.
- * @param {Map} cache - Caché id → recurso.
- * @returns {Promise<void>}
- */
-export async function cargarLoteUnico(ids, urlParaIds, cache) {
-    const idsUnicos = [...new Set(ids.filter((id) => id != null))];
-    const pendientes = idsUnicos.filter((id) => !cache.has(id));
-
-    if (pendientes.length === 0) {
-        return;
-    }
-
-    // Si el lote falla, se reintenta recurso a recurso para que un id
-    // conflictivo no deje la lista entera sin datos.
-    try {
-        const recursos = await fetchJson(urlParaIds(pendientes));
-        const encontrados = new Set();
-
-        for (const recurso of Array.isArray(recursos) ? recursos : []) {
-            if (recurso == null) continue;
-            const id = recurso.miId ?? recurso.id;
-            cache.set(id, recurso);
-            encontrados.add(id);
-        }
-
-        for (const id of pendientes) {
-            if (!encontrados.has(id)) {
-                cache.set(id, null);
-            }
-        }
-    } catch (error) {
-        console.error(`Error al cargar el lote ${urlParaIds(pendientes)}:`, error);
-        for (const id of pendientes) {
-            cache.set(id, null);
-        }
-    }
-}
 
 /* --- BÚSQUEDA Y ORDEN DENTRO DE LA COLECCIÓN --- */
 
@@ -516,7 +438,7 @@ export function cargarMiLista(idUsuario) {
 
     if (!gameGrid) return;
 
-    const LISTA_URL = `${GameBoXDApi.BASE_URL}/lista/${idUsuario}`;
+    const LISTA_URL = `${GameBoXDApi.BASE_URL}/lista/${idUsuario}/ficha`;
 
     // La API restringe cada lista a su propietario, asi que hace falta el token.
     const token = getToken();
@@ -525,12 +447,25 @@ export function cargarMiLista(idUsuario) {
         cabeceras['Authorization'] = `Bearer ${token}`;
     }
 
+    // Una sola petición devuelve entradas + juegos + desarrolladoras. Antes eran
+    // tres encadenadas (cada lote dependía de los ids del anterior).
     return fetch(LISTA_URL, { headers: cabeceras })
         .then(response => {
             if (!response.ok) throw new Error('Error al conectar con la base de datos de tu lista');
             return response.json();
         })
-        .then(async listaEntradas => {
+        .then(ficha => {
+            const listaEntradas = Array.isArray(ficha && ficha.entradas) ? ficha.entradas : [];
+
+            // Las cachés son la única fuente de la que leen el render y la
+            // búsqueda posterior: se rellenan con lo que ya vino resuelto.
+            for (const juego of (ficha && ficha.juegos) || []) {
+                if (juego) cacheJuegos.set(juego.miId, juego);
+            }
+            for (const desarrolladora of (ficha && ficha.desarrolladoras) || []) {
+                if (desarrolladora) cacheDesarrolladoras.set(desarrolladora.miId, desarrolladora);
+            }
+
             if (listLoader) listLoader.style.display = 'none';
 
             if (listaEntradas.length === 0) {
@@ -548,24 +483,12 @@ export function cargarMiLista(idUsuario) {
             // Inicializar el diccionario global de entradas para la edición
             window.miListaEntradas = {};
 
-            // --- Lote 1: todos los juegos únicos en UNA sola petición ---
-            const idsJuego = listaEntradas.map((entrada) => entrada.idVideojuego);
-            await cargarLoteUnico(
-                idsJuego,
-                (ids) => `${GameBoXDApi.BASE_URL}/videojuegos/lote?ids=${ids.join(',')}`,
-                cacheJuegos
-            );
-
             // Renderizar cada entrada leyendo los datos del juego del caché.
-            const idsDesarrolladora = [];
             const registrosPorEntrada = new Map();
             for (const entrada of listaEntradas) {
                 try {
                     const juego = cacheJuegos.get(entrada.idVideojuego);
-                    const idDesarrolladora = renderizarEntradaJuego(entrada, juego, gameGrid);
-                    if (idDesarrolladora) {
-                        idsDesarrolladora.push(idDesarrolladora);
-                    }
+                    renderizarEntradaJuego(entrada, juego, gameGrid);
 
                     // Registro para la búsqueda y el orden: la tarjeta recién
                     // creada más los datos que necesitan los comparadores.
@@ -585,13 +508,6 @@ export function cargarMiLista(idUsuario) {
                     console.error(`Error renderizando la entrada ${entrada.miId}:`, error);
                 }
             }
-
-            // --- Lote 2: todas las desarrolladoras únicas en UNA sola petición ---
-            await cargarLoteUnico(
-                idsDesarrolladora,
-                (ids) => `${GameBoXDApi.BASE_URL}/desarrolladoras/lote?ids=${ids.join(',')}`,
-                cacheDesarrolladoras
-            );
 
             // Inyectar los nombres de desarrolladora ya resueltos en sus tarjetas.
             for (const entrada of listaEntradas) {

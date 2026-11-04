@@ -25,12 +25,12 @@ const registros = [
 ];
 
 const juegos = {
-    10: { id: 10, nombre: 'Hollow Knight', idDesarrolladora: 100, urlImagen: null },
-    20: { id: 20, nombre: 'Celeste', idDesarrolladora: null, urlImagen: null },
+    10: { miId: 10, nombre: 'Hollow Knight', idDesarrolladora: 100, urlImagen: null },
+    20: { miId: 20, nombre: 'Celeste', idDesarrolladora: 0, urlImagen: null },
 };
 
 const desarrolladoras = {
-    100: { id: 100, nombre: 'Team Cherry' },
+    100: { miId: 100, nombre: 'Team Cherry' },
 };
 
 let listaEntradas = [];
@@ -49,16 +49,19 @@ beforeEach(() => {
 
     globalThis.fetch = vi.fn(async (url) => {
         const u = String(url);
-        if (u === `${BASE_URL}/lista/${ID_USUARIO}`) return jsonRespuesta(listaEntradas);
 
-        if (u.startsWith(`${BASE_URL}/videojuegos/lote?ids=`)) {
-            const ids = new URL(u).searchParams.get('ids').split(',').map(Number);
-            return jsonRespuesta(ids.map((id) => juegos[id]).filter(Boolean));
-        }
-
-        if (u.startsWith(`${BASE_URL}/desarrolladoras/lote?ids=`)) {
-            const ids = new URL(u).searchParams.get('ids').split(',').map(Number);
-            return jsonRespuesta(ids.map((id) => desarrolladoras[id]).filter(Boolean));
+        // Una sola petición devuelve entradas, juegos y desarrolladoras.
+        if (u === `${BASE_URL}/lista/${ID_USUARIO}/ficha`) {
+            const idsJuegos = [...new Set(listaEntradas.map((e) => e.idVideojuego))];
+            const juegosDeLista = idsJuegos.map((id) => juegos[id]).filter(Boolean);
+            const devs = juegosDeLista
+                .map((j) => desarrolladoras[j.idDesarrolladora])
+                .filter(Boolean);
+            return jsonRespuesta({
+                entradas: listaEntradas,
+                juegos: juegosDeLista,
+                desarrolladoras: devs,
+            });
         }
 
         return jsonRespuesta({ error: 'Ruta no encontrada' }, 404);

@@ -42,6 +42,18 @@ public interface DesarrolladoraRepo extends MongoRepository<Desarrolladora, Stri
     List<Desarrolladora> findSoloIdYNombre();
 
     /**
+     * Variante ligera de {@link #findByMiIdIn(Collection)}: solo id y nombre.
+     *
+     * <p>"Mi lista" únicamente pinta el nombre del estudio, así que enviar país,
+     * logo e id de Mongo es peso muerto en cada carga.</p>
+     *
+     * @param ids Ids internos a buscar.
+     * @return Desarrolladoras con solo {@code miId} y {@code nombre}.
+     */
+    @Query(value = "{ 'miId': { $in: ?0 } }", fields = "{ 'miId': 1, 'nombre': 1 }")
+    List<Desarrolladora> findSoloIdYNombrePorIds(Collection<Integer> ids);
+
+    /**
      * Busca una desarrolladora por su nombre
      * @param nombre Nombre de la desarrolladora
      * @return Desarrolladora encontrada o null

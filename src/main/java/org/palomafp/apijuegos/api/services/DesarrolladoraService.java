@@ -97,6 +97,33 @@ public class DesarrolladoraService {
     }
 
     /**
+     * Resuelve varias desarrolladoras devolviendo solo id y nombre.
+     *
+     * <p>Es lo que necesita "Mi lista": pinta el nombre del estudio bajo cada
+     * tarjeta y no usa país ni logo. La proyección la aplica MongoDB, así que
+     * tampoco viajan esos campos por la red.</p>
+     *
+     * @param ids Ids internos pedidos (se ignoran los {@code null}).
+     * @return Pares {@code miId}/{@code nombre} de las desarrolladoras encontradas.
+     */
+    public List<ResumenDesarrolladora> obtenerResumenesPorIds(List<Integer> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        List<Integer> unicos = ids.stream()
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .limit(200)
+                .toList();
+        if (unicos.isEmpty()) {
+            return List.of();
+        }
+        return desarrolladoraRepo.findSoloIdYNombrePorIds(unicos).stream()
+                .map(dev -> new ResumenDesarrolladora(dev.getMiId(), dev.getNombre()))
+                .toList();
+    }
+
+    /**
      * Guarda una desarrolladora en la base de datos
      * @param desarrolladora Objeto a guardar
      * @return Desarrolladora guardada

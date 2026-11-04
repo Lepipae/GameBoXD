@@ -1,8 +1,10 @@
 package org.palomafp.apijuegos.api.controladores;
 
 import org.palomafp.apijuegos.api.modelo.EntradaLista;
+import org.palomafp.apijuegos.api.modelo.dto.ListaCompleta;
 import org.palomafp.apijuegos.api.security.Autorizacion;
 import org.palomafp.apijuegos.api.services.EntradaListaService;
+import org.palomafp.apijuegos.api.services.ListaService;
 import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -31,16 +33,20 @@ public class EntradaListaController {
 
     private final EntradaListaService entradaListaService; // Servicio de la clase entradalista
     private final Autorizacion autorizacion;
+    private final ListaService listaService;
 
     /**
      * Inyección por constructor: las dependencias quedan {@code final}.
      *
      * @param entradaListaService Servicio de entradas de lista.
      * @param autorizacion        Reglas de propiedad para las expresiones SpEL.
+     * @param listaService        Composición de "Mi lista" en una sola respuesta.
      */
-    public EntradaListaController(EntradaListaService entradaListaService, Autorizacion autorizacion) {
+    public EntradaListaController(EntradaListaService entradaListaService, Autorizacion autorizacion,
+                                  ListaService listaService) {
         this.entradaListaService = entradaListaService;
         this.autorizacion = autorizacion;
+        this.listaService = listaService;
     }
 
     /**
@@ -57,6 +63,22 @@ public class EntradaListaController {
     @PreAuthorize("@autorizacion.puedeOperarSobreUsuario(#id, authentication)")
     public List<EntradaLista> findByIdUsuario(@PathVariable("miId") int id) {
         return entradaListaService.findByIdUsuario(id);
+    }
+
+    /**
+     * Contenido completo de "Mi lista" en una sola petición.
+     *
+     * <p>Devuelve las entradas, los juegos y sus desarrolladoras. Antes el
+     * frontend hacía tres peticiones encadenadas porque cada lote dependía de
+     * los ids del anterior.</p>
+     *
+     * @param id Id del usuario dueño de la lista.
+     * @return Entradas, resúmenes de juegos y desarrolladoras.
+     */
+    @GetMapping("/{miId}/ficha")
+    @PreAuthorize("@autorizacion.puedeOperarSobreUsuario(#id, authentication)")
+    public ListaCompleta ficha(@PathVariable("miId") int id) {
+        return listaService.obtener(id);
     }
 
     /**
