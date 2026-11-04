@@ -44,9 +44,12 @@ class FichaControllerTest {
         dev.setNombre("Extremely OK Games");
 
         EntradaLista resenya = new EntradaLista();
+        resenya.setIdUsuario(10);
+
+        var autor = new org.palomafp.apijuegos.api.modelo.dto.UsuarioPublicoDTO(10, "Ana", null);
 
         when(fichaService.obtener(7L)).thenReturn(
-                new FichaJuego(juego, dev, List.of(resenya)));
+                new FichaJuego(juego, dev, List.of(resenya), List.of(autor)));
 
         FichaJuego ficha = fichaController.obtener(7L).getBody();
 
@@ -54,6 +57,8 @@ class FichaControllerTest {
         assertEquals("Celeste", ficha.juego().getNombre());
         assertEquals("Extremely OK Games", ficha.desarrolladora().getNombre());
         assertEquals(1, ficha.resenyas().size());
+        assertEquals(1, ficha.autores().size());
+        assertEquals("Ana", ficha.autores().get(0).nombre());
         verify(fichaService, times(1)).obtener(7L);
     }
 
@@ -68,12 +73,13 @@ class FichaControllerTest {
     void juegoSinDesarrolladoraEsValido() {
         Videojuego juego = new Videojuego();
         juego.setMiId(8L);
-        when(fichaService.obtener(8L)).thenReturn(new FichaJuego(juego, null, List.of()));
+        when(fichaService.obtener(8L)).thenReturn(new FichaJuego(juego, null, List.of(), List.of()));
 
         FichaJuego ficha = fichaController.obtener(8L).getBody();
 
         assertNotNull(ficha);
         assertNull(ficha.desarrolladora());
         assertTrue(ficha.resenyas().isEmpty());
+        assertTrue(ficha.autores().isEmpty());
     }
 }

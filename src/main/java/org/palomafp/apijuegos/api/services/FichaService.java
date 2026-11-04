@@ -3,8 +3,7 @@ package org.palomafp.apijuegos.api.services;
 import org.palomafp.apijuegos.api.modelo.Desarrolladora;
 import org.palomafp.apijuegos.api.modelo.EntradaLista;
 import org.palomafp.apijuegos.api.modelo.Videojuego;
-import org.palomafp.apijuegos.api.modelo.dto.FichaJuego;
-import org.springframework.stereotype.Service;
+import org.palomafp.apijuegos.api.modelo.dto.FichaJuego;import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.util.List;
@@ -31,6 +30,7 @@ public class FichaService {
     private final VideojuegoService videojuegoService;
     private final DesarrolladoraService desarrolladoraService;
     private final EntradaListaService entradaListaService;
+    private final UsuarioService usuarioService;
     private final CacheTemporal cacheTemporal;
 
     /**
@@ -39,15 +39,18 @@ public class FichaService {
      * @param videojuegoService    Servicio de videojuegos.
      * @param desarrolladoraService Servicio de desarrolladoras.
      * @param entradaListaService  Servicio de entradas de lista (reseñas).
+     * @param usuarioService       Servicio de usuarios (autores de las reseñas).
      * @param cacheTemporal        Caché de la ficha por id.
      */
     public FichaService(VideojuegoService videojuegoService,
                         DesarrolladoraService desarrolladoraService,
                         EntradaListaService entradaListaService,
+                        UsuarioService usuarioService,
                         CacheTemporal cacheTemporal) {
         this.videojuegoService = videojuegoService;
         this.desarrolladoraService = desarrolladoraService;
         this.entradaListaService = entradaListaService;
+        this.usuarioService = usuarioService;
         this.cacheTemporal = cacheTemporal;
     }
 
@@ -73,8 +76,26 @@ public class FichaService {
                     : null;
 
             List<EntradaLista> resenyas = entradaListaService.findByIdVideojuego(miId);
+            if (resenyas == null) {
+                resenyas = List.of();
+            }
 
-            return new FichaJuego(juego, desarrolladora, resenyas == null ? List.of() : resenyas);
+            // Autores de las reseñas, en la misma respuesta: la página pedía
+            // /usuarios/lote nada más recibir las reseñas.
+            List<Integer> idsAutores = resenyas.stream()
+                    .map(EntradaLista::getIdUsuario)
+                    .filter(id -> id > 0)
+                    .distinct()
+                    .toList();
+
+            // Sin reseñas no se consulta la colección de usuarios: ahorra una
+            // ida a Atlas en los juegos que todavía no tienen ninguna.
+            List<org.palomafp.apijuegos.api.modelo.dto.UsuarioPublicoDTO> autores =
+                    idsAutores.isEmpty()
+                            ? List.of()
+                            : usuarioService.obtenerPublicosPorIds(idsAutores);
+
+            return new FichaJuego(juego, desarrolladora, resenyas, autores);
         });
     }
 }

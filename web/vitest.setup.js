@@ -13,6 +13,16 @@ document.body.innerHTML = `
     <div id="game-detail-wrapper"></div>
     <div id="reviews-wrapper"></div>
     <div id="reviews-container"></div>
+    <h1 id="titulo"></h1>
+    <img id="game-cover">
+    <p id="game-desc"></p>
+    <div id="game-tags"></div>
+    <div id="game-rating"></div>
+    <div id="game-dev-box"></div>
+    <a id="dev-link"></a>
+    <img id="dev-logo">
+    <span id="dev-name"></span>
+    <span id="dev-country"></span>
 
     <!-- Mi lista -->
     <div id="auth-view"></div>

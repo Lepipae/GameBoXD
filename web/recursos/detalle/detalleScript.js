@@ -64,16 +64,17 @@ function obtenerIdDeUrl() {
  * Carga la ficha completa del juego en UNA sola petición.
  *
  * <p>Antes eran tres: el juego, sus reseñas y —solo cuando llegaba el juego—
- * su desarrolladora. Las dos últimas dependían de la primera, así que la ficha
- * encadenaba viajes a la API y tardaba el doble. `GET /api/ficha/{id}` devuelve
- * el juego, el estudio y las reseñas juntos.</p>
+ * su desarrolladora, más el lote de autores de las reseñas. Todas dependían de
+ * la anterior, así que la ficha encadenaba viajes a la API y tardaba el doble.
+ * `GET /api/ficha/{id}` devuelve el juego, el estudio, las reseñas y sus
+ * autores juntos.</p>
  *
  * @param {string} idJuego - El ID del videojuego a cargar.
  */
-function cargarFicha(idJuego) {
+export function cargarFicha(idJuego) {
     const API_URL = `${GameBoXDApi.BASE_URL}/ficha/${idJuego}`;
 
-    fetch(API_URL)
+    return fetch(API_URL)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Error de red al intentar obtener los detalles del juego');
@@ -88,6 +89,15 @@ function cargarFicha(idJuego) {
             if (ficha.desarrolladora) {
                 renderizarDesarrolladora(ficha.desarrolladora);
             }
+
+            // Los nombres de los autores vienen ya resueltos: sembrar el caché
+            // evita el lote a /usuarios que antes se pedía tras las reseñas.
+            for (const autor of (Array.isArray(ficha.autores) ? ficha.autores : [])) {
+                if (autor && autor.miId != null) {
+                    cacheUsuarios.set(autor.miId, autor.nombre);
+                }
+            }
+
             renderizarResenyas(Array.isArray(ficha.resenyas) ? ficha.resenyas : []);
         })
         .catch(error => {
