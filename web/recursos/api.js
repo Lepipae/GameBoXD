@@ -142,11 +142,76 @@
         img.src = original;
     }
 
+    /**
+     * Asigna la portada con varios tamaños candidatos (`srcset`).
+     *
+     * <p>El navegador elige según la densidad de píxeles de la pantalla, así
+     * que un monitor normal descarga la variante pequeña y uno retina la
+     * grande. Los candidatos se piden al redimensionador del backend, igual que
+     * en {@link aplicarImagen}; si la variante elegida falla se reintenta el
+     * original y, si también falla, el placeholder.</p>
+     *
+     * @param {HTMLImageElement} img - Elemento <img> destino.
+     * @param {string} url - URL original de la portada.
+     * @param {Function} [alFallar] - Callback opcional que sustituye al placeholder.
+     * @param {number[]} anchos - Anchos candidatos, de menor a mayor.
+     * @param {string} sizes - Ancho de presentación (atributo `sizes` del <img>).
+     */
+    function aplicarImagenResponsiva(img, url, alFallar, anchos, sizes) {
+        if (!img) return;
+
+        const recurrir = function () {
+            if (typeof alFallar === 'function') {
+                alFallar(img);
+            } else {
+                img.src = IMAGEN_PLACEHOLDER;
+            }
+        };
+
+        if (!tieneUrlImagen(url)) {
+            recurrir();
+            return;
+        }
+
+        const original = url.trim();
+        const optimizada = optimizarUrlImagen(original, 300);
+        const candidatos = (anchos || [])
+            .filter(function (ancho) { return Number.isFinite(ancho) && ancho > 0; })
+            .map(function (ancho) {
+                return optimizarUrlImagen(original, ancho) + ' ' + ancho + 'w';
+            });
+
+        // Host ajeno o URL inválida: no hay variantes que ofrecer (todas las
+        // candidatas apuntarían al mismo archivo original).
+        if (candidatos.length === 0 || optimizada === original) {
+            aplicarImagen(img, original, alFallar);
+            return;
+        }
+
+        img.addEventListener('error', function reintentarOriginal() {
+            img.removeEventListener('error', reintentarOriginal);
+            img.addEventListener('error', function manejarErrorImagen() {
+                img.removeEventListener('error', manejarErrorImagen);
+                recurrir();
+            });
+            // Sin srcset: si el elegido falla, el original es el único plan B.
+            img.removeAttribute('srcset');
+            img.removeAttribute('sizes');
+            img.src = original;
+        });
+
+        if (sizes) img.setAttribute('sizes', sizes);
+        img.setAttribute('srcset', candidatos.join(', '));
+        // `src` queda como último recurso para navegadores sin srcset.
+        img.src = optimizarUrlImagen(original, anchos[anchos.length - 1]);
+    }
+
     window.GameBoXDImagenes = {
         IMAGEN_PLACEHOLDER: IMAGEN_PLACEHOLDER,
         tieneUrlImagen: tieneUrlImagen,
         optimizarUrlImagen: optimizarUrlImagen,
-        aplicarImagen: aplicarImagen
+        aplicarImagen: aplicarImagen,
+        aplicarImagenResponsiva: aplicarImagenResponsiva
     };
 })();
 

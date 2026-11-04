@@ -3,7 +3,10 @@
 // esos scripts no se cargan, así que se simulan aquí antes de importar ningún
 // script de pruebas.
 window.GameBoXDApi = { BASE_URL: 'https://api.test.local/api' };
-window.GameBoXDImagenes = { aplicarImagen: () => {} };
+window.GameBoXDImagenes = {
+    aplicarImagen: () => {},
+    aplicarImagenResponsiva: () => {},
+};
 
 // Esqueleto mínimo del DOM que los scripts tocan al importarse y al renderizar,
 // para evitar fallos por elementos ausentes.

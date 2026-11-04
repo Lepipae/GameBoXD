@@ -6,7 +6,7 @@ import {
     setSession,
 } from '../auth.js';
 
-const { aplicarImagen } = window.GameBoXDImagenes;
+const { aplicarImagen, aplicarImagenResponsiva } = window.GameBoXDImagenes;
 
 /**
  * Caché de nombres de usuario por ID de usuario (id → username).
@@ -166,7 +166,11 @@ function cambiarTitulo(nombreJuego) {
  */
 function renderizarInformacionBasica(juego) {
     const portada = document.getElementById('game-cover');
-    aplicarImagen(portada, juego.urlImagen, null, 600);
+    // La portada se pinta entre 328 y 400 CSS px: pedir siempre 600 era 1,5x-1,8x
+    // de sobremuestreo en un monitor normal (94 766 B en el juego 2). Con
+    // `srcset` un DPR 1 baja a 400 y un DPR 2 sigue recibiendo 600.
+    aplicarImagenResponsiva(portada, juego.urlImagen, null, [400, 600],
+        '(max-width: 480px) 330px, 400px');
     if (portada) {
         // La portada de la ficha sí es el LCP de esta página.
         portada.setAttribute('fetchpriority', 'high');

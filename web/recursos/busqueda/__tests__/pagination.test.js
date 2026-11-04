@@ -35,6 +35,9 @@ beforeAll(async () => {
         aplicarImagen: (img, url) => {
             img.src = url || 'recursos/img/placeholder-game.svg';
         },
+        aplicarImagenResponsiva: (img, url) => {
+            img.src = url || 'recursos/img/placeholder-game.svg';
+        },
     };
 
     window.GameBoXDApi = {

@@ -14,7 +14,7 @@
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import '../api.js';
 
-const { optimizarUrlImagen, aplicarImagen, IMAGEN_PLACEHOLDER } = window.GameBoXDImagenes;
+const { optimizarUrlImagen, aplicarImagen, aplicarImagenResponsiva, IMAGEN_PLACEHOLDER } = window.GameBoXDImagenes;
 
 const CDN = 'https://cdn2.steamgriddb.com/grid/abc123.png';
 
@@ -101,5 +101,62 @@ describe('aplicarImagen — cadena de respaldo', () => {
     it('sin URL no hace ninguna petición: placeholder directo', () => {
         aplicarImagen(img, null, null, 300);
         expect(img.getAttribute('src')).toBe(IMAGEN_PLACEHOLDER);
+    });
+});
+
+describe('aplicarImagenResponsiva — srcset', () => {
+    let img;
+
+    beforeEach(() => {
+        document.body.innerHTML = '';
+        img = document.createElement('img');
+        document.body.appendChild(img);
+    });
+
+    /** Devuelve los descriptores `w` del srcset, en orden. */
+    function anchos() {
+        return (img.getAttribute('srcset') || '')
+            .split(', ')
+            .map((candidato) => candidato.split(' ')[1]);
+    }
+
+    it('ofrece cada ancho como candidato del srcset', () => {
+        aplicarImagenResponsiva(img, CDN, null, [140, 180, 300], '180px');
+
+        expect(anchos()).toEqual(['140w', '180w', '300w']);
+        expect(img.getAttribute('srcset')).toContain('/imagenes?url=');
+        expect(img.getAttribute('sizes')).toBe('180px');
+    });
+
+    it('deja en `src` el mayor candidato, para navegadores sin srcset', () => {
+        aplicarImagenResponsiva(img, CDN, null, [140, 180, 300], '180px');
+
+        expect(img.getAttribute('src')).toContain('&w=300');
+    });
+
+    it('si la variante elegida falla, quita el srcset y pide el original', () => {
+        aplicarImagenResponsiva(img, CDN, null, [140, 180, 300], '180px');
+        fallarImagen(img);
+
+        expect(img.getAttribute('src')).toBe(CDN);
+        expect(img.hasAttribute('srcset')).toBe(false);
+        expect(img.hasAttribute('sizes')).toBe(false);
+    });
+
+    it('si el original también falla, cae al placeholder local', () => {
+        aplicarImagenResponsiva(img, CDN, null, [140, 180, 300], '180px');
+        fallarImagen(img);
+        fallarImagen(img);
+
+        expect(img.getAttribute('src')).toBe(IMAGEN_PLACEHOLDER);
+    });
+
+    it('con un host ajeno no inventa variantes: usa la URL tal cual', () => {
+        // Optimizar aquí apuntaría al redimensionador con una URL que no puede
+        // descargar (lista blanca), así que se degrada a aplicarImagen.
+        aplicarImagenResponsiva(img, 'https://ejemplo.com/portada.png', null, [140, 180], '180px');
+
+        expect(img.hasAttribute('srcset')).toBe(false);
+        expect(img.getAttribute('src')).toBe('https://ejemplo.com/portada.png');
     });
 });
