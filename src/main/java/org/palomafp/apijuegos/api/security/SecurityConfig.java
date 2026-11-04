@@ -95,6 +95,14 @@ public class SecurityConfig {
                         // El preflight de CORS debe pasar siempre: el frontend vive en
                         // otro dominio (GitHub Pages) y lo dispara en cada POST/DELETE.
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // Sonda de disponibilidad para monitores externos (cron-job.org y
+                        // similares) y para mantener despierta la instancia de Render. Es
+                        // pública a propósito: un ping con token dejaría de servir en cuanto
+                        // caducase, y no revela nada (ni datos ni estado de la base de datos).
+                        // HEAD incluido porque los monitores de uptime suelen usar HEAD y el
+                        // matcher por método no lo cubre con GET.
+                        .requestMatchers(HttpMethod.GET, "/api/ping", "/api/ping/").permitAll()
+                        .requestMatchers(HttpMethod.HEAD, "/api/ping", "/api/ping/").permitAll()
                         // Rutas públicas que nos pidió el usuario: Login y Registro
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/usuarios").permitAll()

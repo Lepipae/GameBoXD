@@ -5,9 +5,14 @@ name: Mantener despierta la API
 # que levantarse y abrir el pool contra Atlas, lo que se nota como varios
 # segundos (a veces decenas) de pantalla en blanco en el frontend.
 #
-# Este workflow hace una petición cada 10 minutos a /actuator/health, que es
-# público y no toca la base de datos. Con eso la API casi siempre está
+# Este workflow hace una petición cada 10 minutos a /api/ping, la sonda
+# pública que no toca la base de datos. Con eso la API casi siempre está
 # despierta cuando llega un usuario real.
+#
+# Se usa /api/ping y no /actuator/health a propósito: el actuator incluye el
+# indicador de MongoDB y devuelve 503 cuando Atlas falla, así que un problema
+# de base de datos haría que el keep-alive se quedase sin despertar el
+# contenedor. /api/ping responde 200 mientras el proceso esté vivo.
 #
 # Nota: GitHub puede retrasar los cron en minutos de carga alta, y desactiva
 # los workflows programados en repositorios sin actividad durante 60 días.
@@ -18,7 +23,7 @@ on:
 
 jobs:
   ping:
-    name: Ping a /actuator/health
+    name: Ping a /api/ping
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -30,7 +35,7 @@ jobs:
           for intento in 1 2 3; do
             codigo=$(curl --silent --output /dev/null --write-out '%{http_code}' \
               --max-time 60 \
-              https://gameboxd-2nio.onrender.com/actuator/health || true)
+              https://gameboxd-2nio.onrender.com/api/ping || true)
             echo "Intento $intento -> HTTP $codigo"
             if [ "$codigo" = "200" ]; then
               exit 0

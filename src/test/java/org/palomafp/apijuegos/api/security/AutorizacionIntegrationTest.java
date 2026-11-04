@@ -20,11 +20,15 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -114,6 +118,33 @@ class AutorizacionIntegrationTest {
 
         mockMvc.perform(get("/api/usuarios/999"))
                 .andExpect(status().isNotFound());
+    }
+
+    // ------------------------------------------------------------------
+    // Sonda de disponibilidad: monitores externos y keep-alive de Render
+    // ------------------------------------------------------------------
+
+    @Test
+    @DisplayName("Anonimo puede hacer ping sin token (monitor de uptime y keep-alive)")
+    void anonimoHacePing() throws Exception {
+        mockMvc.perform(get("/api/ping"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("\"status\":\"ok\"")))
+                // Sin no-store, un CDN podría responder de su caché y la petición
+                // no llegaría a Render, que es justo lo que el ping necesita.
+                .andExpect(header().string("Cache-Control", containsString("no-store")));
+
+        // Con barra final también: es un error de configuración fácil de cometer
+        // en el panel del monitor y no debe convertirse en un 401.
+        mockMvc.perform(get("/api/ping/"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("El ping tambien atiende HEAD, que es lo que usan muchos monitores")
+    void pingAtiendeHead() throws Exception {
+        mockMvc.perform(head("/api/ping"))
+                .andExpect(status().isOk());
     }
 
     // ------------------------------------------------------------------
