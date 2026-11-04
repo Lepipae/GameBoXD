@@ -45,7 +45,10 @@ export async function cargarHeroMasResenyado() {
         }
         if (img) {
             // La carátula del propio juego: no hace falta ninguna imagen de hero fija.
-            aplicarImagen(img, juego.urlImagen, null, 600);
+            // Con alto se recorta en el servidor a la proporción del marco (16:9):
+            // pedir 600x900 para pintar 580x326 descargaba dos tercios de píxeles
+            // que `object-fit: cover` tiraba.
+            aplicarImagen(img, juego.urlImagen, null, 600, 338);
             // El hero es el elemento LCP de la portada: prioridad máxima.
             img.setAttribute('fetchpriority', 'high');
             img.setAttribute('loading', 'eager');

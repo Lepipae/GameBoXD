@@ -62,9 +62,11 @@
      *
      * @param {string} url - URL original de la portada.
      * @param {number} ancho - Ancho deseado en píxeles.
+     * @param {number} [alto] - Alto deseado; si se indica, el backend recorta al
+     *        centro para devolver exactamente ancho×alto (`object-fit: cover`).
      * @returns {string} URL optimizada, o la original si el host no aplica.
      */
-    function optimizarUrlImagen(url, ancho) {
+    function optimizarUrlImagen(url, ancho, alto) {
         const original = String(url ?? '').trim();
         if (original === '') return original;
 
@@ -80,7 +82,8 @@
         }
 
         const base = (window.GameBoXDApi && window.GameBoXDApi.BASE_URL) || '';
-        return `${base}/imagenes?url=${encodeURIComponent(original)}&w=${ancho}`;
+        const recorte = alto > 0 ? `&h=${alto}` : '';
+        return `${base}/imagenes?url=${encodeURIComponent(original)}&w=${ancho}${recorte}`;
     }
 
     /**
@@ -95,8 +98,9 @@
      * @param {Function} [alFallar] - Callback opcional que sustituye al placeholder
      *        (por ejemplo, para ocultar el logo de una desarrolladora sin logo real).
      * @param {number} [ancho] - Ancho al que conviene pedir la portada (por defecto 300).
+     * @param {number} [alto] - Alto de recorte; si se omite se conserva la proporción.
      */
-    function aplicarImagen(img, url, alFallar, ancho) {
+    function aplicarImagen(img, url, alFallar, ancho, alto) {
         if (!img) return;
 
         const recurrir = function () {
@@ -114,7 +118,7 @@
         }
 
         const original = url.trim();
-        const optimizada = optimizarUrlImagen(original, ancho || 300);
+        const optimizada = optimizarUrlImagen(original, ancho || 300, alto);
 
         // Si la optimizada falla, se intenta el original antes de rendirse.
         if (optimizada !== original) {

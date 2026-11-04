@@ -42,27 +42,38 @@ public class ImagenController {
     /**
      * Devuelve la portada pedida, escalada al ancho indicado.
      *
+     * <p>Si se envía {@code h} se recorta al centro para devolver exactamente
+     * {@code w}x{@code h}; sin {@code h} se conserva la proporción original.</p>
+     *
      * @param url   URL de la portada (debe pertenecer al CDN permitido).
      * @param ancho Ancho deseado en píxeles (se acota entre 80 y 800).
+     * @param alto  Alto deseado en píxeles (0 = sin recorte, 80-800 con recorte).
      * @return Bytes JPEG de la imagen.
      */
     @GetMapping
     public ResponseEntity<byte[]> obtener(
             @RequestParam(name = "url") String url,
-            @RequestParam(name = "w", defaultValue = "300") int ancho) {
+            @RequestParam(name = "w", defaultValue = "300") int ancho,
+            @RequestParam(name = "h", defaultValue = "0") int alto) {
 
         if (!ImagenService.esUrlPermitida(url)) {
             return ResponseEntity.badRequest().build();
         }
 
         try {
-            byte[] imagen = imagenService.obtener(url, ancho);
-            return ResponseEntity.ok()
+            byte[] imagen = imagenService.obtener(url, ancho, alto);
+            ResponseEntity.BodyBuilder respuesta = ResponseEntity.ok()
                     // Las portadas de un juego no cambian: se cachean una semana.
                     .cacheControl(CacheControl.maxAge(Duration.ofDays(7)).cachePublic().immutable())
                     .contentType(MediaType.IMAGE_JPEG)
-                    .header("X-Image-Width", String.valueOf(ImagenService.normalizarAncho(ancho)))
-                    .body(imagen);
+                    .header("X-Image-Width", String.valueOf(ImagenService.normalizarAncho(ancho)));
+
+            int altoEfectivo = ImagenService.normalizarAlto(alto);
+            if (altoEfectivo > 0) {
+                respuesta.header("X-Image-Height", String.valueOf(altoEfectivo));
+            }
+
+            return respuesta.body(imagen);
         } catch (IOException ex) {
             // El frontend cae a la URL original cuando este endpoint falla.
             return ResponseEntity.notFound().build();

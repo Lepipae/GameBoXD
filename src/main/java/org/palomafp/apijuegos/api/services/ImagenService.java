@@ -51,6 +51,15 @@ public class ImagenService {
     /** Ancho por defecto: suficiente para una tarjeta a 2x. */
     public static final int ANCHO_POR_DEFECTO = 300;
 
+    /** Alto mínimo aceptado cuando se pide recorte, en píxeles. */
+    private static final int ALTO_MINIMO = 80;
+
+    /** Alto máximo aceptado cuando se pide recorte, en píxeles. */
+    private static final int ALTO_MAXIMO = 800;
+
+    /** Alto que significa "sin recorte": se conserva la proporción original. */
+    public static final int ALTO_SIN_RECORTE = 0;
+
     /** Calidad JPEG usada al recomprimir. */
     private static final float CALIDAD_JPEG = 0.82f;
 
@@ -111,20 +120,55 @@ public class ImagenService {
     }
 
     /**
+     * Ajusta el alto pedido a un rango razonable.
+     *
+     * <p>Un valor {@code <= 0} significa "sin recorte": la imagen conserva la
+     * proporción del original (comportamiento histórico del endpoint).</p>
+     *
+     * @param alto Alto pedido por el cliente.
+     * @return Alto efectivo, o {@link #ALTO_SIN_RECORTE} si no se pidió recorte.
+     */
+    public static int normalizarAlto(int alto) {
+        if (alto <= 0) {
+            return ALTO_SIN_RECORTE;
+        }
+        return Math.max(ALTO_MINIMO, Math.min(alto, ALTO_MAXIMO));
+    }
+
+    /**
+     * Devuelve la portada redimensionada en JPEG conservando la proporción.
+     *
+     * @param url   URL de la portada.
+     * @param ancho Ancho deseado en píxeles.
+     * @return Bytes de la imagen JPEG.
+     * @throws IOException Si no se pudo descargar o convertir.
+     */
+    public byte[] obtener(String url, int ancho) throws IOException {
+        return obtener(url, ancho, ALTO_SIN_RECORTE);
+    }
+
+    /**
      * Devuelve la portada redimensionada en JPEG.
      *
      * <p>Si la imagen ya está en caché no se toca la red. Si la descarga o la
      * conversión fallan se propaga {@link IOException} para que el controlador
      * responda 404 y el frontend caiga a la URL original.</p>
      *
+     * <p>Con {@code alto > 0} se recorta al centro hasta esa altura exacta. Es
+     * lo que necesita el hero de la portada: pide 600x338 (16:9) una portada de
+     * 600x900 y hoy se descarga entera para que `object-fit: cover` tire un
+     * tercio del píxel y del ancho de banda.</p>
+     *
      * @param url   URL de la portada (debe pasar {@link #esUrlPermitida(String)}).
      * @param ancho Ancho deseado en píxeles.
+     * @param alto  Alto deseado en píxeles; {@code <= 0} conserva la proporción.
      * @return Bytes de la imagen JPEG.
      * @throws IOException Si no se pudo descargar o convertir.
      */
-    public byte[] obtener(String url, int ancho) throws IOException {
+    public byte[] obtener(String url, int ancho, int alto) throws IOException {
         int anchoEfectivo = normalizarAncho(ancho);
-        String clave = anchoEfectivo + "|" + url;
+        int altoEfectivo = normalizarAlto(alto);
+        String clave = anchoEfectivo + "x" + altoEfectivo + "|" + url;
 
         synchronized (cache) {
             byte[] guardada = cache.get(clave);
@@ -139,7 +183,9 @@ public class ImagenService {
             throw new IOException("El recurso remoto no es una imagen legible");
         }
 
-        byte[] recomprimida = redimensionar(imagen, anchoEfectivo);
+        byte[] recomprimida = altoEfectivo > 0
+                ? recortar(imagen, anchoEfectivo, altoEfectivo)
+                : redimensionar(imagen, anchoEfectivo);
 
         synchronized (cache) {
             cache.put(clave, recomprimida);
@@ -211,6 +257,55 @@ public class ImagenService {
             g.dispose();
         }
 
+        return comprimirJpeg(destino);
+    }
+
+    /**
+     * Escala la imagen para cubrir el marco pedido y recorta el sobrante por el
+     * centro (el equivalente a `object-fit: cover`).
+     *
+     * <p>Se recorta en el servidor y no en CSS porque el navegador descargaría
+     * píxeles que nunca pinta: el hero pide 600x338 sobre portadas de 600x900,
+     * así que dos tercios del archivo eran peso muerto.</p>
+     *
+     * @param original Imagen descargada.
+     * @param ancho    Ancho exacto del resultado.
+     * @param alto     Alto exacto del resultado.
+     * @return Bytes JPEG de exactamente {@code ancho}x{@code alto}.
+     * @throws IOException Si el codificador JPEG no está disponible.
+     */
+    private static byte[] recortar(BufferedImage original, int ancho, int alto) throws IOException {
+        double escala = Math.max(ancho / (double) original.getWidth(),
+                alto / (double) original.getHeight());
+        int escaladoAncho = Math.max(ancho, (int) Math.round(original.getWidth() * escala));
+        int escaladoAlto = Math.max(alto, (int) Math.round(original.getHeight() * escala));
+        int desplazamientoX = (ancho - escaladoAncho) / 2;
+        int desplazamientoY = (alto - escaladoAlto) / 2;
+
+        BufferedImage destino = new BufferedImage(ancho, alto, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = destino.createGraphics();
+        try {
+            // El clip del propio BufferedImage descarta lo que sobresale del marco.
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g.setColor(Color.WHITE);
+            g.fillRect(0, 0, ancho, alto);
+            g.drawImage(original, desplazamientoX, desplazamientoY, escaladoAncho, escaladoAlto, null);
+        } finally {
+            g.dispose();
+        }
+
+        return comprimirJpeg(destino);
+    }
+
+    /**
+     * Codifica la imagen destino como JPEG con la calidad configurada.
+     *
+     * @param destino Imagen ya escalada y compuesta sobre blanco.
+     * @return Bytes JPEG.
+     * @throws IOException Si no hay codificador JPEG o falla la escritura.
+     */
+    private static byte[] comprimirJpeg(BufferedImage destino) throws IOException {
         Iterator<ImageWriter> escritores = ImageIO.getImageWritersByFormatName("jpeg");
         if (!escritores.hasNext()) {
             throw new IOException("No hay codificador JPEG disponible");

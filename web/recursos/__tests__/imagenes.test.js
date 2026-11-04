@@ -38,6 +38,18 @@ describe('optimizarUrlImagen — portadas servidas por el backend', () => {
         expect(optimizarUrlImagen(CDN, 200)).toContain('&w=200');
     });
 
+    it('añade &h= solo cuando se pide recorte', () => {
+        // El hero pinta un marco 16:9: pide 600x338 para no descargar 600x900.
+        const hero = optimizarUrlImagen(CDN, 600, 338);
+        expect(hero).toContain('&w=600');
+        expect(hero).toContain('&h=338');
+
+        // Sin alto (o con 0) el backend conserva la proporción: no viaja `h`.
+        expect(optimizarUrlImagen(CDN, 600)).not.toContain('&h=');
+        expect(optimizarUrlImagen(CDN, 600, 0)).not.toContain('&h=');
+        expect(optimizarUrlImagen(CDN, 600, null)).not.toContain('&h=');
+    });
+
     it('no reescribe hosts ajenos al CDN de portadas', () => {
         const ajena = 'https://ejemplo.com/portada.png';
         expect(optimizarUrlImagen(ajena, 300)).toBe(ajena);
@@ -62,6 +74,13 @@ describe('aplicarImagen — cadena de respaldo', () => {
     it('empieza pidiendo la versión optimizada', () => {
         aplicarImagen(img, CDN, null, 300);
         expect(img.getAttribute('src')).toContain('/imagenes?url=');
+    });
+
+    it('traslada el alto para que el backend recorte el marco', () => {
+        aplicarImagen(img, CDN, null, 600, 338);
+        const src = img.getAttribute('src');
+        expect(src).toContain('&w=600');
+        expect(src).toContain('&h=338');
     });
 
     it('si la optimizada falla, reintenta la URL original', () => {
