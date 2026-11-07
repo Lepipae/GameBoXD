@@ -516,7 +516,8 @@ export function mostrarErrorConPistachos(error, reintentar) {
     botonReintentar.style.background = '#FF4B00';
     botonReintentar.style.color = '#0B0B0C';
     botonReintentar.style.border = 'none';
-    botonReintentar.style.padding = '12px 24px';
+    // 13 px vertical + línea de texto ~14 px ≈ 40 px de diana táctil
+    botonReintentar.style.padding = '13px 26px';
     botonReintentar.style.borderRadius = '2px';
     botonReintentar.style.fontWeight = '800';
     botonReintentar.style.textTransform = 'uppercase';

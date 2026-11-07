@@ -44,6 +44,9 @@
     flex-direction: column;
     gap: 20px;
     transition: border-color 0.3s ease;
+    /* Hijo de grid con min-width auto: el input innecesariamente ancho
+       estira la tarjeta y provoca scroll horizontal en móviles estrechos. */
+    min-width: 0;
 }
 
 .insertar-card:hover {
@@ -71,15 +74,21 @@
     flex-direction: column;
     gap: 8px;
     margin-bottom: 20px;
+    /* Evita el suelo de min-content dentro de flex/grid: sin esto, en
+       pantallas de ~320 px el campo más ancho empuja la tarjeta y aparece
+       scroll horizontal. */
+    min-width: 0;
 }
 
 .form-row {
     display: flex;
     gap: 20px;
+    min-width: 0;
 }
 
 .half-width {
     flex: 1;
+    min-width: 0;
 }
 
 .form-group label {
@@ -98,7 +107,8 @@
     border-radius: var(--radius-sm);
     color: var(--text);
     padding: 12px 16px;
-    font-size: 15px;
+    /* 16 px mínimo: iOS hace zoom automático al enfocar campos más pequeños */
+    font-size: 16px;
     transition: border-color 0.3s ease, background-color 0.3s ease;
     width: 100%;
 }
@@ -123,6 +133,7 @@
 
 .form-group select {
     appearance: none;
+    min-width: 0;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23FF4B00'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 16px center;
@@ -376,6 +387,10 @@
     transition: color 0.2s ease;
     border: none;
     background: none;
+    /* El glyph es minúsculo: el padding agranda la diana táctil (~40 px) y el
+       margen negativo mantiene el aspecto visual original. */
+    padding: 11px 14px;
+    margin: -11px -14px;
 }
 
 .toast-close:hover {
@@ -396,4 +411,31 @@
 .toast.toast-fade-out {
     transform: translateX(120%);
     opacity: 0;
+}
+
+/* Ajustes de pantallas pequeñas: el toast ocupa el ancho disponible en vez de
+   desbordar un móvil (min-width 320 px no cabe), los dos campos de una fila
+   se apilan y las tarjetas aflojan el padding. */
+@media (max-width: 600px) {
+    .insertar-section { padding: 24px 16px 60px; }
+    .insertar-card { padding: 20px; }
+
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .game-preview-img-container { width: 110px; }
+
+    .toast-container {
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+    }
+
+    .toast {
+        min-width: 0;
+        max-width: 100%;
+        padding: 14px 16px;
+    }
 }

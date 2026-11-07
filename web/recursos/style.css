@@ -425,6 +425,7 @@ img {
 
 .search-input {
     flex: 1;
+    min-width: 0;
     background: transparent;
     font-size: 17px;
     font-weight: 600;
@@ -705,10 +706,76 @@ img {
 
 @media (max-width: 600px) {
     .main-header { padding: 0 14px; height: 64px; }
-    .nav-button { padding: 9px 12px; font-size: 11px; letter-spacing: 0.08em; }
-    .icon-button { width: 40px; height: 40px; }
-    .header-center h1 { font-size: 16px; }
+    /* Dianas táctiles: los controles del header quedan por encima de los 44 px
+       que recomiendan Apple HIG / Material; abajo de esa medida un dedo falla. */
+    .nav-button {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 9px 12px;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+    }
+
+    .icon-button { width: 44px; height: 44px; }
+
+    /* El h1 del header puede llevar el nombre del juego (detalle): como
+       máximo dos líneas con puntos suspensivos, y el logo pasa a fila propia
+       sin empujar el resto del contenido. */
+    .header-center { min-width: 0; }
+
+    .header-center h1 {
+        font-size: 16px;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+        max-width: 100%;
+    }
+
+    .brand-link { padding: 12px 8px; }
     .search-container { padding: 40px 16px 20px; }
     .search-input { font-size: 16px; }
     .recomendacion { flex: 1 1 100%; }
+    /* Con ~320 px la fila de botones no cabe en una línea: envuelven en vez
+       de quedarse fuera de la pantalla (body recorta el desbordamiento). */
+    .header-left {
+        flex-wrap: wrap;
+        row-gap: 8px;
+    }
+
+    /* El pie pegado abajo roba ~90 px de la pantalla de un móvil y su texto
+       más las redes dan dos líneas: en pantallas pequeñas vuelve al flujo del
+       documento y se centra. */
+    .main-footer {
+        position: static;
+        flex-direction: column;
+        gap: 12px;
+        padding: 18px 16px 22px;
+        text-align: center;
+    }
+
+    .footer-social {
+        gap: 24px;
+        justify-content: center;
+    }
+
+    .social { width: 44px; height: 44px; margin: 0; }
+
+    .social > a {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .social img { width: 22px; height: 22px; }
+
+    /* Márgenes laterales de 40 px en un teléfono dejan demasiado aire. */
+    .recommendations-section { padding: 20px 16px 64px; }
+    .descripcion-section { padding: 20px 16px 64px; }
+    .section-title { margin-left: 0; }
+    .parrafo { padding: 24px; margin: 28px auto; }
 }

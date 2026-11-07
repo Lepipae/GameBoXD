@@ -295,6 +295,13 @@
     border: 1px dashed rgba(255, 255, 255, 0.09);
 }
 
+/* En móvil las etiquetas son enlaces de búsqueda: con el padding de
+   escritorio quedan por debajo de ~40 px y un dedo falla al pulsarlas. */
+@media (max-width: 600px) {
+    .game-tags { gap: 12px; }
+    .game-tag { padding: 12px 14px; }
+}
+
 /* Responsividad */
 @media (max-width: 800px) {
     .game-detail-wrapper {
